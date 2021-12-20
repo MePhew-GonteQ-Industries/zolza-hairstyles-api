@@ -1,2 +1,2 @@
 # hairdressing-salon-api
-Hairdressing Salon appointments management web api
+Hairdressing salon appointments management web api
