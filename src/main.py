@@ -1,13 +1,17 @@
 from fastapi import FastAPI
-from fastapi import APIRouter
+from .routers import users, auth
+from .config import settings
 
-app = FastAPI()
+app = FastAPI(docs_url=settings.BASE_URL + '/docs',
+              redoc_url=settings.BASE_URL + '/redoc',
+              openapi_url=settings.BASE_URL + '/openapi.json',
+              title='Zołza Hairstyles API',
+              version='0.1 Alpha')
 
-router = APIRouter(prefix='/api')
+app.include_router(users.router)
+app.include_router(auth.router)
 
-app.include_router(router)
 
-
-@router.get('/')
+@app.get(settings.BASE_URL + '/', tags=['Hello World Test'])
 async def root():
     return {"Response": "Hello World"}
