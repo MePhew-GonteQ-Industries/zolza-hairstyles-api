@@ -7,4 +7,5 @@ router = APIRouter(prefix=settings.BASE_URL + '/auth',
 
 @router.get('/')
 async def authorized():
-    return {'authorized': 'false'}
+    return {'authorized': 'false',
+            'permission_level': 'none'}
