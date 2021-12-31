@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 from ..config import settings
 
 router = APIRouter(prefix=settings.BASE_URL + '/appointments',
@@ -15,3 +15,18 @@ async def get_appointments():
         'user_id': 5
         },
     }
+
+
+@router.post('/', status_code=status.HTTP_201_CREATED)
+async def create_appointment():
+    return {'': ''}
+
+
+@router.get('/{id}', status_code=status.HTTP_201_CREATED)
+async def get_appointment():
+    pass
+
+
+@router.post('/{id}', status_code=status.HTTP_201_CREATED)
+async def update_appointment():
+    pass

@@ -1,12 +1,19 @@
 from pydantic import BaseSettings
-import dotenv
-import os
-
-dotenv.load_dotenv()
 
 
 class Settings(BaseSettings):
-    BASE_URL: str = os.getenv('BASE_URL')
+    BASE_URL: str
+    DATABASE_USERNAME: str
+    DATABASE_PASSWORD: str
+    DATABASE_HOSTNAME: str
+    DATABASE_PORT: str
+    DATABASE_NAME: str
+    API_SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+
+    class Config:
+        env_file = ".env"
 
 
 settings = Settings()
