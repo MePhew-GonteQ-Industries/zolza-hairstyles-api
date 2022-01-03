@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Zołza Hairstyles - account activation</title>
+    </head>
+    <body style="font-family:arial,helvetica,sans-serif">
+        <h2>Hello, {{user}}!</h2>
+        <h3>Thank you for signing up at <a href="https://mephew.ddns.net">zolza-hairstyles.pl.</a></h3>
+        <h4 style="font-weight: normal;">To complete registration process, please follow the link below: </h4>
+        <a href="{{account_confirmation_link}}" style="display: block; margin: 5px 0; background-color: rgb(155, 240, 225);
+          color: white; padding: 10px 20px; padding-left: 20px; padding-right: 20px; padding-top: 10px;
+          padding-bottom: 10px;">Confirm your account</a>
+        <h4 style="font-weight: normal;">If the above link doesn't work, please copy the below URL and paste it into your web browser:</h4>
+        <a href="{{account_confirmation_link}}">{{account_confirmation_link}}</a>
+        <footer>
+            <p>© 2021 Zołza Hairstyles</p>
+        </footer>
+    </body>
+</html>
