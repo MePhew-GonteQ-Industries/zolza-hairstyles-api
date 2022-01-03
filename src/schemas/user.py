@@ -1,5 +1,8 @@
+from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel, EmailStr
+from .user_settings import ReturnSettings
+from typing import List
 
 
 class Gender(str, Enum):
@@ -19,3 +22,17 @@ class BaseUser(BaseModel):
 
 class CreateUser(BaseUser):
     password: str
+
+
+class ReturnUser(BaseUser):
+    permission_level: list[str]
+    verified: bool
+    created_at: datetime
+
+
+class ReturnUserAndSettings(BaseModel):
+    user: ReturnUser
+    settings: List[ReturnSettings]
+
+    class Config:
+        orm_mode = True
