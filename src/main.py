@@ -2,11 +2,12 @@ from fastapi import FastAPI
 from .routers import users, auth, user_settings, appointments, services
 from .config import settings
 
+
 app = FastAPI(docs_url=settings.BASE_URL + '/docs',
               redoc_url=settings.BASE_URL + '/redoc',
               openapi_url=settings.BASE_URL + '/openapi.json',
-              title='Zołza Hairstyles API',
-              version='0.1 Alpha')
+              title=settings.API_TITLE,
+              version=settings.API_VERSION)
 
 app.include_router(users.router)
 app.include_router(auth.router)
