@@ -18,4 +18,4 @@ app.include_router(services.router)
 
 @app.get(settings.BASE_URL + '/', tags=['Hello World Test'])
 async def root():
-    return {"Response": "Hello World"}
+    return {"Response": "Hello World!"}
