@@ -22,11 +22,11 @@ async def create_appointment():
     return {'': ''}
 
 
-@router.get('/{id}', status_code=status.HTTP_201_CREATED)
+@router.get('/{id}/', status_code=status.HTTP_201_CREATED)
 async def get_appointment():
     pass
 
 
-@router.post('/{id}', status_code=status.HTTP_201_CREATED)
+@router.post('/{id}/', status_code=status.HTTP_201_CREATED)
 async def update_appointment():
     pass
