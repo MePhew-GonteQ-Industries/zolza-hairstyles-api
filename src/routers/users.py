@@ -21,9 +21,6 @@ def create_user(user: CreateUser,
                 content_language: AvailableContentLanugages = Header(Required),
                 prefered_theme: AvailableThemes = Header(Required)):
     """
-    # Przykład użytkownika z odpowiednimi włosami
-    ![alt text](https://www.wykop.pl/cdn/c3201142/comment_FZlHY7qNlOG8X7B4aM1RhQOhB6joL8sW.jpg)
-
     ## Part of the user creation process is initializing the user's settings
     ### For this reason it is required to pass two *header parameters*: `content-language` and `prefered-theme` to this endpoint
     ### Later on these settings can be accessed and modified via *`/api/settings/`* endpoint
