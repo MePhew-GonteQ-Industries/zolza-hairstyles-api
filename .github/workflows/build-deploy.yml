@@ -55,7 +55,7 @@ jobs:
           script: |
             cd /home/${{secrets.DEPLOYMENT_USERNAME}}/zolza_hairstyles_api
             git pull
-            source 
+            source venv/bin/activate 
             pip install -r requirements.txt
             alembic upgrade head
             echo ${{secrets.DEPLOYMENT_PASSWORD}} | sudo -S systemctl restart zolza_hairstyles_api
