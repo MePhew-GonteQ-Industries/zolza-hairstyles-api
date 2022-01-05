@@ -5,7 +5,7 @@ router = APIRouter(prefix=settings.BASE_URL + '/appointments',
                    tags=['Appointments'])
 
 
-@router.get('/')
+@router.get('')
 async def get_appointments():
     return {'appointment': {
         'id': 0,
@@ -17,16 +17,16 @@ async def get_appointments():
     }
 
 
-@router.post('/', status_code=status.HTTP_201_CREATED)
+@router.post('', status_code=status.HTTP_201_CREATED)
 async def create_appointment():
     return {'': ''}
 
 
-@router.get('/{id}/', status_code=status.HTTP_201_CREATED)
+@router.get('/{id}', status_code=status.HTTP_201_CREATED)
 async def get_appointment():
     pass
 
 
-@router.post('/{id}/', status_code=status.HTTP_201_CREATED)
+@router.post('/{id}', status_code=status.HTTP_201_CREATED)
 async def update_appointment():
     pass

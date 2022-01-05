@@ -5,7 +5,7 @@ router = APIRouter(prefix=settings.BASE_URL + '/services',
                    tags=['Services'])
 
 
-@router.get('/')
+@router.get('')
 async def get_services():
     return {'service': {
         'id': '',

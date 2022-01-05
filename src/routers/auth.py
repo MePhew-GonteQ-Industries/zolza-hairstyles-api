@@ -8,12 +8,12 @@ router = APIRouter(prefix=settings.BASE_URL + '/auth',
                    tags=['Authorization'])
 
 
-@router.post('/login/')
+@router.post('/login')
 def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     return user_credentials
 
 
-@router.get('/')
+@router.get('')
 async def authorized():
     return {'authorized': 'false',
             'permission_level': 'none'}

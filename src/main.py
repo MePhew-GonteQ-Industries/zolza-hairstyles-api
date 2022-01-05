@@ -16,6 +16,6 @@ app.include_router(appointments.router)
 app.include_router(services.router)
 
 
-@app.get(settings.BASE_URL + '/', tags=['Hello World Test'])
+@app.get(settings.BASE_URL, tags=['Hello World Test'])
 async def root():
     return {"Message": "Welcome to Zołza Hairstyles API!"}

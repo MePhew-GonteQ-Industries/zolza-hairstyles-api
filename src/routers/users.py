@@ -14,7 +14,7 @@ router = APIRouter(prefix=settings.BASE_URL + '/users',
                    tags=['Users'])
 
 
-@router.post('/register/', status_code=status.HTTP_201_CREATED, response_model=ReturnUserAndSettings)
+@router.post('/register', status_code=status.HTTP_201_CREATED, response_model=ReturnUserAndSettings)
 def create_user(user: CreateUser,
                 background_tasks: BackgroundTasks,
                 db: Session = Depends(get_db),
@@ -127,7 +127,7 @@ def create_user(user: CreateUser,
             'settings': user_settings}
 
 
-@router.get('/me/', response_model=ReturnUser)
+@router.get('/me', response_model=ReturnUser)
 async def me(db: Session = Depends(get_db)):
     # user = db.query(models.User).filter(models.User.id == user_id)
 
