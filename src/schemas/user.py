@@ -8,6 +8,7 @@ from typing import List
 class Gender(str, Enum):
     male = "male"
     female = "female"
+    other = 'other'
 
 
 class BaseUser(BaseModel):
