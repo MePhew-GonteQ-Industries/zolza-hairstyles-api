@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     API_VERSION: str
     API_TITLE: str
     BASE_URL: str
+    ZOLZA_HAIRSTYLES_URL: str
 
     DATABASE_USERNAME: str
     DATABASE_PASSWORD: str
@@ -12,7 +13,7 @@ class Settings(BaseSettings):
     DATABASE_PORT: str
     DATABASE_NAME: str
 
-    API_SECRET_KEY: str
+    API_SECRET: str
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
