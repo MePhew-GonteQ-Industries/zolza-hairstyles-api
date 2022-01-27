@@ -150,7 +150,7 @@ def request_password_reset(user_email: UserEmailOnly,
 
     db_password_reset_request = db.query(models.EmailRequests).where(models.EmailRequests.user_id == user_db.id
                                                                      and models.EmailRequests.request_type ==
-                                                                     EmailRequestType.password_reset_request)
+                                                                     EmailRequestType.password_reset_request).first()
 
     if db_password_reset_request:
         cooldown_start = db_password_reset_request.created_at
@@ -165,23 +165,23 @@ def request_password_reset(user_email: UserEmailOnly,
                                                                    f' minutes allowed')
         db.delete(db_password_reset_request)
 
-        password_reset_request = create_email_request(user=user_db,
-                                                      token_type=TokenType.password_reset_token,
-                                                      request_type=EmailRequestType.password_reset_request)
+    password_reset_request = create_email_request(user=user_db,
+                                                  token_type=TokenType.password_reset_token,
+                                                  request_type=EmailRequestType.password_reset_request)
 
-        db.add(password_reset_request)
-        db.commit()
+    db.add(password_reset_request)
+    db.commit()
 
-        content_language = db.query(models.Setting).where(models.Setting.name == AvailableSettings.language
-                                                          and models.Setting.user_id == user_db.id).first()
+    content_language = db.query(models.Setting).where(models.Setting.name == AvailableSettings.language
+                                                      and models.Setting.user_id == user_db.id).first()
 
-        message, template_name = create_password_reset_email(content_language.current_value,
-                                                             user_db,
-                                                             password_reset_request.request_token)
+    message, template_name = create_password_reset_email(content_language.current_value,
+                                                         user_db,
+                                                         password_reset_request.request_token)
 
-        background_tasks.add_task(send_email, message, template_name)
+    background_tasks.add_task(send_email, message, template_name)
 
-        return user_email
+    return user_email
 
 
 @router.put('/reset-password', response_model=ReturnUser)
