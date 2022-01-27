@@ -99,7 +99,7 @@ def create_user(user: CreateUser,
 
     user_settings = db.query(models.Setting).filter(models.Setting.user_id == new_user.id).all()
 
-    email_verification_request = create_email_request(user=user,
+    email_verification_request = create_email_request(user=new_user,
                                                       token_type=TokenType.email_verification_token,
                                                       request_type=EmailRequestType.email_verification_request)
 
