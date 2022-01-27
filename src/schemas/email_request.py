@@ -1,6 +1,7 @@
 from enum import Enum
 from pydantic import BaseModel, Field, validator
 import re
+from pydantic import UUID4
 
 
 class EmailRequestType(str, Enum):
@@ -9,7 +10,7 @@ class EmailRequestType(str, Enum):
 
 
 class EmailRequest(BaseModel):
-    user_id: int
+    user_id: UUID4
     request_type: EmailRequestType
     request_token: str
 

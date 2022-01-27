@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from enum import Enum
 from typing import Union
+from pydantic import UUID4
 
 
 class TokenType(str, Enum):
@@ -11,7 +12,7 @@ class TokenType(str, Enum):
 
 
 class TokenPayloadBase(BaseModel):
-    user_id: int
+    user_id: UUID4
     token_type: str
 
 
@@ -25,13 +26,13 @@ class CreateTokenPayload(TokenPayloadBase):
 
 
 class ReturnAccessTokenPayload(BaseModel):
-    user_id: int
+    user_id: UUID4
     permission_level: str
     access_token: str
 
 
 class ReturnGenericToken(BaseModel):
-    user_id: int
+    user_id: UUID4
 
 
 class ReturnAccessToken(BaseModel):
