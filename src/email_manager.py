@@ -58,8 +58,28 @@ def create_email_verification_email(content_language: AvailableContentLanugages,
 
 def create_password_reset_email(content_language: AvailableContentLanugages,
                                 user,
-                                email_verification_token):
-    raise NotImplementedError()
+                                password_reset_token):
+    match content_language:
+        case AvailableContentLanugages.polish:
+            template_name = 'password_reset_pl.html'
+            subject = 'Zołza Hairstyles - resetowanie hasła'
+        case AvailableContentLanugages.english:
+            template_name = 'password_reset_en.html'
+            subject = 'Zołza Hairstyles - password reset'
+        case _:
+            raise InvalidEnumerationMemberHTTPException()
+
+    message = MessageSchema(
+        subject=subject,
+        recipients=[user.email],
+        template_body={
+            'user': user.name,
+            'password_reset_link': f'https://mephew.ddns.net/password-reset?token={password_reset_token}'
+        },
+        subtype="html"
+    )
+
+    return message, template_name
 
 
 def create_email_request(*, user, token_type: TokenType, request_type: EmailRequestType):
