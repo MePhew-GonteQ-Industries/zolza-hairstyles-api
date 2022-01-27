@@ -13,10 +13,31 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     gender = Column(String, nullable=False)
     permission_level = Column(ARRAY(item_type=String), nullable=False, server_default='{user}')
-    disabled = Column(Boolean, nullable=False, server_default='false')
     verified = Column(Boolean, nullable=False, server_default='false')
+    disabled = Column(Boolean, nullable=False, server_default='false')
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
+
+
+class Session(Base):
+    __tablename__ = 'sessions'
+    id = Column(Integer, primary_key=True, nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    access_token = Column(String, nullable=False)
+    refresh_token = Column(String, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True),
+                        nullable=False, server_default=text('now()'))
+
+
+class EmailRequests(Base):
+    __tablename__ = 'email_requests'
+    id = Column(Integer, primary_key=True, nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    request_type = Column(String, nullable=False)
+    request_token = Column(String, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True),
+                        nullable=False, server_default=text('now()'))
+    UniqueConstraint('user_id', 'request_type', name='limit_email_requests')
 
 
 class Service(Base):
