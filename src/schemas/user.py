@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, validator, UUID4
 from .user_settings import ReturnSetting
 from typing import List
 
@@ -42,6 +42,15 @@ class ReturnUser(BaseUser):
     permission_level: List[str]
     verified: bool
     created_at: datetime
+
+
+class ReturnUserDetailed(ReturnUser):
+    id: UUID4
+    disabled: bool
+
+
+class ReturnUsers(BaseModel):
+    users: List[ReturnUserDetailed]
 
 
 class ReturnUserAndSettings(BaseModel):
