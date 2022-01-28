@@ -1,4 +1,3 @@
-import uuid
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, UniqueConstraint
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP, ARRAY
@@ -8,7 +7,7 @@ from .database import Base
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(UUID(as_uuid=True), primary_key=True, nullable=False, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, nullable=False, server_default=text('gen_random_uuid()'))
     email = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
     surname = Column(String, nullable=False)
@@ -44,18 +43,22 @@ class EmailRequests(Base):
 
 class Service(Base):
     __tablename__ = "services"
-    id = Column(UUID(as_uuid=True), primary_key=True, nullable=False, default=uuid.uuid4)
-    name = Column(String, nullable=False)
-    available = Column(Boolean, nullable=False, server_default='true')
+    id = Column(UUID(as_uuid=True), primary_key=True, nullable=False, server_default=text('gen_random_uuid()'))
+    name = Column(String, nullable=False, unique=True)
+    min_price = Column(Integer, nullable=False)
+    max_price = Column(Integer, nullable=False)
+    time_minutes = Column(Integer, nullable=False)
+    description = Column(String)
+    available = Column(Boolean, nullable=False)
     user_defined = Column(Boolean, nullable=False)
-    created_by = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    created_by = Column(UUID(as_uuid=True), ForeignKey('users.id'))
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
 
 
 class Appointment(Base):
     __tablename__ = "appointments"
-    id = Column(UUID(as_uuid=True), primary_key=True, nullable=False, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, nullable=False, server_default=text('gen_random_uuid()'))
     service_id = Column(UUID(as_uuid=True), ForeignKey('services.id'), nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     scheduled_for = Column(TIMESTAMP(timezone=True), nullable=False)
