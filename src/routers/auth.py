@@ -217,9 +217,9 @@ def reset_password(password_reset_request: PasswordResetRequest, db: Session = D
 
 @router.post('/enable-two-factor-authentication')
 def enable_two_factor_authentication():
-    pass
+    raise NotImplementedError
 
 
 @router.post('/disable-two-factor-authentication')
 def disable_two_factor_authentication():
-    pass
+    raise NotImplementedError
