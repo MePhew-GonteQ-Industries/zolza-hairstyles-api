@@ -142,9 +142,7 @@ def get_administrative_user(token: str = Depends(oauth2_scheme), db: Session = D
     if not user.verified:
         raise UnverifiedUserHTTPException()
 
-    user_permissions = user.permission_level.split(' ')
-
-    if 'admin' not in user_permissions:
+    if 'admin' not in user.permission_level:
         raise InsufficientPermissionHTTPException()
 
     return user
