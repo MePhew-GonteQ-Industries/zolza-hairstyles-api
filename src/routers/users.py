@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+from typing import List, Union
+
 from fastapi import APIRouter, status, Depends, BackgroundTasks, HTTPException, Header
 from ..config import settings
 from sqlalchemy.orm import Session
@@ -6,14 +8,15 @@ from ..database import get_db
 from ..exceptions import CooldownHTTPException, InvalidTokenException, MalformedAccessTokenException, \
     InvalidEnumerationMemberHTTPException
 from ..schemas.oauth2 import TokenType
-from ..schemas.user import CreateUser, ReturnUser, ReturnUserAndSettings, UserEmailOnly
+from ..schemas.user import CreateUser, ReturnUser, ReturnUserAndSettings, ReturnUserDetailed, ReturnUsers, \
+    UserEmailOnly
 from ..schemas.user_settings import AvailableContentLanugages, AvailableSettings, AvailableThemes, PreferredThemeBase, \
-    LanguageCreate
+    LanguageCreate, ReturnSetting
 from ..schemas.email_request import EmailRequestType, EmailVerificationRequest
 from .. import models
 from ..email_manager import create_email_verification_email, create_email_request, send_email
 from sqlalchemy.exc import IntegrityError
-from pydantic import Required
+from pydantic import Required, UUID4
 from .. import utils, oauth2
 from ..utils import on_decode_error
 
@@ -26,7 +29,8 @@ def create_user(user: CreateUser,
                 background_tasks: BackgroundTasks,
                 db: Session = Depends(get_db),
                 content_language: AvailableContentLanugages = Header(Required),
-                preferred_theme: AvailableThemes = Header(Required)):
+                preferred_theme: AvailableThemes = Header(Required)) -> dict[str, Union[ReturnUser,
+                                                                                        List[ReturnSetting]]]:
     """
     ## Part of the user creation process is initializing the user's settings
     ### For this reason it is required to pass two *header parameters*: `content-language` and `preferred-theme` to this endpoint
@@ -120,7 +124,7 @@ def create_user(user: CreateUser,
              response_model=UserEmailOnly)
 def request_email_verification(user_email: UserEmailOnly,
                                background_tasks: BackgroundTasks,
-                               db: Session = Depends(get_db)):
+                               db: Session = Depends(get_db)) -> UserEmailOnly:
     user_db = db.query(models.User).where(models.User.email == user_email.email).first()
 
     if not user_db:
@@ -165,7 +169,9 @@ def request_email_verification(user_email: UserEmailOnly,
 
 
 @router.put('/email-verification', response_model=ReturnUser)
-def verify_email(email_verification_request: EmailVerificationRequest, db: Session = Depends(get_db)):
+def verify_email(email_verification_request: EmailVerificationRequest,
+                 db: Session = Depends(get_db)) -> ReturnUser:
+
     request_db = db.query(models.EmailRequests) \
         .where(models.EmailRequests.request_type == EmailRequestType.email_verification_request
                and models.EmailRequests.request_token == email_verification_request.verification_token).first()
@@ -195,33 +201,50 @@ def verify_email(email_verification_request: EmailVerificationRequest, db: Sessi
 
 @router.get('/me', response_model=ReturnUser, name='Get info about your account')
 async def me(db: Session = Depends(get_db),
-             user=Depends(oauth2.get_user)):
+             user=Depends(oauth2.get_user)) -> ReturnUser:
     user_id = user.id
     user = db.query(models.User).where(models.User.id == user_id).first()
 
     return user
 
 
-@router.get('/users')
-def get_users():
-    pass
+@router.get('', response_model=ReturnUsers)
+def get_users(db: Session = Depends(get_db),
+              _=Depends(oauth2.get_administrative_user)) -> dict[str, ReturnUser]:
+    users_db = db.query(models.User).all()
+
+    return {'users': users_db}
 
 
-@router.get('/user/{uuid}')
-def get_user_by_uuid():
-    pass
+@router.get('/user/{uuid}', response_model=ReturnUserDetailed)
+def get_user_by_uuid(uuid: UUID4,
+                     db: Session = Depends(get_db),
+                     _=Depends(oauth2.get_administrative_user)) -> ReturnUserDetailed:
+    user_db = db.query(models.User).where(models.User.id == uuid).first()
+
+    if not user_db:
+        raise HTTPException(detail=f'User with uuid of {uuid} does not exist',
+                            status_code=status.HTTP_404_NOT_FOUND)
+
+    return user_db
 
 
 @router.put('/ban/{uuid}')
-def block_user():
-    pass
+def block_user(uuid: UUID4,
+               db: Session = Depends(get_db),
+               _=Depends(oauth2.get_administrative_user)):
+    raise NotImplementedError
 
 
 @router.put('/promote/{uuid}')
-def promote_user():
-    pass
+def promote_user(uuid: UUID4,
+                 db: Session = Depends(get_db),
+                 _=Depends(oauth2.get_administrative_user)):
+    raise NotImplementedError
 
 
 @router.put('/demote/{uuid}')
-def demote_user():
-    pass
+def demote_user(uuid: UUID4,
+                db: Session = Depends(get_db),
+                _=Depends(oauth2.get_administrative_user)):
+    raise NotImplementedError
