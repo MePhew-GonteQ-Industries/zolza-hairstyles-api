@@ -1,9 +1,10 @@
 from fastapi import FastAPI, status
-from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import users, auth, user_settings, appointments, services
-from .config import settings
+from fastapi.responses import RedirectResponse
 
+from .config import settings
+from .routers import appointments, auth, services, user_settings, users
+from .scheduler import scheduler
 
 app = FastAPI(docs_url=settings.BASE_URL + '/docs',
               redoc_url=settings.BASE_URL + '/redoc',
@@ -18,7 +19,7 @@ app.include_router(appointments.router)
 app.include_router(services.router)
 
 ALLOWED_ORIGINS = [
-    "http://localhost:8080",
+    "*",
 ]
 
 app.add_middleware(
@@ -28,6 +29,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+scheduler.start()
 
 
 @app.get(settings.BASE_URL, tags=['Zołza Hairstyles Redirection'])
