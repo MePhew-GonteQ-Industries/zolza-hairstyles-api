@@ -53,9 +53,5 @@ class ReturnUsers(BaseModel):
     users: List[ReturnUserDetailed]
 
 
-class ReturnUserAndSettings(BaseModel):
-    user: ReturnUser
+class ReturnUserAndSettings(ReturnUser):
     settings: List[ReturnSetting]
-
-    class Config:
-        orm_mode = True
