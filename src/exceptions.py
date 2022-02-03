@@ -4,6 +4,12 @@ from fastapi import HTTPException, status
 from datetime import timedelta
 
 
+class ResourceNotFoundException(HTTPException):
+    def __init__(self):
+        self.status_code = status.HTTP_404_NOT_FOUND
+        self.detail = 'Requested resource was not found on the server'
+
+
 class IncorrectTokenDataException(Exception):
     pass
 
@@ -22,21 +28,21 @@ class InvalidTokenException(HTTPException):
 class AccountDisabledHTTPException(HTTPException):
     def __init__(self):
         self.detail = 'This account has been suspended'
-        self.status_code = status.HTTP_401_UNAUTHORIZED
+        self.status_code = status.HTTP_403_FORBIDDEN
         self.headers = {"WWW-Authenticate": "Bearer"}
 
 
 class UnverifiedUserHTTPException(HTTPException):
     def __init__(self):
-        self.detail = 'User is not verfied'
-        self.status_code = status.HTTP_401_UNAUTHORIZED
+        self.detail = 'User is not verified'
+        self.status_code = status.HTTP_403_FORBIDDEN
         self.headers = {"WWW-Authenticate": "Bearer"}
 
 
-class InsufficientPermissionHTTPException(HTTPException):
+class InsufficientPermissionsHTTPException(HTTPException):
     def __init__(self):
-        self.detail = 'User does not have required permissions to perfrom this action'
-        self.status_code = status.HTTP_401_UNAUTHORIZED
+        self.detail = 'Insufficient permissions to perform this action'
+        self.status_code = status.HTTP_403_FORBIDDEN
         self.headers = {"WWW-Authenticate": "Bearer"}
 
 
