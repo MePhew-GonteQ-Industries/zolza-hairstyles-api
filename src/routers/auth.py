@@ -37,7 +37,7 @@ def login(user_credentials: OAuth2PasswordRequestFormStrict = Depends(), db: Ses
     password_hash = db.query(models.Password.password_hash).where(models.Password.user_id == user.id) \
         .where(models.Password.current == True).first()
 
-    if not utils.compare_passwords(user_credentials.password, password_hash):
+    if not utils.compare_passwords(user_credentials.password, *password_hash):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail='invalid credentials')
 
