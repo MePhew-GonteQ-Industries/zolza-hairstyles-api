@@ -148,8 +148,7 @@ def request_email_verification(user_email: UserEmailOnly,
         cooldown_left = cooldown_end - now
 
         if cooldown_end > now:
-            # noinspection PyTypeChecker,PydanticTypeChecker
-            raise CooldownHTTPException(cooldown_left.total_seconds(),
+            raise CooldownHTTPException(str(int(cooldown_left.total_seconds())),
                                         detail=f'Too many verification requests, max 1 request per'
                                                f' {settings.MAIL_VERIFICATION_COOLDOWN_MINUTES}'
                                                f' minutes allowed')

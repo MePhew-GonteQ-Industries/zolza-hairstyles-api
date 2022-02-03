@@ -164,7 +164,7 @@ def request_password_reset(user_email: UserEmailOnly,
 
         if cooldown_end > now:
             # noinspection PyTypeChecker,PydanticTypeChecker
-            raise CooldownHTTPException(cooldown_left.total_seconds(),
+            raise CooldownHTTPException(str(int(cooldown_left.total_seconds())),
                                         detail=f'Too many password reset requests, max 1 request per '
                                                f'{settings.PASSWORD_RESET_COOLDOWN_MINUTES} minutes allowed')
         db.delete(db_password_reset_request)
