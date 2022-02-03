@@ -11,7 +11,7 @@ from fastapi.security import OAuth2PasswordBearer
 from .schemas.oauth2 import CreateTokenPayload, ReturnAccessTokenPayload, ReturnGenericToken, ReturnTokenPayload, \
     TokenType
 from .exceptions import AccountDisabledHTTPException, IncorrectTokenDataException, \
-    InsufficientPermissionHTTPException, InvalidTokenException, \
+    InsufficientPermissionsHTTPException, InvalidTokenException, \
     MalformedAccessTokenException, SessionNotFoundHTTPException, UnverifiedUserHTTPException
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/auth/login')
@@ -107,42 +107,22 @@ def get_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db))
     return user
 
 
-def get_verified_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    payload = decode_jwt(token, expected_token_type=TokenType.access_token)
-    user = db.query(models.User).where(models.User.id == payload.user_id).first()
-
-    session_db = db.query(models.Session).where(models.Session.user_id == user.id
-                                                and models.Session.access_token == token).first()
-
-    if not session_db:
-        raise SessionNotFoundHTTPException()
-
-    if user.disabled:
-        raise AccountDisabledHTTPException()
-
+def get_verified_user(user=Depends(get_user)):
     if not user.verified:
         raise UnverifiedUserHTTPException()
 
     return user
 
 
-def get_administrative_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    payload = decode_jwt(token, expected_token_type=TokenType.access_token)
-    user = db.query(models.User).where(models.User.id == payload.user_id).first()
-
-    session_db = db.query(models.Session).where(models.Session.user_id == user.id
-                                                and models.Session.access_token == token).first()
-
-    if not session_db:
-        raise SessionNotFoundHTTPException()
-
-    if user.disabled:
-        raise AccountDisabledHTTPException()
-
-    if not user.verified:
-        raise UnverifiedUserHTTPException()
-
+def get_admin(user=Depends(get_verified_user)):
     if 'admin' not in user.permission_level:
-        raise InsufficientPermissionHTTPException()
+        raise InsufficientPermissionsHTTPException()
 
     return user
+
+
+def get_superuser(admin=Depends(get_admin)):
+    if 'superuser' not in admin.permission_level:
+        raise InsufficientPermissionsHTTPException()
+
+    return admin
