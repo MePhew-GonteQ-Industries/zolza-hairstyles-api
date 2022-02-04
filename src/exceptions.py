@@ -46,16 +46,6 @@ class InsufficientPermissionsHTTPException(HTTPException):
         self.headers = {"WWW-Authenticate": "Bearer"}
 
 
-class MalformedAccessTokenException(HTTPException):
-    def __init__(self, detail,
-                 status_code: status = status.HTTP_401_UNAUTHORIZED,
-                 headers: Optional[dict] = None):
-        self.detail = detail
-        self.status_code = status_code
-        if headers:
-            self.headers = headers
-
-
 class InvalidEnumerationMemberHTTPException(HTTPException):
     def __init__(self):
         self.detail = [
@@ -78,7 +68,7 @@ class InvalidEnumerationMemberHTTPException(HTTPException):
 
 
 class CooldownHTTPException(HTTPException):
-    def __init__(self, cooldown_left: timedelta, *, detail: str):
+    def __init__(self, cooldown_left: str, *, detail: str):
         self.status_code = status.HTTP_429_TOO_MANY_REQUESTS
         self.detail = detail
         self.headers = {"Retry-After": str(cooldown_left)}

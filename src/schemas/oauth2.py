@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from enum import Enum
-from typing import Union
 from pydantic import UUID4
 
 
@@ -21,13 +20,8 @@ class ReturnTokenPayload(TokenPayloadBase):
     issued_at: str
 
 
-class CreateTokenPayload(TokenPayloadBase):
-    permission_level: Union[str, None] = None
-
-
 class ReturnAccessTokenPayload(BaseModel):
     user_id: UUID4
-    permission_level: str
     access_token: str
 
 
@@ -38,6 +32,5 @@ class ReturnGenericToken(BaseModel):
 class ReturnAccessToken(BaseModel):
     access_token: str
     token_type: str
-    scope: str
     expires_in: int = Field(gt=0)
     refresh_token: str

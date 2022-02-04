@@ -62,8 +62,8 @@ class Service(Base):
     description = Column(String)
     available = Column(Boolean, nullable=False)
     deleted = Column(Boolean, nullable=False, server_default=text('false'))
-    created_by_user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    created_by = relationship("User")
+    create_event_id = Column(UUID(as_uuid=True), ForeignKey('service_events.id'), nullable=False)
+    create_event_metadata = relationship("ServiceEvent", foreign_keys=[create_event_id])
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
 

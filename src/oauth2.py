@@ -8,29 +8,18 @@ from fastapi import Depends, status
 from sqlalchemy.orm import Session
 from .database import get_db
 from fastapi.security import OAuth2PasswordBearer
-from .schemas.oauth2 import CreateTokenPayload, ReturnAccessTokenPayload, ReturnGenericToken, ReturnTokenPayload, \
+from .schemas.oauth2 import TokenPayloadBase, ReturnAccessTokenPayload, ReturnGenericToken, \
     TokenType
 from .exceptions import AccountDisabledHTTPException, IncorrectTokenDataException, \
-    InsufficientPermissionsHTTPException, InvalidTokenException, \
-    MalformedAccessTokenException, SessionNotFoundHTTPException, UnverifiedUserHTTPException
+    InsufficientPermissionsHTTPException, InvalidTokenException, SessionNotFoundHTTPException,\
+    UnverifiedUserHTTPException
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/auth/login')
 
 
-def create_jwt(token_data: CreateTokenPayload):
+def create_jwt(token_data: TokenPayloadBase):
     encode_data = {'sub': str(token_data.user_id),
                    'type': token_data.token_type}
-
-    if token_data.token_type == TokenType.access_token or token_data.token_type == TokenType.refresh_token:
-        if token_data.permission_level:
-            encode_data['scope'] = token_data.permission_level
-        else:
-            raise IncorrectTokenDataException(f"insufficient data provided for specified token type "
-                                              f"({token_data.token_type}) requires specifying user's permissions")
-    else:
-        if token_data.permission_level:
-            raise IncorrectTokenDataException(f"specified user's permission but token type is {token_data.token_type} "
-                                              f"did you mean to create an access or refresh token instead?")
 
     match token_data.token_type:
         case TokenType.email_verification_token:
@@ -78,12 +67,10 @@ def decode_jwt(token: str, *, expected_token_type: TokenType, on_error: Optional
         raise IncorrectTokenDataException('Token types mismatch')
 
     user_id = payload.get("sub")
-    permissions_level: str = payload.get('scope')
 
     match token_type:
         case TokenType.access_token, TokenType.refresh_token:
             token_data = ReturnAccessTokenPayload(user_id=user_id,
-                                                  permission_level=permissions_level,
                                                   access_token=token)
         case _:
             token_data = ReturnGenericToken(user_id=user_id)

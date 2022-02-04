@@ -8,8 +8,8 @@ from sqlalchemy.orm import Session
 from ..email_manager import create_email_request, create_password_reset_email, send_email
 from ..exceptions import CooldownHTTPException, InvalidGrantTypeException, SessionNotFoundHTTPException
 from ..schemas.email_request import EmailRequestType, PasswordResetRequest
-from ..schemas.oauth2 import ReturnAccessToken
-from ..schemas.oauth2 import CreateTokenPayload, TokenType
+from ..schemas.oauth2 import ReturnAccessToken, TokenPayloadBase
+from ..schemas.oauth2 import TokenType
 from ..schemas import session
 
 from .. import models, utils, oauth2
@@ -41,11 +41,8 @@ def login(user_credentials: OAuth2PasswordRequestFormStrict = Depends(), db: Ses
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail='invalid credentials')
 
-    user_permissions = ' '.join(map(str, user.permission_level))
-
-    token_data = CreateTokenPayload(user_id=user.id,
-                                    permission_level=user_permissions,
-                                    token_type=TokenType.access_token)
+    token_data = TokenPayloadBase(user_id=user.id,
+                                  token_type=TokenType.access_token)
 
     access_token = oauth2.create_jwt(token_data)
 
@@ -65,7 +62,6 @@ def login(user_credentials: OAuth2PasswordRequestFormStrict = Depends(), db: Ses
 
     return ReturnAccessToken(access_token=access_token,
                              token_type='bearer',
-                             scope=user_permissions,
                              expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
                              refresh_token=refresh_token)
 

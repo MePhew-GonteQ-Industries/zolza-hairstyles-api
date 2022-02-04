@@ -4,7 +4,7 @@ from pydantic import EmailStr
 from . import models, oauth2
 from .config import settings
 from pathlib import Path
-from .schemas.oauth2 import CreateTokenPayload, TokenType
+from .schemas.oauth2 import TokenPayloadBase, TokenType
 from .schemas.email_request import EmailRequest, EmailRequestType
 
 from .exceptions import InvalidEnumerationMemberHTTPException
@@ -83,8 +83,8 @@ def create_password_reset_email(content_language: AvailableContentLanugages,
 
 
 def create_email_request(*, user, token_type: TokenType, request_type: EmailRequestType):
-    token_data = CreateTokenPayload(user_id=user.id,
-                                    token_type=token_type)
+    token_data = TokenPayloadBase(user_id=user.id,
+                                  token_type=token_type)
     request_token = oauth2.create_jwt(token_data)
 
     email_request = EmailRequest(user_id=user.id,
