@@ -86,11 +86,8 @@ def token_refresh(db: Session = Depends(get_db),
     db.delete(db_session)
     db.commit()
 
-    user_permissions = ' '.join(map(str, user.permission_level))
-
-    token_data = CreateTokenPayload(user_id=user.id,
-                                    permission_level=user_permissions,
-                                    token_type=TokenType.access_token)
+    token_data = TokenPayloadBase(user_id=user.id,
+                                  token_type=TokenType.access_token)
 
     access_token = oauth2.create_jwt(token_data)
 
@@ -110,7 +107,6 @@ def token_refresh(db: Session = Depends(get_db),
 
     return ReturnAccessToken(access_token=access_token,
                              token_type='bearer',
-                             scope=user_permissions,
                              expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
                              refresh_token=refresh_token)
 
