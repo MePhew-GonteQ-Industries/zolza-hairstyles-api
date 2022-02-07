@@ -14,7 +14,7 @@ class Service(BaseModel):
 
     @validator('max_price')
     def validate(cls, v):
-        if v.get('min_price') > v.get('max_price'):
+        if v.min_price > v.max_price:
             raise ValueError('ensure max_price is greater than the min_price')
         return v
 
