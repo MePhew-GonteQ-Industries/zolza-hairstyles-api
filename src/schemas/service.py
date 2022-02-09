@@ -37,11 +37,3 @@ class ReturnService(Service):
 
 class ReturnServiceDetailed(ReturnService):
     created_by: ReturnUserDetailed
-
-
-class ReturnServices(BaseModel):
-    services: List[ReturnService]
-
-
-class ReturnServicesDetailed(BaseModel):
-    services: List[ReturnServiceDetailed]

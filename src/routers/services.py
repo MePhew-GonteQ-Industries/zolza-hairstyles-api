@@ -8,26 +8,25 @@ from .. import models, oauth2
 from ..config import settings
 from ..database import get_db
 from ..exceptions import ResourceNotFoundException
-from ..schemas.service import CreateServices, ReturnService, ReturnServiceDetailed, ReturnServices, \
-    ReturnServicesDetailed
+from ..schemas.service import CreateServices, ReturnService, ReturnServiceDetailed
 
 router = APIRouter(prefix=settings.BASE_URL + '/services',
                    tags=['Services'])
 
 
-@router.get('', response_model=ReturnServices)
+@router.get('', response_model=List[ReturnService])
 def get_services(db: Session = Depends(get_db)):
     services = db.query(models.Service).all()
 
-    return {'services': services}
+    return services
 
 
-@router.get('/details', response_model=ReturnServicesDetailed)
+@router.get('/details', response_model=List[ReturnServiceDetailed])
 def get_services_details(db: Session = Depends(get_db),
                          _=Depends(oauth2.get_admin)):
     services_details = db.query(models.Service).all()
 
-    return {'services': services_details}
+    return services_details
 
 
 @router.get('/details/{{uuid}}', response_model=ReturnServiceDetailed)
