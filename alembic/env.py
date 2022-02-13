@@ -29,13 +29,8 @@ target_metadata = Base.metadata
 # ... etc.
 
 
-def include_object(obj, name, type_, reflected, compare_to):
-    if name == 'apscheduler_jobs' or name == 'ix_apscheduler_jobs_next_run_time':
-        return False
-    # if type_ == 'table' and obj == 'apscheduler_jobs':
-    #     return False
-
-    return True
+def include_name(name, *_):
+    return name not in ["apscheduler_jobs", "ix_apscheduler_jobs_next_run_time"]
 
 
 def run_migrations_offline():
@@ -57,7 +52,7 @@ def run_migrations_offline():
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        include_object=include_object
+        # include_name=include_name
     )
 
     with context.begin_transaction():
@@ -81,7 +76,7 @@ def run_migrations_online():
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            include_object=include_object
+            include_name=include_name
         )
 
         with context.begin_transaction():
