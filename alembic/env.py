@@ -22,10 +22,20 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
 
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+
+def include_object(obj, name, type_, reflected, compare_to):
+    if name == 'apscheduler_jobs' or name == 'ix_apscheduler_jobs_next_run_time':
+        return False
+    # if type_ == 'table' and obj == 'apscheduler_jobs':
+    #     return False
+
+    return True
 
 
 def run_migrations_offline():
@@ -40,12 +50,14 @@ def run_migrations_offline():
     script output.
 
     """
+
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object
     )
 
     with context.begin_transaction():
@@ -67,7 +79,9 @@ def run_migrations_online():
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
+            include_object=include_object
         )
 
         with context.begin_transaction():
