@@ -8,7 +8,7 @@ from .schemas.oauth2 import TokenPayloadBase, TokenType
 from .schemas.email_request import EmailRequest, EmailRequestType
 
 from .exceptions import InvalidEnumerationMemberHTTPException
-from .schemas.user_settings import AvailableContentLanugages
+from .schemas.user_settings import AvailableContentLanguages
 
 MAIL_CONFIG = ConnectionConfig(
     MAIL_USERNAME=settings.MAIL_USERNAME,
@@ -30,14 +30,14 @@ async def send_email(email, template_name):
     await fm.send_message(email, template_name)
 
 
-def create_email_verification_email(content_language: AvailableContentLanugages,
+def create_email_verification_email(content_language: AvailableContentLanguages,
                                     user,
                                     email_verification_token):
     match content_language:
-        case AvailableContentLanugages.polish:
+        case AvailableContentLanguages.polish:
             template_name = 'account_verification_pl.html'
             subject = 'Zołza Hairstyles - weryfikacja konta'
-        case AvailableContentLanugages.english:
+        case AvailableContentLanguages.english:
             template_name = 'account_verification_en.html'
             subject = 'Zołza Hairstyles - account verification'
         case _:
@@ -56,14 +56,14 @@ def create_email_verification_email(content_language: AvailableContentLanugages,
     return message, template_name
 
 
-def create_password_reset_email(content_language: AvailableContentLanugages,
+def create_password_reset_email(content_language: AvailableContentLanguages,
                                 user,
                                 password_reset_token):
     match content_language:
-        case AvailableContentLanugages.polish:
+        case AvailableContentLanguages.polish:
             template_name = 'password_reset_pl.html'
             subject = 'Zołza Hairstyles - resetowanie hasła'
-        case AvailableContentLanugages.english:
+        case AvailableContentLanguages.english:
             template_name = 'password_reset_en.html'
             subject = 'Zołza Hairstyles - password reset'
         case _:

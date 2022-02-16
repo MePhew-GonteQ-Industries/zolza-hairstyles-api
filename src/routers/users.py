@@ -16,7 +16,7 @@ from ..schemas.email_request import EmailRequestType, EmailVerificationRequest
 from ..schemas.oauth2 import TokenType
 from ..schemas.user import CreateUser, Gender, ReturnUser, ReturnUserAndSettings, ReturnUserDetailed, ReturnUsers, \
     UserEmailOnly
-from ..schemas.user_settings import AvailableContentLanugages, AvailableSettings, AvailableThemes, LanguageCreate, \
+from ..schemas.user_settings import AvailableContentLanguages, AvailableSettings, AvailableThemes, LanguageCreate, \
     PreferredThemeBase, ReturnSetting
 from ..utils import get_user_from_db, on_decode_error
 
@@ -28,7 +28,7 @@ router = APIRouter(prefix=settings.BASE_URL + '/users',
 def create_user(user: CreateUser,
                 background_tasks: BackgroundTasks,
                 db: Session = Depends(get_db),
-                content_language: AvailableContentLanugages = Header(Required),
+                content_language: AvailableContentLanguages = Header(Required),
                 preferred_theme: AvailableThemes = Header(Required)) -> dict[str, Union[ReturnUser,
                                                                                         List[ReturnSetting]]]:
     """
@@ -68,9 +68,9 @@ def create_user(user: CreateUser,
     user_theme = PreferredThemeBase(current_value=preferred_theme)
 
     if content_language == content_language.polish:
-        user_language = LanguageCreate(current_value=AvailableContentLanugages.polish)
+        user_language = LanguageCreate(current_value=AvailableContentLanguages.polish)
     elif content_language == content_language.english:
-        user_language = LanguageCreate(current_value=AvailableContentLanugages.english)
+        user_language = LanguageCreate(current_value=AvailableContentLanguages.english)
     else:
         raise InvalidEnumerationMemberHTTPException
 
@@ -258,6 +258,7 @@ def get_user_by_uuid(uuid: UUID4,
     return user
 
 
+# TODO: Require auth via otps for critical administration ?
 @router.put('/promote/{uuid}', response_model=ReturnUserDetailed)
 def promote_user(uuid: UUID4,
                  db: Session = Depends(get_db),
