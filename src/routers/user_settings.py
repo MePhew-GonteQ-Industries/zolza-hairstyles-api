@@ -18,7 +18,7 @@ async def get_settings(db: Session = Depends(get_db),
     return {'settings': user_settings}
 
 
-@router.put('')  # , response_model=ReturnSettings
+@router.put('', response_model=ReturnSettings)
 async def update_settings(new_settings: UpdateSettings,
                           db: Session = Depends(get_db),
                           user=Depends(oauth2.get_user)):
@@ -26,12 +26,16 @@ async def update_settings(new_settings: UpdateSettings,
     settings_db = []
 
     for setting in new_settings.settings:
-        setting_db = db.query(models.Setting).where(models.Setting.user_id == user.id
-                                                    and models.Setting.name == setting.get('name')).first()
-        setting_db.current_value = setting.get('current_value')
+        setting_db = db.query(models.Setting).where(models.Setting.user_id == user.id)\
+            .where(models.Setting.name == setting.name).first()
+
+        setting_db.current_value = setting.new_value
 
         db.commit()
-        db.refresh(setting_db)
+
         settings_db.append(setting_db)
+
+    for setting_db in settings_db:
+        db.refresh(setting_db)
 
     return {'settings': settings_db}
