@@ -30,7 +30,7 @@ class PreferredThemeBase(BaseModel):
 
 
 class PreferredThemeCreate(PreferredThemeBase):
-    default_value: AvailableThemes = None
+    default_value: Union[AvailableThemes, None] = None
 
 
 class LanguageBase(BaseModel):
@@ -42,7 +42,7 @@ class LanguageBase(BaseModel):
 
 
 class LanguageCreate(LanguageBase):
-    default_value: AvailableContentLanguages = None
+    default_value: Union[AvailableContentLanguages, None] = None
 
 
 class ReturnSetting(BaseModel):
