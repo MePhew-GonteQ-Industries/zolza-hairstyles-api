@@ -21,6 +21,7 @@ MAIL_CONFIG = ConnectionConfig(
     USE_CREDENTIALS=settings.USE_CREDENTIALS,
     VALIDATE_CERTS=settings.VALIDATE_CERTS,
     MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
+    SUPPRESS_SEND=settings.SUPRESS_SEND,
     TEMPLATE_FOLDER=Path(__file__).parent / 'templates'
 )
 

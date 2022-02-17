@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     USE_CREDENTIALS: bool
     VALIDATE_CERTS: bool
     MAIL_FROM_NAME: str
+    SUPRESS_SEND: bool
 
     class Config:
         env_file = ".env"
