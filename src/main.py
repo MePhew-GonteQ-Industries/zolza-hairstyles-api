@@ -4,7 +4,7 @@ from fastapi.responses import RedirectResponse
 
 from .config import settings
 from .routers import appointments, auth, services, user_settings, users
-from .scheduler import scheduler
+# from .scheduler import scheduler
 
 app = FastAPI(docs_url=settings.BASE_URL + '/docs',
               redoc_url=settings.BASE_URL + '/redoc',
@@ -30,7 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-scheduler.start()
+# scheduler.start() todo: fix
 
 
 @app.get(settings.BASE_URL, tags=['Zołza Hairstyles Redirection'])
