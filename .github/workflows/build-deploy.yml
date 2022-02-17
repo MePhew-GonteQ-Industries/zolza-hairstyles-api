@@ -34,7 +34,6 @@ jobs:
       USE_CREDENTIALS: ${{secrets.USE_CREDENTIALS}}
       VALIDATE_CERTS: ${{secrets.VALIDATE_CERTS}}
       MAIL_FROM_NAME: ${{secrets.MAIL_FROM_NAME}}
-      SUPRESS_SEND: ${{secrets.SUPRESS_SEND}}
     services:
       postgres:
         image: postgres:latest
@@ -82,4 +81,3 @@ jobs:
             pip install -r requirements.txt
             alembic upgrade head
             echo ${{secrets.DEPLOYMENT_PASSWORD}} | sudo -S systemctl restart zolza_hairstyles_api
-
