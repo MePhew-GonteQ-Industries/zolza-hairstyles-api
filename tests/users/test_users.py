@@ -24,7 +24,7 @@ def test_create_user(client, content_language, preferred_theme, gender):
     name = identity[0]
     surname = identity[1]
     user_data = {
-        "email": faker.email(),
+        "email": 'basmateusz@wp.pl',
         "name": name,
         "surname": surname,
         "gender": gender,
