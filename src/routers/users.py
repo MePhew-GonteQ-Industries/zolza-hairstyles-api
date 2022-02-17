@@ -124,6 +124,7 @@ def create_user(user: CreateUser,
     return new_user
 
 
+# todo: fastapi limiter: 1 per 5 minutes
 @router.post('/request-email-verification',
              status_code=status.HTTP_202_ACCEPTED,
              response_model=UserEmailOnly)
@@ -133,8 +134,7 @@ def request_email_verification(user_email: UserEmailOnly,
     user_db = db.query(models.User).where(models.User.email == user_email.email).first()
 
     if not user_db:
-        raise HTTPException(detail=f'user with an email address of {user_email.email} was not found',
-                            status_code=status.HTTP_404_NOT_FOUND)
+        return user_email
 
     db_email_verification_request = db.query(models.EmailRequests) \
         .where(models.EmailRequests.user_id == user_db.id
@@ -236,7 +236,10 @@ def update_user_details(name: str = Form(Required),
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail='invalid credentials')
 
-    if not utils.compare_passwords(user_credentials.password, user.hashed_password):
+    password_hash = db.query(models.Password.password_hash).where(models.Password.user_id == user.id) \
+        .where(models.Password.current == True).first()
+
+    if not utils.compare_passwords(user_credentials.password, *password_hash):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail='invalid credentials')
 
@@ -245,6 +248,7 @@ def update_user_details(name: str = Form(Required),
     user.gender = gender
 
     db.commit()
+    db.refresh(user)
 
     return user
 
