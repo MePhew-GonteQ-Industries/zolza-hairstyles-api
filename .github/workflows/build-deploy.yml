@@ -36,7 +36,7 @@ jobs:
       MAIL_FROM_NAME: ${{secrets.MAIL_FROM_NAME}}
     services:
       postgres:
-        image: postgres
+        image: postgres-latest
         env:
           POSTGRES_USER: ${{secrets.DATABASE_USERNAME}}
           POSTGRES_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
@@ -81,4 +81,3 @@ jobs:
             pip install -r requirements.txt
             alembic upgrade head
             echo ${{secrets.DEPLOYMENT_PASSWORD}} | sudo -S systemctl restart zolza_hairstyles_api
-
