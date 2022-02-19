@@ -1,12 +1,34 @@
 name: Lint
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  checks: write
+  contents: write
 
 jobs:
-  lint:
+  run-linters:
+    name: Run linters
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: psf/black@stable
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          options: "--verbose"
+          python-version: 3.10
+
+      - name: Install Python dependencies
+        run: pip install black flake8
+
+      - name: Lint
+        uses: wearerequired/lint-action@v1.11.1
+        with:
+          black: true
