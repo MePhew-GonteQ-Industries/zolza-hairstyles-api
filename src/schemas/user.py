@@ -9,7 +9,7 @@ from typing import List
 class Gender(str, Enum):
     male = "male"
     female = "female"
-    other = 'other'
+    other = "other"
 
 
 class UserEmailOnly(BaseModel):
@@ -28,14 +28,16 @@ class BaseUser(UserEmailOnly):
 class CreateUser(BaseUser):
     password: str = Field(min_length=8, max_length=200)
 
-    @validator('password')
+    @validator("password")
     def verify_strong_password(cls, v):
-        strong_password_regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,}$"
+        strong_password_regex = (
+            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,}$"
+        )
 
         if re.fullmatch(strong_password_regex, v):
             return v
         else:
-            raise ValueError('ensure the password is strong')
+            raise ValueError("ensure the password is strong")
 
 
 class ReturnUser(BaseUser):

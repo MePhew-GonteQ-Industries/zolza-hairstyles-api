@@ -76,7 +76,7 @@ def run_migrations_online():
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            include_name=include_name
+            include_name=include_name,
         )
 
         with context.begin_transaction():
