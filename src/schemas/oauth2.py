@@ -4,10 +4,10 @@ from pydantic import UUID4
 
 
 class TokenType(str, Enum):
-    access_token = 'access'
-    refresh_token = 'refresh'
-    email_verification_token = 'email_verification'
-    password_reset_token = 'password_reset'
+    access_token = "access"
+    refresh_token = "refresh"
+    email_verification_token = "email_verification"
+    password_reset_token = "password_reset"
 
 
 class TokenPayloadBase(BaseModel):

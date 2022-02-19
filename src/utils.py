@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from src import models
 
-pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hash_password(password):
@@ -25,7 +25,9 @@ def get_user_from_db(*, uuid: UUID4, db: Session):
     user = db.query(models.User).where(models.User.id == uuid).first()
 
     if not user:
-        raise HTTPException(detail=f'User with uuid of {uuid} does not exist',
-                            status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(
+            detail=f"User with uuid of {uuid} does not exist",
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
 
     return user

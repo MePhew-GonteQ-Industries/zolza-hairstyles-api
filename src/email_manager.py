@@ -22,7 +22,7 @@ MAIL_CONFIG = ConnectionConfig(
     VALIDATE_CERTS=settings.VALIDATE_CERTS,
     MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
     SUPPRESS_SEND=settings.SUPRESS_SEND,
-    TEMPLATE_FOLDER=Path(__file__).parent / 'templates'
+    TEMPLATE_FOLDER=Path(__file__).parent / "templates",
 )
 
 
@@ -31,16 +31,16 @@ async def send_email(email, template_name):
     await fm.send_message(email, template_name)
 
 
-def create_email_verification_email(content_language: AvailableContentLanguages,
-                                    user,
-                                    email_verification_token):
+def create_email_verification_email(
+    content_language: AvailableContentLanguages, user, email_verification_token
+):
     match content_language:
         case AvailableContentLanguages.polish:
-            template_name = 'account_verification_pl.html'
-            subject = 'Zołza Hairstyles - weryfikacja konta'
+            template_name = "account_verification_pl.html"
+            subject = "Zołza Hairstyles - weryfikacja konta"
         case AvailableContentLanguages.english:
-            template_name = 'account_verification_en.html'
-            subject = 'Zołza Hairstyles - account verification'
+            template_name = "account_verification_en.html"
+            subject = "Zołza Hairstyles - account verification"
         case _:
             raise InvalidEnumerationMemberHTTPException()
 
@@ -48,25 +48,25 @@ def create_email_verification_email(content_language: AvailableContentLanguages,
         subject=subject,
         recipients=[user.email],
         template_body={
-            'user': user.name,
-            'account_confirmation_link': f'https://mephew.ddns.net/email-verification?token={email_verification_token}'
+            "user": user.name,
+            "account_confirmation_link": f"https://mephew.ddns.net/email-verification?token={email_verification_token}",
         },
-        subtype="html"
+        subtype="html",
     )
 
     return message, template_name
 
 
-def create_password_reset_email(content_language: AvailableContentLanguages,
-                                user,
-                                password_reset_token):
+def create_password_reset_email(
+    content_language: AvailableContentLanguages, user, password_reset_token
+):
     match content_language:
         case AvailableContentLanguages.polish:
-            template_name = 'password_reset_pl.html'
-            subject = 'Zołza Hairstyles - resetowanie hasła'
+            template_name = "password_reset_pl.html"
+            subject = "Zołza Hairstyles - resetowanie hasła"
         case AvailableContentLanguages.english:
-            template_name = 'password_reset_en.html'
-            subject = 'Zołza Hairstyles - password reset'
+            template_name = "password_reset_en.html"
+            subject = "Zołza Hairstyles - password reset"
         case _:
             raise InvalidEnumerationMemberHTTPException()
 
@@ -74,23 +74,24 @@ def create_password_reset_email(content_language: AvailableContentLanguages,
         subject=subject,
         recipients=[user.email],
         template_body={
-            'user': user.name,
-            'password_reset_link': f'https://mephew.ddns.net/password-reset?token={password_reset_token}'
+            "user": user.name,
+            "password_reset_link": f"https://mephew.ddns.net/password-reset?token={password_reset_token}",
         },
-        subtype="html"
+        subtype="html",
     )
 
     return message, template_name
 
 
-def create_email_request(*, user, token_type: TokenType, request_type: EmailRequestType):
-    token_data = TokenPayloadBase(user_id=user.id,
-                                  token_type=token_type)
+def create_email_request(
+    *, user, token_type: TokenType, request_type: EmailRequestType
+):
+    token_data = TokenPayloadBase(user_id=user.id, token_type=token_type)
     request_token = oauth2.create_jwt(token_data)
 
-    email_request = EmailRequest(user_id=user.id,
-                                 request_type=request_type,
-                                 request_token=request_token)
+    email_request = EmailRequest(
+        user_id=user.id, request_type=request_type, request_token=request_token
+    )
 
     email_request = models.EmailRequests(**email_request.dict())
 

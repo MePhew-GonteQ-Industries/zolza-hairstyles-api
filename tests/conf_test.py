@@ -7,12 +7,14 @@ from src.config import settings
 from src.database import Base, get_db
 from src.main import app
 
-SQLALCHEMY_TEST_DATABASE_URL = f'postgresql://' \
-                          f'{settings.DATABASE_USERNAME}:' \
-                          f'{settings.DATABASE_PASSWORD}@' \
-                          f'{settings.DATABASE_HOSTNAME}:' \
-                          f'{settings.DATABASE_PORT}/' \
-                          f'{settings.DATABASE_NAME}_test'
+SQLALCHEMY_TEST_DATABASE_URL = (
+    f"postgresql://"
+    f"{settings.DATABASE_USERNAME}:"
+    f"{settings.DATABASE_PASSWORD}@"
+    f"{settings.DATABASE_HOSTNAME}:"
+    f"{settings.DATABASE_PORT}/"
+    f"{settings.DATABASE_NAME}_test"
+)
 
 engine = create_engine(SQLALCHEMY_TEST_DATABASE_URL)
 

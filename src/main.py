@@ -4,13 +4,16 @@ from fastapi.responses import RedirectResponse
 
 from .config import settings
 from .routers import appointments, auth, services, user_settings, users
+
 # from .scheduler import scheduler
 
-app = FastAPI(docs_url=settings.BASE_URL + '/docs',
-              redoc_url=settings.BASE_URL + '/redoc',
-              openapi_url=settings.BASE_URL + '/openapi.json',
-              title=settings.API_TITLE,
-              version=settings.API_VERSION)
+app = FastAPI(
+    docs_url=settings.BASE_URL + "/docs",
+    redoc_url=settings.BASE_URL + "/redoc",
+    openapi_url=settings.BASE_URL + "/openapi.json",
+    title=settings.API_TITLE,
+    version=settings.API_VERSION,
+)
 
 app.include_router(users.router)
 app.include_router(auth.router)
@@ -33,7 +36,8 @@ app.add_middleware(
 # scheduler.start() todo: fix
 
 
-@app.get(settings.BASE_URL, tags=['Zołza Hairstyles Redirection'])
+@app.get(settings.BASE_URL, tags=["Zołza Hairstyles Redirection"])
 async def zolza_hairstyles_redirection():
-    return RedirectResponse(settings.ZOLZA_HAIRSTYLES_URL,
-                            status_code=status.HTTP_308_PERMANENT_REDIRECT)
+    return RedirectResponse(
+        settings.ZOLZA_HAIRSTYLES_URL, status_code=status.HTTP_308_PERMANENT_REDIRECT
+    )
