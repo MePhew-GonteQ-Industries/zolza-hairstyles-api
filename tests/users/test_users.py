@@ -36,6 +36,8 @@ def test_create_user(client, content_language, preferred_theme, gender):
         },
         json=user_data,
     )
+    assert res.status_code == status.HTTP_201_CREATED
+
     _ = user.ReturnUser(**res.json())
     user_data["permission_level"] = ["user"]
     user_data["verified"] = False
@@ -52,7 +54,6 @@ def test_create_user(client, content_language, preferred_theme, gender):
     response_body.pop("created_at")
 
     assert response_body == user_data
-    assert res.status_code == status.HTTP_201_CREATED
 
 
 def test_request_email_verification(client):
@@ -61,8 +62,8 @@ def test_request_email_verification(client):
         settings.BASE_URL + ROUTE_PREFIX + "request-email-verification", json=user_email
     )
 
-    assert res.json() == user_email
     assert res.status_code == status.HTTP_202_ACCEPTED
+    assert res.json() == user_email
 
 
 @pytest.mark.parametrize(
