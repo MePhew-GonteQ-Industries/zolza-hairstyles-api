@@ -285,8 +285,7 @@ def reset_password(
         ):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="new password cannot be the same as any of the last 5 passwords used by the "
-                "user",
+                detail="new password cannot be the same as any of the last 5 passwords",
             )
 
     old_passwords = (
@@ -327,7 +326,17 @@ def reset_password(
     return {"status": "ok"}
 
 
-@router.post("/enable-two-factor-authentication")
+@router.post('/change-password')
+def change_password():
+    raise NotImplementedError
+
+
+@router.post('/get-otp')
+def get_otp():
+    raise NotImplementedError
+
+
+@router.post('/enable-two-factor-authentication')
 def enable_two_factor_authentication():
     raise NotImplementedError
 
