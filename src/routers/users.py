@@ -96,7 +96,7 @@ def create_user(
 
     This particular endpoint uses this value only for the sole purpose of user config initialization in order to
     provide consistent theming experience across multiple devices and/or web browsers
-    """
+    """ # noqa
 
     user_theme = PreferredThemeBase(current_value=preferred_theme)
 
@@ -407,8 +407,9 @@ def ban_user(uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_ad
 
     if "admin" in user.permission_level:
         raise HTTPException(
-            detail="Cannot ban user with elevated permissions level, if you are a superuser and really"
-            "want to perform this action, you need to demote this user first",
+            detail="Cannot ban a user with elevated permissions level, "
+                   "if you are a superuser and really want to perform this action,"
+                   "you need to demote this user first",
             status_code=status.HTTP_409_CONFLICT,
         )
 
