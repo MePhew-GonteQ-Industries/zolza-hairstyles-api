@@ -1,11 +1,16 @@
 import pytz
-from .database import SQLALCHEMY_DATABASE_URL
-from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-
-
-jobstores = {"default": SQLAlchemyJobStore(url=SQLALCHEMY_DATABASE_URL)}
+from apscheduler.schedulers.background import BackgroundScheduler
 
 scheduler = BackgroundScheduler()
 
-scheduler.configure(jobstores=jobstores, timezone=pytz.timezone("Europe/Warsaw"))
+
+def configure_scheduler(database_url: str):
+    jobstores = {
+        "default": SQLAlchemyJobStore(
+            url=database_url
+        )
+    }
+
+    scheduler.configure(jobstores=jobstores,
+                        timezone=pytz.timezone("Europe/Warsaw"))
