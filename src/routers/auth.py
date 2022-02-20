@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status, Form, BackgroundTasks
+from fastapi_mail import FastMail
 from pydantic import Required
 from fastapi.security.oauth2 import OAuth2PasswordRequestFormStrict
 from sqlalchemy.orm import Session
@@ -8,7 +9,7 @@ from sqlalchemy.orm import Session
 from ..email_manager import (
     create_email_request,
     create_password_reset_email,
-    send_email,
+    get_fastMail_client, send_email,
 )
 from ..exceptions import (
     CooldownHTTPException,
@@ -32,16 +33,16 @@ router = APIRouter(prefix=settings.BASE_URL + "/auth", tags=["Authorization"])
 
 @router.post("/login", response_model=ReturnAccessToken)
 def login(
-    user_credentials: OAuth2PasswordRequestFormStrict = Depends(),
-    db: Session = Depends(get_db),
+        user_credentials: OAuth2PasswordRequestFormStrict = Depends(),
+        db: Session = Depends(get_db),
 ):
     if user_credentials.grant_type != "password":
         raise InvalidGrantTypeException("password")
 
     user = (
         db.query(models.User)
-        .filter(models.User.email == user_credentials.username)
-        .first()
+            .filter(models.User.email == user_credentials.username)
+            .first()
     )
 
     if not user:
@@ -51,9 +52,9 @@ def login(
 
     password_hash = (
         db.query(models.Password.password_hash)
-        .where(models.Password.user_id == user.id)
-        .where(models.Password.current == True)
-        .first()
+            .where(models.Password.user_id == user.id)
+            .where(models.Password.current == True)
+            .first()
     )
 
     if not utils.compare_passwords(user_credentials.password, *password_hash):
@@ -89,9 +90,9 @@ def login(
 
 @router.post("/refresh-token", response_model=ReturnAccessToken, name="Refresh Token")
 def token_refresh(
-    db: Session = Depends(get_db),
-    refresh_token: str = Form(Required),
-    grant_type: str = Form(Required),
+        db: Session = Depends(get_db),
+        refresh_token: str = Form(Required),
+        grant_type: str = Form(Required),
 ):
     if grant_type != "refresh_token":
         raise InvalidGrantTypeException("refresh_token")
@@ -102,11 +103,11 @@ def token_refresh(
 
     db_session = (
         db.query(models.Session)
-        .where(
+            .where(
             models.Session.user_id == payload.user_id
             and models.Session.refresh_token == refresh_token
         )
-        .first()
+            .first()
     )
 
     if not db_session:
@@ -147,11 +148,11 @@ def token_refresh(
 def logout(db: Session = Depends(get_db), user=Depends(oauth2.get_user)):
     session_db = (
         db.query(models.Session)
-        .where(
+            .where(
             models.Session.user_id == user.id
             and models.Session.access_token == user.access_token
         )
-        .first()
+            .first()
     )
     db.delete(session_db)
     db.commit()
@@ -174,9 +175,10 @@ def logout_everywhere(db: Session = Depends(get_db), user=Depends(oauth2.get_use
     response_model=UserEmailOnly,
 )
 def request_password_reset(
-    user_email: UserEmailOnly,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
+        user_email: UserEmailOnly,
+        background_tasks: BackgroundTasks,
+        db: Session = Depends(get_db),
+        fastMail_client: FastMail = Depends(get_fastMail_client)
 ):
     user_db = db.query(models.User).where(models.User.email == user_email.email).first()
 
@@ -185,12 +187,12 @@ def request_password_reset(
 
     db_password_reset_request = (
         db.query(models.EmailRequests)
-        .where(
+            .where(
             models.EmailRequests.user_id == user_db.id
             and models.EmailRequests.request_type
             == EmailRequestType.password_reset_request
         )
-        .first()
+            .first()
     )
 
     if db_password_reset_request:
@@ -207,7 +209,7 @@ def request_password_reset(
             raise CooldownHTTPException(
                 str(int(cooldown_left.total_seconds())),
                 detail=f"Too many password reset requests, max 1 request per "
-                f"{settings.PASSWORD_RESET_COOLDOWN_MINUTES} minutes allowed",
+                       f"{settings.PASSWORD_RESET_COOLDOWN_MINUTES} minutes allowed",
             )
         db.delete(db_password_reset_request)
 
@@ -222,33 +224,33 @@ def request_password_reset(
 
     content_language = (
         db.query(models.Setting)
-        .where(
+            .where(
             models.Setting.name == AvailableSettings.language
             and models.Setting.user_id == user_db.id
         )
-        .first()
+            .first()
     )
 
     message, template_name = create_password_reset_email(
         content_language.current_value, user_db, password_reset_request.request_token
     )
 
-    background_tasks.add_task(send_email, message, template_name)
+    background_tasks.add_task(send_email, message, template_name, fastMail_client)
 
     return user_email
 
 
 @router.put("/reset-password")
 def reset_password(
-    password_reset_request: PasswordResetRequest, db: Session = Depends(get_db)
+        password_reset_request: PasswordResetRequest, db: Session = Depends(get_db)
 ):
     request_db = (
         db.query(models.EmailRequests)
-        .where(
+            .where(
             models.EmailRequests.request_type == EmailRequestType.password_reset_request
             and models.EmailRequests.request_token == password_reset_request.reset_token
         )
-        .first()
+            .first()
     )
 
     if not request_db:
@@ -275,13 +277,13 @@ def reset_password(
 
     recent_passwords = (
         db.query(models.Password)
-        .where(models.Password.user_id == payload.user_id)
-        .all()
+            .where(models.Password.user_id == payload.user_id)
+            .all()
     )
 
     for recent_password in recent_passwords:
         if utils.compare_passwords(
-            password_reset_request.new_password, recent_password.password_hash
+                password_reset_request.new_password, recent_password.password_hash
         ):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -290,11 +292,11 @@ def reset_password(
 
     old_passwords = (
         db.query(models.Password)
-        .where(models.Password.user_id == payload.user_id)
-        .where(models.Password.current == False)
-        .order_by(models.Password.created_at.desc())
-        .offset(4)
-        .all()
+            .where(models.Password.user_id == payload.user_id)
+            .where(models.Password.current == False)
+            .order_by(models.Password.created_at.desc())
+            .offset(4)
+            .all()
     )
 
     for old_password in old_passwords:
@@ -304,9 +306,9 @@ def reset_password(
 
     current_password = (
         db.query(models.Password)
-        .where(models.Password.user_id == payload.user_id)
-        .where(models.Password.current)
-        .first()
+            .where(models.Password.user_id == payload.user_id)
+            .where(models.Password.current)
+            .first()
     )
 
     current_password.current = False
