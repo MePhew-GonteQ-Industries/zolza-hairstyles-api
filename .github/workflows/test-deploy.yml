@@ -6,7 +6,7 @@ on:
       - "main"
 
 jobs:
-  build:
+  test:
     name: Build
     env:
       API_VERSION: ${{secrets.API_VERSION}}
@@ -76,7 +76,6 @@ jobs:
           username: ${{secrets.DEPLOYMENT_USERNAME}}
           password: ${{secrets.DEPLOYMENT_PASSWORD}}
           script: |
-            set -o allexport; source /home/mephew/.env; set +o allexport
             cd /home/${{secrets.DEPLOYMENT_USERNAME}}/zolza_hairstyles_api
             git pull
             source venv/bin/activate 
