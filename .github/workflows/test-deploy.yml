@@ -1,4 +1,4 @@
-name: Build and deploy code
+name: Test and deploy code
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    name: Build
+    name: Test
     env:
       API_VERSION: ${{secrets.API_VERSION}}
       API_TITLE: ${{secrets.API_TITLE}}
