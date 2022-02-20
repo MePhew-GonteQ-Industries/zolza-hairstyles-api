@@ -1,26 +1,15 @@
 import pytest
 from fastapi.testclient import TestClient
+from fastapi_mail import FastMail, ConnectionConfig
+from pathlib import Path
 
-from src.database import Base, SQLALCHEMY_DATABASE_URL, get_db, get_db_engine, \
-    get_session
+from pydantic import EmailStr
+
+from src.config import settings
+from src.database import get_db
+from src.email_manager import get_fastMail_client
 from src.main import app
-
-SQLALCHEMY_TEST_DATABASE_URL = f'{SQLALCHEMY_DATABASE_URL}_test'
-
-
-database_engine = get_db_engine(SQLALCHEMY_TEST_DATABASE_URL)
-TestingSessionLocal = get_session(database_engine)
-
-
-@pytest.fixture
-def session():
-    Base.metadata.drop_all(bind=database_engine)
-    Base.metadata.create_all(bind=database_engine)
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+from .conf_database import session # noqa
 
 
 @pytest.fixture
@@ -31,6 +20,25 @@ def client(session):
         finally:
             session.close()
 
+    def get_test_fastMail_client():
+        MAIL_CONFIG = ConnectionConfig(
+            MAIL_USERNAME=settings.MAIL_USERNAME,
+            MAIL_PASSWORD=settings.MAIL_PASSWORD,
+            MAIL_FROM=EmailStr(settings.MAIL_FROM),
+            MAIL_PORT=settings.MAIL_PORT,
+            MAIL_SERVER=settings.MAIL_SERVER,
+            MAIL_TLS=settings.MAIL_TLS,
+            MAIL_SSL=settings.MAIL_SSL,
+            USE_CREDENTIALS=settings.USE_CREDENTIALS,
+            VALIDATE_CERTS=settings.VALIDATE_CERTS,
+            MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
+            TEMPLATE_FOLDER=Path(__file__).parent.parent / "src/templates",
+            SUPPRESS_SEND=True
+        )
+        test_fastMail = FastMail(MAIL_CONFIG)
+        return test_fastMail
+
+    app.dependency_overrides[get_fastMail_client] = get_test_fastMail_client
     app.dependency_overrides[get_db] = get_test_db
 
     yield TestClient(app)
