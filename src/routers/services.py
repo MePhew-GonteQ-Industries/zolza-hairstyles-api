@@ -27,10 +27,10 @@ def get_services_details(db: Session = Depends(get_db), _=Depends(oauth2.get_adm
     return services_details
 
 
-@router.get("/details/{{uuid}}", response_model=ReturnServiceDetailed)
-def get_service_details(
-    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
-):
+@router.get('/details/{uuid}', response_model=ReturnServiceDetailed)
+def get_service_details(uuid: UUID4,
+                        db: Session = Depends(get_db),
+                        _=Depends(oauth2.get_admin)):
     service_details = db.query(models.Service).where(models.Service.id == uuid).first()
 
     if not service_details:
