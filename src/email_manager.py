@@ -21,14 +21,19 @@ MAIL_CONFIG = ConnectionConfig(
     USE_CREDENTIALS=settings.USE_CREDENTIALS,
     VALIDATE_CERTS=settings.VALIDATE_CERTS,
     MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
-    SUPPRESS_SEND=settings.SUPRESS_SEND,
-    TEMPLATE_FOLDER=Path(__file__).parent / "templates",
+    TEMPLATE_FOLDER=Path(__file__).parent / "templates"
 )
 
+fastMail = FastMail(MAIL_CONFIG)
 
-async def send_email(email, template_name):
-    fm = FastMail(MAIL_CONFIG)
-    await fm.send_message(email, template_name)
+
+def get_fastMail_client():
+    return fastMail
+
+
+async def send_email(email: MessageSchema, template_name: str,
+                     fastMailClient: FastMail):
+    await fastMailClient.send_message(email, template_name)
 
 
 def create_email_verification_email(
@@ -49,7 +54,8 @@ def create_email_verification_email(
         recipients=[user.email],
         template_body={
             "user": user.name,
-            "account_confirmation_link": f"https://mephew.ddns.net/email-verification?token={email_verification_token}",
+            "account_confirmation_link": f"https://mephew.ddns.net/email-verification"
+                                         f"?token={email_verification_token}",
         },
         subtype="html",
     )
