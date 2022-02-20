@@ -6,9 +6,9 @@ from enum import Enum
 
 
 class EventType(str, Enum):
-    create = 'create'
-    update = 'update'
-    delete = 'delete'
+    create = "create"
+    update = "update"
+    delete = "delete"
 
 
 class Event(BaseModel):

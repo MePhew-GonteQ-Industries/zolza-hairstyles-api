@@ -9,7 +9,7 @@ from src.config import settings
 from src.database import get_db
 from src.email_manager import get_fastMail_client
 from src.main import app
-from .conf_database import session # noqa
+from .conf_database import session  # noqa
 
 
 @pytest.fixture
@@ -33,7 +33,7 @@ def client(session):
             VALIDATE_CERTS=settings.VALIDATE_CERTS,
             MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
             TEMPLATE_FOLDER=Path(__file__).parent.parent / "src/templates",
-            SUPPRESS_SEND=True
+            SUPPRESS_SEND=True,
         )
         test_fastMail = FastMail(MAIL_CONFIG)
         return test_fastMail

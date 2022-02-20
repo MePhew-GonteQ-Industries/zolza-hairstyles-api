@@ -1,9 +1,8 @@
 import pytest
 
-from src.database import Base, SQLALCHEMY_DATABASE_URL, get_db_engine, \
-    get_session
+from src.database import Base, SQLALCHEMY_DATABASE_URL, get_db_engine, get_session
 
-SQLALCHEMY_TEST_DATABASE_URL = f'{SQLALCHEMY_DATABASE_URL}_test'
+SQLALCHEMY_TEST_DATABASE_URL = f"{SQLALCHEMY_DATABASE_URL}_test"
 
 
 database_engine = get_db_engine(SQLALCHEMY_TEST_DATABASE_URL)

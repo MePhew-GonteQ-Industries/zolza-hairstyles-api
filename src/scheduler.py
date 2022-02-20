@@ -6,11 +6,6 @@ scheduler = BackgroundScheduler()
 
 
 def configure_scheduler(database_url: str):
-    jobstores = {
-        "default": SQLAlchemyJobStore(
-            url=database_url
-        )
-    }
+    jobstores = {"default": SQLAlchemyJobStore(url=database_url)}
 
-    scheduler.configure(jobstores=jobstores,
-                        timezone=pytz.timezone("Europe/Warsaw"))
+    scheduler.configure(jobstores=jobstores, timezone=pytz.timezone("Europe/Warsaw"))

@@ -34,7 +34,7 @@ app.add_middleware(
 )
 
 
-@app.on_event('startup')
+@app.on_event("startup")
 def launch_scheduler():
     configure_scheduler(SQLALCHEMY_DATABASE_URL)
     scheduler.start()
