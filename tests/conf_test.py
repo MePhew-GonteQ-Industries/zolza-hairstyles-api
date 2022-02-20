@@ -1,30 +1,21 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from src.config import settings
-from src.database import Base, get_db
+from src.database import Base, SQLALCHEMY_DATABASE_URL, get_db, get_db_engine, \
+    get_session
 from src.main import app
 
-SQLALCHEMY_TEST_DATABASE_URL = (
-    f"postgresql://"
-    f"{settings.DATABASE_USERNAME}:"
-    f"{settings.DATABASE_PASSWORD}@"
-    f"{settings.DATABASE_HOSTNAME}:"
-    f"{settings.DATABASE_PORT}/"
-    f"{settings.DATABASE_NAME}_test"
-)
+SQLALCHEMY_TEST_DATABASE_URL = f'{SQLALCHEMY_DATABASE_URL}_test'
 
-engine = create_engine(SQLALCHEMY_TEST_DATABASE_URL)
 
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+database_engine = get_db_engine(SQLALCHEMY_TEST_DATABASE_URL)
+TestingSessionLocal = get_session(database_engine)
 
 
 @pytest.fixture
 def session():
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.drop_all(bind=database_engine)
+    Base.metadata.create_all(bind=database_engine)
     db = TestingSessionLocal()
     try:
         yield db
