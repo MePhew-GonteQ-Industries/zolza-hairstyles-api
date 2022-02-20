@@ -3,9 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from .config import settings
+from .database import SQLALCHEMY_DATABASE_URL
 from .routers import appointments, auth, services, user_settings, users
-
-# from .scheduler import scheduler
+from .scheduler import scheduler, configure_scheduler
 
 app = FastAPI(
     docs_url=settings.BASE_URL + "/docs",
@@ -33,7 +33,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# scheduler.start() todo: fix
+
+@app.on_event('startup')
+def launch_scheduler():
+    configure_scheduler(SQLALCHEMY_DATABASE_URL)
+    scheduler.start()
 
 
 @app.get(settings.BASE_URL, tags=["Zołza Hairstyles Redirection"])
