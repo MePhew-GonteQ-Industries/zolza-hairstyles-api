@@ -1,2 +1,2 @@
-# hairdressing-salon-backend
-Hairdressing Salon appointments management backend api
+# Zołza hairstyles API
+Hairdressing salon appointments management web api
