@@ -331,7 +331,7 @@ def update_user_details(
     password_hash = (
         db.query(models.Password.password_hash)
         .where(models.Password.user_id == user.id)
-        .where(models.Password.current == True) # noqa
+        .where(models.Password.current == True)  # noqa
         .first()
     )
 
