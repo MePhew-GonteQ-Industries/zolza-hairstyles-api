@@ -27,14 +27,14 @@ MAIL_CONFIG = ConnectionConfig(
 fastMail = FastMail(MAIL_CONFIG)
 
 
-def get_fastMail_client():
+def get_fast_mail_client():
     return fastMail
 
 
 async def send_email(
-    email: MessageSchema, template_name: str, fastMailClient: FastMail
+    email: MessageSchema, template_name: str, fast_mail_client: FastMail
 ):
-    await fastMailClient.send_message(email, template_name)
+    await fast_mail_client.send_message(email, template_name)
 
 
 def create_email_verification_email(

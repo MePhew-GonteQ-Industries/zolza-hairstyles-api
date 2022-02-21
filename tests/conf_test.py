@@ -7,7 +7,7 @@ from pydantic import EmailStr
 
 from src.config import settings
 from src.database import get_db
-from src.email_manager import get_fastMail_client
+from src.email_manager import get_fast_mail_client
 from src.main import app
 from .conf_database import session  # noqa
 
@@ -38,7 +38,7 @@ def client(session):
         test_fastMail = FastMail(MAIL_CONFIG)
         return test_fastMail
 
-    app.dependency_overrides[get_fastMail_client] = get_test_fastMail_client
+    app.dependency_overrides[get_fast_mail_client] = get_test_fastMail_client
     app.dependency_overrides[get_db] = get_test_db
 
     yield TestClient(app)

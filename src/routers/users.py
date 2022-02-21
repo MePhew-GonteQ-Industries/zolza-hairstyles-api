@@ -21,7 +21,7 @@ from ..database import get_db
 from ..email_manager import (
     create_email_request,
     create_email_verification_email,
-    get_fastMail_client,
+    get_fast_mail_client,
     send_email,
 )
 from ..exceptions import (
@@ -63,7 +63,7 @@ def create_user(
     user: CreateUser,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    fastMail_client: FastMail = Depends(get_fastMail_client),
+    fast_mail_client: FastMail = Depends(get_fast_mail_client),
     content_language: AvailableContentLanguages = Header(Required),
     preferred_theme: AvailableThemes = Header(Required),
 ) -> dict[str, Union[ReturnUser, List[ReturnSetting]]]:
@@ -163,7 +163,7 @@ def create_user(
         content_language, new_user, email_verification_request.request_token
     )
 
-    background_tasks.add_task(send_email, message, template_name, fastMail_client)
+    background_tasks.add_task(send_email, message, template_name, fast_mail_client)
 
     return new_user
 
@@ -178,7 +178,7 @@ def request_email_verification(
     user_email: UserEmailOnly,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    fastMail_client: FastMail = Depends(get_fastMail_client),
+    fast_mail_client: FastMail = Depends(get_fast_mail_client),
 ) -> UserEmailOnly:
     user_db = db.query(models.User).where(models.User.email == user_email.email).first()
 
@@ -238,7 +238,7 @@ def request_email_verification(
         email_verification_request.request_token,
     )
 
-    background_tasks.add_task(send_email, message, template_name, fastMail_client)
+    background_tasks.add_task(send_email, message, template_name, fast_mail_client)
 
     return user_email
 
@@ -331,7 +331,7 @@ def update_user_details(
     password_hash = (
         db.query(models.Password.password_hash)
         .where(models.Password.user_id == user.id)
-        .where(models.Password.current == True)
+        .where(models.Password.current == True) # noqa
         .first()
     )
 

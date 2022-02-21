@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from ..email_manager import (
     create_email_request,
     create_password_reset_email,
-    get_fastMail_client,
+    get_fast_mail_client,
     send_email,
 )
 from ..exceptions import (
@@ -179,7 +179,7 @@ def request_password_reset(
     user_email: UserEmailOnly,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    fastMail_client: FastMail = Depends(get_fastMail_client),
+    fast_mail_client: FastMail = Depends(get_fast_mail_client),
 ):
     user_db = db.query(models.User).where(models.User.email == user_email.email).first()
 
@@ -236,7 +236,7 @@ def request_password_reset(
         content_language.current_value, user_db, password_reset_request.request_token
     )
 
-    background_tasks.add_task(send_email, message, template_name, fastMail_client)
+    background_tasks.add_task(send_email, message, template_name, fast_mail_client)
 
     return user_email
 
