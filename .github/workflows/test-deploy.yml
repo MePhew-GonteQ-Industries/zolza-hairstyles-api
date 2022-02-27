@@ -35,6 +35,8 @@ jobs:
       USE_CREDENTIALS: ${{secrets.USE_CREDENTIALS}}
       VALIDATE_CERTS: ${{secrets.VALIDATE_CERTS}}
       MAIL_FROM_NAME: ${{secrets.MAIL_FROM_NAME}}
+      IPINFO_ACCESS_TOKEN: ${{secrets.IPINFO_ACCESS_TOKEN}}
+      SUDO_MODE_TIME_HOURS: ${{secrets.SUDO_MODE_TIME_HOURS}}
     services:
       postgres:
         image: postgres:latest
