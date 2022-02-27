@@ -42,11 +42,25 @@ class Password(Base):
 
 class Session(Base):
     __tablename__ = "sessions"
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        nullable=False,
+        server_default=text("gen_random_uuid()"),
+    )
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     access_token = Column(String, nullable=False)
     refresh_token = Column(String, nullable=False)
-    created_at = Column(
+    sign_in_user_agent = Column(String, nullable=False)
+    sign_in_ip_address = Column(String, nullable=False)
+    last_user_agent = Column(String, nullable=False)
+    last_ip_address = Column(String, nullable=False)
+    last_accessed = Column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    sudo_mode_activated = Column(TIMESTAMP(timezone=True))
+    sudo_mode_expires = Column(TIMESTAMP(timezone=True))
+    first_accessed = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
 
