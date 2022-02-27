@@ -10,7 +10,7 @@ router = APIRouter(prefix=settings.BASE_URL + "/settings", tags=["Settings"])
 
 
 @router.get("", response_model=ReturnSettings)
-async def get_settings(db: Session = Depends(get_db), user=Depends(oauth2.get_user)):
+def get_settings(db: Session = Depends(get_db), user=Depends(oauth2.get_user)):
     user_settings = (
         db.query(models.Setting).where(models.Setting.user_id == user.id).all()
     )
@@ -19,7 +19,7 @@ async def get_settings(db: Session = Depends(get_db), user=Depends(oauth2.get_us
 
 
 @router.put("", response_model=ReturnSettings)
-async def update_settings(
+def update_settings(
     new_settings: UpdateSettings,
     db: Session = Depends(get_db),
     user=Depends(oauth2.get_user),
