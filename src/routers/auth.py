@@ -362,10 +362,10 @@ def get_sessions(db: Session = Depends(get_db), user_session=Depends(oauth2.get_
         if not ipaddress.ip_address(session_db.last_ip_address).is_private:
             handler = ipinfo.getHandler(settings.IPINFO_ACCESS_TOKEN)
             last_ip_address_details = handler.getDetails(session_db.last_ip_address)
-            session_db.sign_in_city = last_ip_address_details.city
-            session_db.sign_in_region = last_ip_address_details.region
-            session_db.sign_in_country = last_ip_address_details.country
-            session_db.sign_in_location = last_ip_address_details.loc
+            session_db.last_city = last_ip_address_details.city
+            session_db.last_region = last_ip_address_details.region
+            session_db.last_country = last_ip_address_details.country
+            session_db.last_location = last_ip_address_details.loc
 
     return sessions
 
