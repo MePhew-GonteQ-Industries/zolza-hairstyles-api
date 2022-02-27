@@ -1,6 +1,10 @@
-from pydantic import BaseModel, Field
+import re
+from datetime import datetime
+
+from pydantic import BaseModel, Field, validator
 from enum import Enum
 from pydantic import UUID4
+from src import models
 
 
 class TokenType(str, Enum):
@@ -34,3 +38,47 @@ class ReturnAccessToken(BaseModel):
     token_type: str
     expires_in: int = Field(gt=0)
     refresh_token: str
+
+
+class PasswordChangeForm(BaseModel):
+    old_password: str
+    new_password: str = Field(min_length=8, max_length=200)
+
+    @validator("new_password")
+    def verify_strong_password(cls, v):
+        strong_password_regex = (
+            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,}$"
+        )
+
+        if re.fullmatch(strong_password_regex, v):
+            return v
+        else:
+            raise ValueError("ensure the password is strong")
+
+
+class SudoModeInfo(BaseModel):
+    sudo_mode_activated: datetime
+    sudo_mode_expires: datetime
+
+
+class BaseUserSession(BaseModel):
+    session: models.Session
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class UserSession(BaseUserSession):
+    user: models.User
+
+
+class VerifiedUserSession(BaseUserSession):
+    verified_user: models.User
+
+
+class AdminSession(BaseUserSession):
+    admin: models.User
+
+
+class SuperuserSession(BaseUserSession):
+    superuser: models.User

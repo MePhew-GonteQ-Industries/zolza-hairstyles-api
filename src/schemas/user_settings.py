@@ -3,9 +3,6 @@ from enum import Enum
 from typing import List, Union
 
 
-# TODO: Ensure everything works as intended
-
-
 class AvailableSettings(str, Enum):
     language = "language"
     preferred_theme = "preferred_theme"

@@ -19,10 +19,14 @@ class UserEmailOnly(BaseModel):
         orm_mode = True
 
 
-class BaseUser(UserEmailOnly):
+class UserData(BaseModel):
     name: str = Field(max_length=50)
     surname: str = Field(max_length=50)
     gender: Gender
+
+
+class BaseUser(UserEmailOnly, UserData):
+    pass
 
 
 class CreateUser(BaseUser):
