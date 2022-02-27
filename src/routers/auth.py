@@ -1,11 +1,18 @@
+import ipaddress
 from datetime import datetime, timedelta
+from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status, Form, BackgroundTasks
-from fastapi_mail import FastMail
-from pydantic import Required
+import ipinfo
+from fastapi import (APIRouter, BackgroundTasks, Depends, Form, HTTPException, Header,
+                     Request, status)
 from fastapi.security.oauth2 import OAuth2PasswordRequestFormStrict
+from fastapi_mail import FastMail
+from pydantic import Required, UUID4
 from sqlalchemy.orm import Session
 
+from .. import models, oauth2, utils
+from ..config import settings
+from ..database import get_db
 from ..email_manager import (
     create_email_request,
     create_password_reset_email,
@@ -17,26 +24,25 @@ from ..exceptions import (
     InvalidGrantTypeException,
     SessionNotFoundHTTPException,
 )
-from ..schemas.email_request import EmailRequestType, PasswordResetRequest
-from ..schemas.oauth2 import ReturnAccessToken, TokenPayloadBase
-from ..schemas.oauth2 import TokenType
 from ..schemas import session
-
-from .. import models, utils, oauth2
-from ..config import settings
-from ..database import get_db
+from ..schemas.email_request import EmailRequestType, PasswordResetRequest
+from ..schemas.oauth2 import PasswordChangeForm, ReturnAccessToken, SudoModeInfo, \
+    TokenPayloadBase, \
+    TokenType
+from ..schemas.session import ReturnActiveSession
 from ..schemas.user import UserEmailOnly
 from ..schemas.user_settings import AvailableSettings
-from ..utils import on_decode_error
+from ..utils import on_decode_error, verify_password
 
 router = APIRouter(prefix=settings.BASE_URL + "/auth", tags=["Authorization"])
 
 
 @router.post("/login", response_model=ReturnAccessToken)
-def login(
-    user_credentials: OAuth2PasswordRequestFormStrict = Depends(),
-    db: Session = Depends(get_db),
-):
+def login(request: Request,
+          user_credentials: OAuth2PasswordRequestFormStrict = Depends(),
+          db: Session = Depends(get_db),
+          user_agent: str | None = Header(None)
+          ):
     if user_credentials.grant_type != "password":
         raise InvalidGrantTypeException("password")
 
@@ -51,17 +57,9 @@ def login(
             status_code=status.HTTP_404_NOT_FOUND, detail="invalid credentials"
         )
 
-    password_hash = (
-        db.query(models.Password.password_hash)
-        .where(models.Password.user_id == user.id)
-        .where(models.Password.current == True)
-        .first()
-    )
-
-    if not utils.compare_passwords(user_credentials.password, *password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="invalid credentials"
-        )
+    verify_password(password=user_credentials.password,
+                    user_id=user.id,
+                    db=db)
 
     token_data = TokenPayloadBase(user_id=user.id, token_type=TokenType.access_token)
 
@@ -71,9 +69,16 @@ def login(
 
     refresh_token = oauth2.create_jwt(token_data)
 
+    user_ip_address = request.client.host
+
     new_session = session.Session(
-        user_id=user.id, access_token=access_token, refresh_token=refresh_token
-    )
+        user_id=user.id,
+        access_token=access_token,
+        refresh_token=refresh_token,
+        sign_in_user_agent=user_agent,
+        last_user_agent=user_agent,
+        sign_in_ip_address=user_ip_address,
+        last_ip_address=user_ip_address)
 
     db_session = models.Session(**new_session.dict())
 
@@ -91,9 +96,9 @@ def login(
 
 @router.post("/refresh-token", response_model=ReturnAccessToken, name="Refresh Token")
 def token_refresh(
-    db: Session = Depends(get_db),
-    refresh_token: str = Form(Required),
-    grant_type: str = Form(Required),
+        db: Session = Depends(get_db),
+        refresh_token: str = Form(Required),
+        grant_type: str = Form(Required),
 ):
     if grant_type != "refresh_token":
         raise InvalidGrantTypeException("refresh_token")
@@ -116,9 +121,6 @@ def token_refresh(
 
     user = db.query(models.User).where(models.User.id == payload.user_id).first()
 
-    db.delete(db_session)
-    db.commit()
-
     token_data = TokenPayloadBase(user_id=user.id, token_type=TokenType.access_token)
 
     access_token = oauth2.create_jwt(token_data)
@@ -127,13 +129,8 @@ def token_refresh(
 
     refresh_token = oauth2.create_jwt(token_data)
 
-    new_session = session.Session(
-        user_id=user.id, access_token=access_token, refresh_token=refresh_token
-    )
-
-    db_session = models.Session(**new_session.dict())
-
-    db.add(db_session)
+    db_session.access_token = access_token
+    db_session.refresh_token = refresh_token
 
     db.commit()
 
@@ -146,7 +143,9 @@ def token_refresh(
 
 
 @router.post("/logout")
-def logout(db: Session = Depends(get_db), user=Depends(oauth2.get_user)):
+def logout(db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)):
+    user = user_session.user
+
     session_db = (
         db.query(models.Session)
         .where(
@@ -162,7 +161,10 @@ def logout(db: Session = Depends(get_db), user=Depends(oauth2.get_user)):
 
 
 @router.post("/logout-everywhere")
-def logout_everywhere(db: Session = Depends(get_db), user=Depends(oauth2.get_user)):
+def logout_everywhere(db: Session = Depends(get_db),
+                      user_session=Depends(oauth2.get_user)):
+    user = user_session.user
+
     query = models.Session.__table__.delete().where(models.Session.user_id == user.id)
     db.execute(query)
     db.commit()
@@ -176,10 +178,10 @@ def logout_everywhere(db: Session = Depends(get_db), user=Depends(oauth2.get_use
     response_model=UserEmailOnly,
 )
 def request_password_reset(
-    user_email: UserEmailOnly,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    fast_mail_client: FastMail = Depends(get_fast_mail_client),
+        user_email: UserEmailOnly,
+        background_tasks: BackgroundTasks,
+        db: Session = Depends(get_db),
+        fast_mail_client: FastMail = Depends(get_fast_mail_client),
 ):
     user_db = db.query(models.User).where(models.User.email == user_email.email).first()
 
@@ -210,7 +212,7 @@ def request_password_reset(
             raise CooldownHTTPException(
                 str(int(cooldown_left.total_seconds())),
                 detail=f"Too many password reset requests, max 1 request per "
-                f"{settings.PASSWORD_RESET_COOLDOWN_MINUTES} minutes allowed",
+                       f"{settings.PASSWORD_RESET_COOLDOWN_MINUTES} minutes allowed",
             )
         db.delete(db_password_reset_request)
 
@@ -243,7 +245,7 @@ def request_password_reset(
 
 @router.put("/reset-password")
 def reset_password(
-    password_reset_request: PasswordResetRequest, db: Session = Depends(get_db)
+        password_reset_request: PasswordResetRequest, db: Session = Depends(get_db)
 ):
     request_db = (
         db.query(models.EmailRequests)
@@ -276,67 +278,99 @@ def reset_password(
         request_db=request_db,
     )
 
-    recent_passwords = (
-        db.query(models.Password)
-        .where(models.Password.user_id == payload.user_id)
-        .all()
-    )
-
-    for recent_password in recent_passwords:
-        if utils.compare_passwords(
-            password_reset_request.new_password, recent_password.password_hash
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="new password cannot be the same as any of the last 5 passwords",
-            )
-
-    old_passwords = (
-        db.query(models.Password)
-        .where(models.Password.user_id == payload.user_id)
-        .where(models.Password.current == False)
-        .order_by(models.Password.created_at.desc())
-        .offset(4)
-        .all()
-    )
-
-    for old_password in old_passwords:
-        db.delete(old_password)
-
-    db.commit()
-
-    current_password = (
-        db.query(models.Password)
-        .where(models.Password.user_id == payload.user_id)
-        .where(models.Password.current)
-        .first()
-    )
-
-    current_password.current = False
-
-    db.commit()
-
-    new_password = models.Password(
-        password_hash=utils.hash_password(password_reset_request.new_password),
-        user_id=payload.user_id,
-        current=True,
-    )
-
-    db.add(new_password)
-
-    db.commit()
+    utils.change_password(new_password=password_reset_request.new_password,
+                          user_id=payload.user_id,
+                          db=db)
 
     return {"status": "ok"}
 
 
 @router.post("/change-password")
-def change_password():
-    raise NotImplementedError
+def change_password(
+        password_change_form: PasswordChangeForm,
+        db: Session = Depends(get_db),
+        user_session=Depends(oauth2.get_user)
+):
+    user = user_session.user
+
+    verify_password(password=password_change_form.old_password,
+                    user_id=user.id,
+                    db=db)
+    utils.change_password(new_password=password_change_form.new_password,
+                          user_id=user.id,
+                          db=db)
+
+    return {"status": "ok"}
 
 
-@router.post("/get-otp")
-def get_otp():
-    raise NotImplementedError
+@router.post("/enter-sudo-mode", response_model=SudoModeInfo)
+def enter_sudo_mode(
+        password: str = Form(Required),
+        db: Session = Depends(get_db),
+        user_session=Depends(oauth2.get_user)):
+
+    verify_password(password=password,
+                    user_id=user_session.user.id,
+                    db=db)
+
+    sudo_mode_start = datetime.now().astimezone()
+
+    user_session.session.sudo_mode_activated = sudo_mode_start
+
+    user_session.session.sudo_mode_expires = \
+        sudo_mode_start + timedelta(hours=settings.SUDO_MODE_TIME_HOURS)
+
+    db.commit()
+
+    db.refresh(user_session.session)
+
+    sudo_mode_info = SudoModeInfo(
+        sudo_mode_activated=user_session.session.sudo_mode_activated,
+        sudo_mode_expires=user_session.session.sudo_mode_expires
+    )
+
+    return sudo_mode_info
+
+
+@router.get('/sessions', response_model=List[ReturnActiveSession])
+def get_sessions(db: Session = Depends(get_db),
+                 user_session=Depends(oauth2.get_user)):
+    user = user_session.user
+
+    sessions = db.query(models.Session).where(
+        models.Session.user_id == user.id
+    ).all()
+
+    for session_db in sessions:
+
+        if not ipaddress.ip_address(session_db.sign_in_ip_address).is_private:
+            handler = ipinfo.getHandler(settings.IPINFO_ACCESS_TOKEN)
+            sign_ip_address_details = handler.getDetails(session_db.sign_in_ip_address)
+            session_db.sign_in_city = sign_ip_address_details.city
+            session_db.sign_in_region = sign_ip_address_details.region
+            session_db.sign_in_country = sign_ip_address_details.country
+            session_db.sign_in_location = sign_ip_address_details.loc
+
+        if not ipaddress.ip_address(session_db.last_ip_address).is_private:
+            handler = ipinfo.getHandler(settings.IPINFO_ACCESS_TOKEN)
+            last_ip_address_details = handler.getDetails(session_db.last_ip_address)
+            session_db.sign_in_city = last_ip_address_details.city
+            session_db.sign_in_region = last_ip_address_details.region
+            session_db.sign_in_country = last_ip_address_details.country
+            session_db.sign_in_location = last_ip_address_details.loc
+
+    return sessions
+
+
+@router.delete('/remove-session/{session_id}')
+def remove_session(session_id: UUID4,
+                   db: Session = Depends(get_db),
+                   _=Depends(oauth2.get_user)):
+    session_db = db.query(models.Session).where(models.Session.id == session_id).first()
+    db.delete(session_db)
+    db.commit()
+
+    return {"status": "ok"}
 
 
 @router.post("/enable-two-factor-authentication")
