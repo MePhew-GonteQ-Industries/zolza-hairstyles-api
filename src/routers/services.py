@@ -53,7 +53,7 @@ def get_service(uuid: UUID4, db: Session = Depends(get_db)):
 def create_services(
     services: CreateServices,
     db: Session = Depends(get_db),
-    admin=Depends(oauth2.get_admin),
+    admin_session=Depends(oauth2.get_admin),
 ):
     raise NotImplementedError
 
@@ -76,7 +76,7 @@ def update_service(
 def delete_services(
     services: List[UUID4],
     db: Session = Depends(get_db),
-    admin=Depends(oauth2.get_admin),
+    admin_session=Depends(oauth2.get_admin),
 ):
     raise NotImplementedError
     # print(services)
