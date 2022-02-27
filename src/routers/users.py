@@ -5,12 +5,11 @@ from fastapi import (
     APIRouter,
     BackgroundTasks,
     Depends,
-    Form,
     HTTPException,
     Header,
     status,
 )
-from fastapi.security import OAuth2PasswordRequestFormStrict
+from fastapi_mail import FastMail
 from pydantic import Required, UUID4
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -27,18 +26,16 @@ from ..email_manager import (
 from ..exceptions import (
     CooldownHTTPException,
     InvalidEnumerationMemberHTTPException,
-    InvalidGrantTypeException,
 )
 from ..schemas.email_request import EmailRequestType, EmailVerificationRequest
 from ..schemas.oauth2 import TokenType
 from ..schemas.user import (
     CreateUser,
-    Gender,
     ReturnUser,
     ReturnUserAndSettings,
     ReturnUserDetailed,
     ReturnUsers,
-    UserEmailOnly,
+    UserData, UserEmailOnly,
 )
 from ..schemas.user_settings import (
     AvailableContentLanguages,
@@ -49,24 +46,21 @@ from ..schemas.user_settings import (
     ReturnSetting,
 )
 from ..utils import get_user_from_db, on_decode_error
-from fastapi_mail import FastMail
 
 router = APIRouter(prefix=settings.BASE_URL + "/users", tags=["Users"])
 
 
-@router.post(
-    "/register",
-    status_code=status.HTTP_201_CREATED,
-    response_model=ReturnUserAndSettings,
-)
-def create_user(
-    user: CreateUser,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    fast_mail_client: FastMail = Depends(get_fast_mail_client),
-    content_language: AvailableContentLanguages = Header(Required),
-    preferred_theme: AvailableThemes = Header(Required),
-) -> dict[str, Union[ReturnUser, List[ReturnSetting]]]:
+@router.post("/register",
+             status_code=status.HTTP_201_CREATED,
+             response_model=ReturnUserAndSettings,
+             )
+def create_user(user: CreateUser,
+                background_tasks: BackgroundTasks,
+                db: Session = Depends(get_db),
+                fast_mail_client: FastMail = Depends(get_fast_mail_client),
+                content_language: AvailableContentLanguages = Header(Required),
+                preferred_theme: AvailableThemes = Header(Required),
+                ) -> dict[str, Union[ReturnUser, List[ReturnSetting]]]:
     """
     ## Part of the user creation process is initializing the user's settings
     ### For this reason it is required to pass two *header parameters*: `content-language` and `preferred-theme` to this endpoint
@@ -175,10 +169,10 @@ def create_user(
     response_model=UserEmailOnly,
 )
 def request_email_verification(
-    user_email: UserEmailOnly,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    fast_mail_client: FastMail = Depends(get_fast_mail_client),
+        user_email: UserEmailOnly,
+        background_tasks: BackgroundTasks,
+        db: Session = Depends(get_db),
+        fast_mail_client: FastMail = Depends(get_fast_mail_client),
 ) -> UserEmailOnly:
     user_db = db.query(models.User).where(models.User.email == user_email.email).first()
 
@@ -208,8 +202,8 @@ def request_email_verification(
             raise CooldownHTTPException(
                 str(int(cooldown_left.total_seconds())),
                 detail=f"Too many verification requests, max 1 request per"
-                f" {settings.MAIL_VERIFICATION_COOLDOWN_MINUTES}"
-                f" minutes allowed",
+                       f" {settings.MAIL_VERIFICATION_COOLDOWN_MINUTES}"
+                       f" minutes allowed",
             )
 
         db.delete(db_email_verification_request)
@@ -245,7 +239,8 @@ def request_email_verification(
 
 @router.put("/verify-email", response_model=ReturnUser)
 def verify_email(
-    email_verification_request: EmailVerificationRequest, db: Session = Depends(get_db)
+        email_verification_request: EmailVerificationRequest,
+        db: Session = Depends(get_db)
 ) -> ReturnUser:
     request_db = (
         db.query(models.EmailRequests)
@@ -290,7 +285,10 @@ def verify_email(
 
 
 @router.get("/me", response_model=ReturnUser, name="Get info about your account")
-def me(db: Session = Depends(get_db), user=Depends(oauth2.get_user)) -> ReturnUser:
+def me(db: Session = Depends(get_db),
+       user_session=Depends(oauth2.get_user)) -> ReturnUser:
+    user = user_session.user
+
     user_id = user.id
     user = db.query(models.User).where(models.User.id == user_id).first()
 
@@ -298,9 +296,9 @@ def me(db: Session = Depends(get_db), user=Depends(oauth2.get_user)) -> ReturnUs
 
 
 @router.get("", response_model=ReturnUsers)
-def get_users(
-    db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
-) -> dict[str, ReturnUser]:
+def get_users(db: Session = Depends(get_db),
+              _=Depends(oauth2.get_admin)
+              ) -> dict[str, ReturnUser]:
     users_db = db.query(models.User).all()
 
     return {"users": users_db}
@@ -308,41 +306,15 @@ def get_users(
 
 @router.put("/me/update-details", response_model=ReturnUser)
 def update_user_details(
-    name: str = Form(Required),
-    surname: str = Form(Required),
-    gender: Gender = Form(Required),
-    user_credentials: OAuth2PasswordRequestFormStrict = Depends(),
-    db: Session = Depends(get_db),
-):
-    if user_credentials.grant_type != "password":
-        raise InvalidGrantTypeException("password")
+        user_data: UserData,
+        db: Session = Depends(get_db),
+        user_session=Depends(oauth2.get_user_sudo)
+) -> ReturnUser:
+    user = user_session.user
 
-    user = (
-        db.query(models.User)
-        .filter(models.User.email == user_credentials.username)
-        .first()
-    )
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="invalid credentials"
-        )
-
-    password_hash = (
-        db.query(models.Password.password_hash)
-        .where(models.Password.user_id == user.id)
-        .where(models.Password.current == True)  # noqa
-        .first()
-    )
-
-    if not utils.compare_passwords(user_credentials.password, *password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="invalid credentials"
-        )
-
-    user.name = name
-    user.surname = surname
-    user.gender = gender
+    user.name = user_data.name
+    user.surname = user_data.surname
+    user.gender = user_data.gender
 
     db.commit()
     db.refresh(user)
@@ -352,18 +324,17 @@ def update_user_details(
 
 @router.get("/{uuid}", response_model=ReturnUserDetailed, name="Get User")
 def get_user_by_uuid(
-    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
+        uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
 ) -> ReturnUserDetailed:
     user = get_user_from_db(uuid=uuid, db=db)
 
     return user
 
 
-# TODO: Require auth via otps for critical administration ?
 @router.put("/promote/{uuid}", response_model=ReturnUserDetailed)
 def promote_user(
-    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
-):
+        uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin_sudo)
+) -> ReturnUserDetailed:
     user = get_user_from_db(uuid=uuid, db=db)
 
     if not user.verified:
@@ -388,8 +359,8 @@ def promote_user(
 
 @router.put("/demote/{uuid}", response_model=ReturnUserDetailed)
 def demote_user(
-    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_superuser)
-):
+        uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_superuser_sudo)
+) -> ReturnUserDetailed:
     user = get_user_from_db(uuid=uuid, db=db)
 
     if "admin" not in user.permission_level:
@@ -406,15 +377,23 @@ def demote_user(
 
 
 @router.put("/ban/{uuid}", response_model=ReturnUserDetailed)
-def ban_user(uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)):
+def ban_user(uuid: UUID4,
+             db: Session = Depends(get_db),
+             _=Depends(oauth2.get_admin_sudo)) -> ReturnUserDetailed:
     user = get_user_from_db(uuid=uuid, db=db)
 
     if "admin" in user.permission_level:
         raise HTTPException(
             detail="Cannot ban a user with elevated permissions level, "
-            "if you are a superuser and really want to perform this action,"
-            "you need to demote this user first",
+                   "if you are a superuser and really want to perform this action,"
+                   "you need to demote this user first",
             status_code=status.HTTP_409_CONFLICT,
+        )
+
+    if "superuser" in user.permission_level:
+        raise HTTPException(
+            detail="Cannot ban a superuser",
+            status_code=status.HTTP_403_FORBIDDEN,
         )
 
     user.disabled = True
@@ -425,7 +404,9 @@ def ban_user(uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_ad
 
 
 @router.put("/unban/{uuid}", response_model=ReturnUserDetailed)
-def unban_user(uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)):
+def unban_user(uuid: UUID4,
+               db: Session = Depends(get_db),
+               _=Depends(oauth2.get_admin_sudo)) -> ReturnUserDetailed:
     user = get_user_from_db(uuid=uuid, db=db)
 
     if not user.disabled:
