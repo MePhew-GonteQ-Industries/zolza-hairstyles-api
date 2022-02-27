@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from .. import models, oauth2
@@ -10,7 +10,10 @@ router = APIRouter(prefix=settings.BASE_URL + "/settings", tags=["Settings"])
 
 
 @router.get("", response_model=ReturnSettings)
-def get_settings(db: Session = Depends(get_db), user=Depends(oauth2.get_user)):
+def get_settings(db: Session = Depends(get_db),
+                 user_session=Depends(oauth2.get_user)):
+    user = user_session.user
+
     user_settings = (
         db.query(models.Setting).where(models.Setting.user_id == user.id).all()
     )
@@ -22,8 +25,9 @@ def get_settings(db: Session = Depends(get_db), user=Depends(oauth2.get_user)):
 def update_settings(
     new_settings: UpdateSettings,
     db: Session = Depends(get_db),
-    user=Depends(oauth2.get_user),
+    user_session=Depends(oauth2.get_user),
 ):
+    user = user_session.user
 
     settings_db = []
 
