@@ -8,10 +8,7 @@ from src import models
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def verify_password(*,
-                    password,
-                    user_id,
-                    db):
+def verify_password(*, password, user_id, db):
     current_password_hash = (
         db.query(models.Password.password_hash)
         .where(models.Password.user_id == user_id)
@@ -25,19 +22,13 @@ def verify_password(*,
         )
 
 
-def change_password(*, new_password,
-                    user_id,
-                    db: Session) -> None:
+def change_password(*, new_password, user_id, db: Session) -> None:
     recent_passwords = (
-        db.query(models.Password)
-        .where(models.Password.user_id == user_id)
-        .all()
+        db.query(models.Password).where(models.Password.user_id == user_id).all()
     )
 
     for recent_password in recent_passwords:
-        if compare_passwords(
-            new_password, recent_password.password_hash
-        ):
+        if compare_passwords(new_password, recent_password.password_hash):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="new password cannot be the same as any of the last 5 passwords",

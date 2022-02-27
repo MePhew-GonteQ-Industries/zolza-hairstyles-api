@@ -12,13 +12,16 @@ from .schemas.oauth2 import (
     TokenPayloadBase,
     ReturnAccessTokenPayload,
     ReturnGenericToken,
-    TokenType, UserSession,
-    VerifiedUserSession, AdminSession,
-    SuperuserSession
+    TokenType,
+    UserSession,
+    VerifiedUserSession,
+    AdminSession,
+    SuperuserSession,
 )
 from .exceptions import (
     AccountDisabledHTTPException,
-    AdditionalAuthenticationRequiredHTTPException, IncorrectTokenDataException,
+    AdditionalAuthenticationRequiredHTTPException,
+    IncorrectTokenDataException,
     InsufficientPermissionsHTTPException,
     InvalidTokenException,
     SessionNotFoundHTTPException,
@@ -103,10 +106,12 @@ def decode_jwt(
     return token_data
 
 
-def get_user(request: Request,
-             token: str = Depends(oauth2_scheme),
-             db: Session = Depends(get_db),
-             user_agent: str | None = Header(None)) -> UserSession:
+def get_user(
+    request: Request,
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+    user_agent: str | None = Header(None),
+) -> UserSession:
     payload = decode_jwt(token, expected_token_type=TokenType.access_token)
     user = db.query(models.User).where(models.User.id == payload.user_id).first()
 
@@ -128,8 +133,7 @@ def get_user(request: Request,
     if user.disabled:
         raise AccountDisabledHTTPException()
 
-    user_session = UserSession(user=user,
-                               session=session_db)
+    user_session = UserSession(user=user, session=session_db)
 
     return user_session
 
@@ -182,7 +186,7 @@ def get_user_sudo(user_session=Depends(get_user)) -> UserSession:
 
 
 def get_verified_user_sudo(
-        verified_user_session=Depends(get_verified_user)
+    verified_user_session=Depends(get_verified_user),
 ) -> VerifiedUserSession:
     ensure_sudo(verified_user_session.session)
 

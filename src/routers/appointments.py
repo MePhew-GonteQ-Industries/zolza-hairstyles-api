@@ -14,8 +14,9 @@ router = APIRouter(prefix=settings.BASE_URL + "/appointments", tags=["Appointmen
 
 
 @router.get("/mine")
-def get_your_appointments(db: Session = Depends(get_db),
-                          user_session=Depends(oauth2.get_user)):
+def get_your_appointments(
+    db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)
+):
     user = user_session.user
 
     appointments_db = (
@@ -28,7 +29,7 @@ def get_your_appointments(db: Session = Depends(get_db),
 @router.get("/mine/{id}")
 def get_your_appointment(
     db: Session = Depends(get_db),
-        verified_user_session=Depends(oauth2.get_verified_user)
+    verified_user_session=Depends(oauth2.get_verified_user),
 ):
     return NotImplementedError
 
@@ -36,7 +37,7 @@ def get_your_appointment(
 @router.put("/mine/{id}", status_code=status.HTTP_201_CREATED)
 async def update_your_appointment(
     db: Session = Depends(get_db),
-        verified_user_session=Depends(oauth2.get_verified_user)
+    verified_user_session=Depends(oauth2.get_verified_user),
 ):
     raise NotImplementedError
 
@@ -44,7 +45,7 @@ async def update_your_appointment(
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_appointment(
     db: Session = Depends(get_db),
-        verified_user_session=Depends(oauth2.get_verified_user)
+    verified_user_session=Depends(oauth2.get_verified_user),
 ):
     verified_user = verified_user_session.user
 
@@ -60,22 +61,21 @@ def create_appointment(
 
 
 @router.get("/all")
-def get_all_appointments(db: Session = Depends(get_db),
-                         admin_session=Depends(oauth2.get_admin)):
+def get_all_appointments(
+    db: Session = Depends(get_db), admin_session=Depends(oauth2.get_admin)
+):
     raise NotImplementedError
 
 
 @router.get("/any/{id}")
 async def get_any_appointment(
-    db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin)
+    db: Session = Depends(get_db), admin_session=Depends(oauth2.get_admin)
 ):
     raise NotImplementedError
 
 
 @router.put("/any/{id}")
 def update_any_appointment(
-    db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin)
+    db: Session = Depends(get_db), admin_session=Depends(oauth2.get_admin)
 ):
     raise NotImplementedError

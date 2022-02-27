@@ -6,10 +6,12 @@ from src.config import settings
 
 
 class AdditionalAuthenticationRequiredHTTPException(HTTPException):
-    def __init__(self,
-                 detail: str = f"Additional authentication required; "
-                               f"Authenticate using {settings.ZOLZA_HAIRSTYLES_URL}"
-                               f"{settings.BASE_URL}/auth/enter-sudo-mode"):
+    def __init__(
+        self,
+        detail: str = f"Additional authentication required; "
+        f"Authenticate using {settings.ZOLZA_HAIRSTYLES_URL}"
+        f"{settings.BASE_URL}/auth/enter-sudo-mode",
+    ):
         self.status_code = status.HTTP_403_FORBIDDEN
         self.detail = detail
 

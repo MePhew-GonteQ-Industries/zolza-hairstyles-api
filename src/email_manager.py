@@ -82,8 +82,7 @@ def create_password_reset_email(
         recipients=[user.email],
         template_body={
             "user": user.name,
-            "password_reset_link":
-                f"https://mephew.ddns.net/password-reset?token={password_reset_token}",
+            "password_reset_link": f"https://mephew.ddns.net/password-reset?token={password_reset_token}",
         },
         subtype="html",
     )

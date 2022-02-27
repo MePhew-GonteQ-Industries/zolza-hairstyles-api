@@ -10,8 +10,7 @@ router = APIRouter(prefix=settings.BASE_URL + "/settings", tags=["Settings"])
 
 
 @router.get("", response_model=ReturnSettings)
-def get_settings(db: Session = Depends(get_db),
-                 user_session=Depends(oauth2.get_user)):
+def get_settings(db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)):
     user = user_session.user
 
     user_settings = (
