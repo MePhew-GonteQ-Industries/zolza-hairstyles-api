@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from . import models
 from .config import settings
 from typing import Optional, Callable
-from fastapi import Depends, status
+from fastapi import Depends, Header, status, Request
 from sqlalchemy.orm import Session
 from .database import get_db
 from fastapi.security import OAuth2PasswordBearer
@@ -12,11 +12,13 @@ from .schemas.oauth2 import (
     TokenPayloadBase,
     ReturnAccessTokenPayload,
     ReturnGenericToken,
-    TokenType,
+    TokenType, UserSession,
+    VerifiedUserSession, AdminSession,
+    SuperuserSession
 )
 from .exceptions import (
     AccountDisabledHTTPException,
-    IncorrectTokenDataException,
+    AdditionalAuthenticationRequiredHTTPException, IncorrectTokenDataException,
     InsufficientPermissionsHTTPException,
     InvalidTokenException,
     SessionNotFoundHTTPException,
@@ -101,7 +103,10 @@ def decode_jwt(
     return token_data
 
 
-def get_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_user(request: Request,
+             token: str = Depends(oauth2_scheme),
+             db: Session = Depends(get_db),
+             user_agent: str | None = Header(None)) -> UserSession:
     payload = decode_jwt(token, expected_token_type=TokenType.access_token)
     user = db.query(models.User).where(models.User.id == payload.user_id).first()
 
@@ -116,28 +121,81 @@ def get_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db))
     if not session_db:
         raise SessionNotFoundHTTPException()
 
+    session_db.last_accessed = datetime.now().astimezone()
+    session_db.last_user_agent = user_agent
+    session_db.last_ip_address = request.client.host
+
     if user.disabled:
         raise AccountDisabledHTTPException()
 
-    return user
+    user_session = UserSession(user=user,
+                               session=session_db)
+
+    return user_session
 
 
-def get_verified_user(user=Depends(get_user)):
+def get_verified_user(user_session=Depends(get_user)) -> VerifiedUserSession:
+    user = user_session.user
+
     if not user.verified:
         raise UnverifiedUserHTTPException()
 
-    return user
+    verifiedUserSession = VerifiedUserSession(**user_session)
+
+    return verifiedUserSession
 
 
-def get_admin(user=Depends(get_verified_user)):
+def get_admin(verified_user_session=Depends(get_verified_user)) -> AdminSession:
+    user = verified_user_session.verified_user
+
     if "admin" not in user.permission_level:
         raise InsufficientPermissionsHTTPException()
 
-    return user
+    admin_session = AdminSession(**verified_user_session)
+
+    return admin_session
 
 
-def get_superuser(admin=Depends(get_admin)):
+def get_superuser(admin_session=Depends(get_admin)) -> SuperuserSession:
+    admin = admin_session.admin
+
     if "superuser" not in admin.permission_level:
         raise InsufficientPermissionsHTTPException()
 
-    return admin
+    superuser_session = SuperuserSession(**admin_session)
+
+    return superuser_session
+
+
+def ensure_sudo(session):
+    if not session.sudo_mode_activated:
+        raise AdditionalAuthenticationRequiredHTTPException()
+
+    if not session.sudo_mode_expires > datetime.now().astimezone():
+        raise AdditionalAuthenticationRequiredHTTPException()
+
+
+def get_user_sudo(user_session=Depends(get_user)) -> UserSession:
+    ensure_sudo(user_session.session)
+
+    return user_session
+
+
+def get_verified_user_sudo(
+        verified_user_session=Depends(get_verified_user)
+) -> VerifiedUserSession:
+    ensure_sudo(verified_user_session.session)
+
+    return verified_user_session
+
+
+def get_admin_sudo(admin_session=Depends(get_admin)) -> AdminSession:
+    ensure_sudo(admin_session.session)
+
+    return admin_session
+
+
+def get_superuser_sudo(superuser_session=Depends(get_superuser)) -> SuperuserSession:
+    ensure_sudo(superuser_session.session)
+
+    return superuser_session
