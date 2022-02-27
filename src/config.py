@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     VALIDATE_CERTS: bool
     MAIL_FROM_NAME: str
 
+    IPINFO_ACCESS_TOKEN: str
+
+    SUDO_MODE_TIME_HOURS: int
+
     class Config:
         env_file = ".env"
 
