@@ -144,18 +144,18 @@ def get_verified_user(user_session=Depends(get_user)) -> VerifiedUserSession:
     if not user.verified:
         raise UnverifiedUserHTTPException()
 
-    verifiedUserSession = VerifiedUserSession(**user_session)
+    verified_user_session = VerifiedUserSession(**user_session.dict(), verified_user=user_session.user)
 
-    return verifiedUserSession
+    return verified_user_session
 
 
 def get_admin(verified_user_session=Depends(get_verified_user)) -> AdminSession:
-    user = verified_user_session.verified_user
+    verified_user = verified_user_session.verified_user
 
-    if "admin" not in user.permission_level:
+    if "admin" not in verified_user.permission_level:
         raise InsufficientPermissionsHTTPException()
 
-    admin_session = AdminSession(**verified_user_session)
+    admin_session = AdminSession(**verified_user_session.dict(), admin=verified_user)
 
     return admin_session
 
@@ -166,7 +166,7 @@ def get_superuser(admin_session=Depends(get_admin)) -> SuperuserSession:
     if "superuser" not in admin.permission_level:
         raise InsufficientPermissionsHTTPException()
 
-    superuser_session = SuperuserSession(**admin_session)
+    superuser_session = SuperuserSession(**admin_session.dict(), superuser=admin)
 
     return superuser_session
 
