@@ -144,7 +144,9 @@ def get_verified_user(user_session=Depends(get_user)) -> VerifiedUserSession:
     if not user.verified:
         raise UnverifiedUserHTTPException()
 
-    verified_user_session = VerifiedUserSession(**user_session.dict(), verified_user=user_session.user)
+    verified_user_session = VerifiedUserSession(
+        **user_session.dict(), verified_user=user_session.user
+    )
 
     return verified_user_session
 
