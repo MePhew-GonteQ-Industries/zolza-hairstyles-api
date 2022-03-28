@@ -31,7 +31,12 @@ def get_your_appointment(
     db: Session = Depends(get_db),
     verified_user_session=Depends(oauth2.get_verified_user),
 ):
-    return NotImplementedError
+    verified_user = verified_user_session.verified_user
+
+    appointment_db = (
+            db.query(models.Appointment).where(models.Appointment.user_id == verified_user.id))
+
+    return appointment_db
 
 
 @router.put("/mine/{id}", status_code=status.HTTP_201_CREATED)
