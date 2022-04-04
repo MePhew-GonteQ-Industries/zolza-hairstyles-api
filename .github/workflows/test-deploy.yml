@@ -79,7 +79,7 @@ jobs:
           key: ${{secrets.DEPLOYMENT_SSH_KEY}}
           passphrase: ${{secrets.DEPLOYMENT_SSH_KEY_PASSPHRASE}}
           script: |
-            cd /home/${{secrets.DEPLOYMENT_USERNAME}}/zolza_hairstyles_api
+            cd /home/${{secrets.DEPLOYMENT_USERNAME}}/zolza-hairstyles-api
             git pull
             source venv/bin/activate 
             pip install -r requirements.txt
