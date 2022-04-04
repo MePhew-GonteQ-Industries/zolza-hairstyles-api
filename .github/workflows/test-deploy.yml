@@ -76,7 +76,8 @@ jobs:
         with:
           host: ${{secrets.DEPLOYMENT_HOST}}
           username: ${{secrets.DEPLOYMENT_USERNAME}}
-          password: ${{secrets.DEPLOYMENT_PASSWORD}}
+          key: ${{secrets.DEPLOYMENT_SSH_KEY}}
+          passphrase: ${{secrets.DEPLOYMENT_SSH_KEY_PASSPHRASE}}
           script: |
             cd /home/${{secrets.DEPLOYMENT_USERNAME}}/zolza_hairstyles_api
             git pull
