@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from .. import models, oauth2
 from ..config import settings
 from ..database import get_db
-from ..exceptions import ResourceNotFoundException
+from ..exceptions import ResourceNotFoundHTTPException
 from ..jobs import send_appointment_reminder
 from ..scheduler import scheduler
 from ..schemas.appointment import AppointmentSlot, CreateAppointment
@@ -158,7 +158,7 @@ async def get_any_appointment(
     )
 
     if not appointment:
-        raise ResourceNotFoundException()
+        raise ResourceNotFoundHTTPException()
 
     return appointment
 
@@ -176,7 +176,7 @@ def update_any_appointment(
     )
 
     if not appointment_db:
-        raise ResourceNotFoundException()
+        raise ResourceNotFoundHTTPException()
 
     # TODO: Update appointment
 

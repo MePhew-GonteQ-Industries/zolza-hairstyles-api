@@ -29,7 +29,7 @@ from ..email_manager import (
 )
 from ..exceptions import (
     CooldownHTTPException,
-    InvalidGrantTypeException,
+    InvalidGrantTypeHTTPException,
     SessionNotFoundHTTPException,
 )
 from ..schemas import session
@@ -57,7 +57,7 @@ def login(
     user_agent: str | None = Header(None),
 ):
     if user_credentials.grant_type != "password":
-        raise InvalidGrantTypeException("password")
+        raise InvalidGrantTypeHTTPException("password")
 
     user = (
         db.query(models.User)
@@ -113,7 +113,7 @@ def token_refresh(
     grant_type: str = Form(Required),
 ):
     if grant_type != "refresh_token":
-        raise InvalidGrantTypeException("refresh_token")
+        raise InvalidGrantTypeHTTPException("refresh_token")
 
     payload = oauth2.decode_jwt(
         refresh_token, expected_token_type=TokenType.refresh_token

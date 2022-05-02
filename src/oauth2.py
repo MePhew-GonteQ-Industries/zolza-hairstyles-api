@@ -23,7 +23,7 @@ from .exceptions import (
     AdditionalAuthenticationRequiredHTTPException,
     IncorrectTokenDataException,
     InsufficientPermissionsHTTPException,
-    InvalidTokenException,
+    InvalidTokenHTTPException,
     SessionNotFoundHTTPException,
     UnverifiedUserHTTPException,
 )
@@ -77,18 +77,18 @@ def decode_jwt(
         if on_error:
             on_error(**kwargs)
         if expected_token_type == TokenType.access_token:
-            raise InvalidTokenException(
+            raise InvalidTokenHTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         elif expected_token_type == TokenType.refresh_token:
-            raise InvalidTokenException(
+            raise InvalidTokenHTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid refresh token provided",
             )
         else:
-            raise InvalidTokenException()
+            raise InvalidTokenHTTPException()
 
     token_type = payload.get("type")
 

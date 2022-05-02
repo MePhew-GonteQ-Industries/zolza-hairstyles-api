@@ -16,7 +16,7 @@ class AdditionalAuthenticationRequiredHTTPException(HTTPException):
         self.detail = detail
 
 
-class ResourceNotFoundException(HTTPException):
+class ResourceNotFoundHTTPException(HTTPException):
     def __init__(self):
         self.status_code = status.HTTP_404_NOT_FOUND
         self.detail = "Requested resource was not found on the server"
@@ -26,7 +26,7 @@ class IncorrectTokenDataException(Exception):
     pass
 
 
-class InvalidTokenException(HTTPException):
+class InvalidTokenHTTPException(HTTPException):
     def __init__(
         self,
         detail: str = "Invalid or expired verification code provided",
@@ -80,14 +80,14 @@ class CooldownHTTPException(HTTPException):
         self.headers = {"Retry-After": str(cooldown_left)}
 
 
-class InvalidApiKeyException(HTTPException):
+class InvalidApiKeyHTTPException(HTTPException):
     def __init__(self):
         self.status_code = status.HTTP_401_UNAUTHORIZED
         self.detail = "Could not validate credentials"
         self.headers = {"WWW-Authenticate": "x-api_key"}
 
 
-class InvalidGrantTypeException(HTTPException):
+class InvalidGrantTypeHTTPException(HTTPException):
     def __init__(self, grant_type):
         self.detail = [
             {

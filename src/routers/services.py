@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from .. import models, oauth2
 from ..config import settings
 from ..database import get_db
-from ..exceptions import ResourceNotFoundException
+from ..exceptions import ResourceNotFoundHTTPException
 from ..schemas.service import CreateServices, ReturnService, ReturnServiceDetailed
 from ..schemas.user_settings import DefaultContentLanguages
 
@@ -60,7 +60,7 @@ def get_service_details(
     service_details = db.query(models.Service).where(models.Service.id == uuid).first()
 
     if not service_details:
-        raise ResourceNotFoundException()
+        raise ResourceNotFoundHTTPException()
 
     return service_details
 
@@ -70,7 +70,7 @@ def get_service(uuid: UUID4, db: Session = Depends(get_db)):
     service = db.query(models.Service).where(models.Service.id == uuid).first()
 
     if not service:
-        raise ResourceNotFoundException()
+        raise ResourceNotFoundHTTPException()
 
     return service
 
