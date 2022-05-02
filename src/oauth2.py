@@ -25,7 +25,8 @@ from .exceptions import (
     InsufficientPermissionsHTTPException,
     InvalidTokenHTTPException,
     SessionNotFoundHTTPException,
-    UnverifiedUserHTTPException, UserNotFoundException,
+    UnverifiedUserHTTPException,
+    UserNotFoundException,
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
