@@ -110,7 +110,7 @@ def create_user(
             .first()[0]
         )
     else:
-        user_language = LanguageCreate(current_value=language.language_name())
+        user_language = LanguageCreate(current_value=language.language)
 
     new_user = user.dict()
 
