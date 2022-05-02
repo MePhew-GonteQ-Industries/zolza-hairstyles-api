@@ -1,0 +1,18 @@
+{
+  "nav": {
+    "primaryNav": ["Home", "Services", "Contact"],
+    "secondaryNav": ["Log in", "Sign up"]
+  },
+  "footer": ["Terms of use", "Privacy policy"],
+  "home": "HOME",
+  "settings": {
+    "languageSelector": ["Polish", "English"]
+  },
+  "signUp": {
+    "heading": "Welcome",
+    "eMailFieldLabel": "E-mail address",
+    "passwordFieldLabel": "Password",
+    "forgotPasswordBtn": "Forgot password?",
+    "logInBtn": "Log in"
+  }
+}

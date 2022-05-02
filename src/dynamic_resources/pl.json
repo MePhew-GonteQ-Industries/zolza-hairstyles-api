@@ -1,0 +1,18 @@
+{
+  "nav": {
+    "primaryNav": ["Strona główna", "Usługi", "Kontakt"],
+    "secondaryNav": ["Zaloguj się", "Zarejestruj się"]
+  },
+  "footer": ["Warunki korzystania", "Polityka prywatności"],
+  "home": "DOM",
+  "settings": {
+    "languageSelector": ["Polski", "Angielski"]
+  },
+  "signUp": {
+    "heading": "Zapraszamy",
+    "eMailFieldLabel": "Adres e-mail",
+    "passwordFieldLabel": "Hasło",
+    "forgotPasswordBtn": "Nie pamiętasz hasła?",
+    "logInBtn": "Zaloguj się"
+  }
+}
