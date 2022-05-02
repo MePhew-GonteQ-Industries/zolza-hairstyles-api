@@ -3,9 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from .config import settings
-from .database import SQLALCHEMY_DATABASE_URL
+from .database import get_db
 from .routers import appointments, auth, services, user_settings, users
-from .scheduler import scheduler, configure_scheduler
+from .utils import (ensure_appointment_slots_generation_task_exists,
+                    ensure_enough_appointment_slots_available, init_holidays,
+                    init_languages,
+                    init_services, start_scheduler)
 
 app = FastAPI(
     docs_url=settings.BASE_URL + "/docs",
@@ -22,7 +25,7 @@ app.include_router(appointments.router)
 app.include_router(services.router)
 
 ALLOWED_ORIGINS = [
-    "*",
+    "https://zolza-hairstyles.pl",
 ]
 
 app.add_middleware(
@@ -35,9 +38,20 @@ app.add_middleware(
 
 
 @app.on_event("startup")
-def launch_scheduler():
-    configure_scheduler(SQLALCHEMY_DATABASE_URL)
-    scheduler.start()
+def startup():
+    scheduler = start_scheduler()
+
+    db = next(get_db())
+
+    init_languages(db)
+
+    init_services(db)
+
+    init_holidays(db)
+
+    ensure_enough_appointment_slots_available(get_db)
+
+    ensure_appointment_slots_generation_task_exists(scheduler)
 
 
 @app.get(settings.BASE_URL, tags=["Zołza Hairstyles Redirection"])
