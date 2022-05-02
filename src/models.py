@@ -1,8 +1,13 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, UniqueConstraint
+import enum
+from enum import auto
+
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, \
+    UniqueConstraint
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
-from sqlalchemy.sql.sqltypes import TIMESTAMP, ARRAY
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql.sqltypes import ARRAY, DATE, TIMESTAMP
+
 from .database import Base
 
 
@@ -85,16 +90,26 @@ class Service(Base):
         nullable=False,
         server_default=text("gen_random_uuid()"),
     )
-    name = Column(String, nullable=False, unique=True)
     min_price = Column(Integer, nullable=False)
     max_price = Column(Integer, nullable=False)
     average_time_minutes = Column(Integer, nullable=False)
-    description = Column(String)
-    available = Column(Boolean, nullable=False)
+    required_slots = Column(Integer, nullable=False)
+    available = Column(Boolean, nullable=False, server_default=text("true"))
     deleted = Column(Boolean, nullable=False, server_default=text("false"))
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
+
+
+class ServiceTranslations(Base):
+    __tablename__ = "service_translations"
+    id = Column(Integer, primary_key=True, nullable=False)
+    service_id = Column(UUID(as_uuid=True), ForeignKey("services.id"), nullable=False)
+    language_id = Column(Integer, ForeignKey("languages.id"), nullable=False)
+    name = Column(String, nullable=False, unique=True)
+    description = Column(String)
+    UniqueConstraint("service_id", "language_id", name="one_translation_per_language")
+    service = relationship('Service')
 
 
 class ServiceEvent(Base):
@@ -119,6 +134,11 @@ class ServiceEvent(Base):
     )
 
 
+class PermissionEventType(enum.Enum):
+    user_ban = auto()
+    user_unban = auto()
+
+
 class PermissionEvent(Base):
     __tablename__ = "permission_events"
     id = Column(
@@ -127,7 +147,9 @@ class PermissionEvent(Base):
         nullable=False,
         server_default=text("gen_random_uuid()"),
     )
-    event_type = Column(String, nullable=False)
+    event_type = Column(Enum(PermissionEventType,
+                             name='permission_event_type'),
+                        nullable=False)
     performed_by_user_id = Column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
     )
@@ -141,6 +163,34 @@ class PermissionEvent(Base):
     )
 
 
+class AppointmentSlot(Base):
+    __tablename__ = "appointment_slots"
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        nullable=False,
+        server_default=text("gen_random_uuid()"),
+    )
+    occupied = Column(Boolean, nullable=False, server_default="false")
+    occupied_by_appointment = Column(UUID(as_uuid=True),
+                                     ForeignKey("appointments.id",
+                                                use_alter=True))
+    reserved = Column(Boolean, nullable=False, server_default="false")
+    reserved_reason = Column(String)
+    holiday = Column(Boolean, nullable=False, server_default="false")
+    sunday = Column(Boolean, nullable=False, server_default="false")
+    break_time = Column(Boolean, nullable=False, server_default="false")
+    holiday_id = Column(Integer, ForeignKey("holidays.id"))
+    date = Column(DATE, nullable=False)
+    start_time = Column(TIMESTAMP(timezone=True), unique=True)
+    end_time = Column(TIMESTAMP(timezone=True), unique=True)
+    appointment = relationship("Appointment",
+                               cascade="all,delete",
+                               backref="parent",
+                               foreign_keys=[occupied_by_appointment])
+    holiday_info = relationship('Holiday')
+
+
 class Appointment(Base):
     __tablename__ = "appointments"
     id = Column(
@@ -151,12 +201,26 @@ class Appointment(Base):
     )
     service_id = Column(UUID(as_uuid=True), ForeignKey("services.id"), nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    scheduled_for = Column(TIMESTAMP(timezone=True), nullable=False)
+    start_slot_id = Column(UUID(as_uuid=True),
+                           ForeignKey("appointment_slots.id"),
+                           nullable=False)
+    end_slot_id = Column(UUID(as_uuid=True),
+                         ForeignKey("appointment_slots.id"),
+                         nullable=False)
     canceled = Column(Boolean, nullable=False, server_default="false")
     archival = Column(Boolean, nullable=False, server_default="false")
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
+    start_slot = relationship(
+        'AppointmentSlot',
+        cascade="all,delete",
+        foreign_keys=[start_slot_id])
+    end_slot = relationship(
+        'AppointmentSlot',
+        cascade="all,delete",
+        foreign_keys=[end_slot_id])
+    service = relationship('Service')
 
 
 class Setting(Base):
@@ -170,3 +234,25 @@ class Setting(Base):
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
     UniqueConstraint("user_id", "name", name="unique_user_settings")
+
+
+class Holiday(Base):
+    __tablename__ = "holidays"
+    id = Column(Integer, primary_key=True, nullable=False)
+    translation = relationship('HolidayTranslations')
+
+
+class HolidayTranslations(Base):
+    __tablename__ = 'holiday_translations'
+    id = Column(Integer, primary_key=True, nullable=False)
+    holiday_id = Column(Integer, ForeignKey('holidays.id'), nullable=False)
+    language_id = Column(Integer, ForeignKey("languages.id"), nullable=False)
+    name = Column(String, nullable=False, unique=True)
+    UniqueConstraint("holiday_id", "language_id", name="one_translation_per_language")
+
+
+class Language(Base):
+    __tablename__ = "languages"
+    id = Column(Integer, primary_key=True, nullable=False)
+    code = Column(String, nullable=False)
+    name = Column(String, nullable=False)
