@@ -178,8 +178,9 @@ def logout_everywhere(
 ):
     user = user_session.user
 
-    query = models.Session.__table__.delete().where(models.Session.user_id == user.id)
-    db.execute(query)
+    sessions = db.query(models.Session).where(models.Session.user_id == user.id).all()
+    for session_db in sessions:
+        db.delete(session_db)
     db.commit()
 
     return {"status": "ok"}
