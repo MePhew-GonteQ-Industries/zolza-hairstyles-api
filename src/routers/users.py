@@ -84,7 +84,7 @@ def create_user(
     #### `preferred-theme` is a **required** *header parameter* used to represent user's preferred application theme
 
     It can only be set to one of the following two values as these are the only themes currently supported
-    by [Zołza Hairstyles](https://mephew.ddns.net) website :
+    by [Zołza Hairstyles](https://zolza-hairstyles.pl) website :
     - **dark** for dark theme
     - **light** for light theme
 
