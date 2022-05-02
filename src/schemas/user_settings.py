@@ -10,8 +10,8 @@ class AvailableSettings(str, Enum):
 
 
 class DefaultContentLanguages(str, Enum):
-    polish = langcodes.Language.get(langcodes.standardize_tag('pl')).language
-    english = langcodes.Language.get(langcodes.standardize_tag('en')).language
+    polish = langcodes.Language.get(langcodes.standardize_tag("pl")).language
+    english = langcodes.Language.get(langcodes.standardize_tag("en")).language
 
 
 class AvailableThemes(str, Enum):

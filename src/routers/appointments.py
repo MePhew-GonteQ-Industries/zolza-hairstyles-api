@@ -18,11 +18,11 @@ from ..utils import get_user_language_id
 router = APIRouter(prefix=settings.BASE_URL + "/appointments", tags=["Appointments"])
 
 
-@router.get('/slots', response_model=list[AppointmentSlot])
+@router.get("/slots", response_model=list[AppointmentSlot])
 def get_appointment_slots(
-        date: datetime.date | None = None,
-        db: Session = Depends(get_db),
-        user_session=Depends(oauth2.get_user)
+    date: datetime.date | None = None,
+    db: Session = Depends(get_db),
+    user_session=Depends(oauth2.get_user),
 ):
     now = datetime.date.today()
     last_available_date = now + timedelta(days=settings.MAX_FUTURE_APPOINTMENT_DAYS)
@@ -43,13 +43,12 @@ def get_appointment_slots(
 
     for slot in slots:
         if slot.holiday:
-            holiday_name = db.query(
-                models.HolidayTranslations.name
-            ).where(
-                models.HolidayTranslations.holiday_id == slot.holiday_info.id
-            ).where(
-                models.HolidayTranslations.language_id == user_language_id
-            ).first()[0]
+            holiday_name = (
+                db.query(models.HolidayTranslations.name)
+                .where(models.HolidayTranslations.holiday_id == slot.holiday_info.id)
+                .where(models.HolidayTranslations.language_id == user_language_id)
+                .first()[0]
+            )
 
             holiday_name = holiday_name
             slot.holiday_name = holiday_name
@@ -59,7 +58,7 @@ def get_appointment_slots(
 
 @router.get("/mine")
 def get_your_appointments(
-        db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)
+    db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)
 ):
     user = user_session.user
 
@@ -72,8 +71,8 @@ def get_your_appointments(
 
 @router.get("/mine/{id}")
 def get_your_appointment(
-        db: Session = Depends(get_db),
-        verified_user_session=Depends(oauth2.get_verified_user),
+    db: Session = Depends(get_db),
+    verified_user_session=Depends(oauth2.get_verified_user),
 ):
     verified_user = verified_user_session.verified_user
 
@@ -86,25 +85,24 @@ def get_your_appointment(
 
 @router.put("/mine/{id}", status_code=status.HTTP_201_CREATED)
 async def update_your_appointment(
-        db: Session = Depends(get_db),
-        verified_user_session=Depends(oauth2.get_verified_user),
+    db: Session = Depends(get_db),
+    verified_user_session=Depends(oauth2.get_verified_user),
 ):
     raise NotImplementedError
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_appointment(
-        appointment: CreateAppointment,
-        db: Session = Depends(get_db),
-        verified_user_session=Depends(oauth2.get_verified_user),
+    appointment: CreateAppointment,
+    db: Session = Depends(get_db),
+    verified_user_session=Depends(oauth2.get_verified_user),
 ):
     verified_user = verified_user_session.verified_user
 
-    service_db = db.query(models.Service).where(models.Service
-                                                == appointment.service_id).first()
-    available_slots = db.query(
-        models.AppointmentSlot
-    ).where(
+    service_db = (
+        db.query(models.Service).where(models.Service == appointment.service_id).first()
+    )
+    available_slots = db.query(models.AppointmentSlot).where(
         models.AppointmentSlot.date
     )
 
@@ -123,12 +121,12 @@ def create_appointment(
 
 @router.get("/all")
 def get_all_appointments(
-        db: Session = Depends(get_db),
-        _=Depends(oauth2.get_admin),
-        upcoming_only: bool = False,
-        offset: int = 0,
-        limit: int | None = None,
-        user_id: UUID4 | None = None
+    db: Session = Depends(get_db),
+    _=Depends(oauth2.get_admin),
+    upcoming_only: bool = False,
+    offset: int = 0,
+    limit: int | None = None,
+    user_id: UUID4 | None = None,
 ):
     all_appointments = db.query(models.Appointment)
 
@@ -136,9 +134,7 @@ def get_all_appointments(
         all_appointments = all_appointments.where(models.Appointment.archival == False)
 
     if user_id:
-        all_appointments = all_appointments.where(
-            models.Appointment.user_id == user_id
-        )
+        all_appointments = all_appointments.where(models.Appointment.user_id == user_id)
 
     if offset:
         all_appointments = all_appointments.offset(offset)
@@ -153,13 +149,13 @@ def get_all_appointments(
 
 @router.get("/any/{id}")
 async def get_any_appointment(
-        appointment_id: UUID4,
-        db: Session = Depends(get_db),
-        _=Depends(oauth2.get_admin)
+    appointment_id: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
 ):
-    appointment = db.query(models.Appointment).where(
-        models.Appointment.id == appointment_id
-    ).first()
+    appointment = (
+        db.query(models.Appointment)
+        .where(models.Appointment.id == appointment_id)
+        .first()
+    )
 
     if not appointment:
         raise ResourceNotFoundException()
@@ -169,13 +165,15 @@ async def get_any_appointment(
 
 @router.put("/any/{id}")
 def update_any_appointment(
-        appointment_id: UUID4,
-        db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin),
+    appointment_id: UUID4,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),
 ):
-    appointment_db = db.query(models.Appointment).where(
-        models.Appointment.id == appointment_id
-    ).first()
+    appointment_db = (
+        db.query(models.Appointment)
+        .where(models.Appointment.id == appointment_id)
+        .first()
+    )
 
     if not appointment_db:
         raise ResourceNotFoundException()
