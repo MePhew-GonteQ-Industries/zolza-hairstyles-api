@@ -37,6 +37,8 @@ jobs:
       MAIL_FROM_NAME: ${{secrets.MAIL_FROM_NAME}}
       IPINFO_ACCESS_TOKEN: ${{secrets.IPINFO_ACCESS_TOKEN}}
       SUDO_MODE_TIME_HOURS: ${{secrets.SUDO_MODE_TIME_HOURS}}
+      APPOINTMENT_SLOT_TIME_MINUTES: {{secrets.APPOINTMENT_SLOT_TIME_MINUTES}}
+      MAX_FUTURE_APPOINTMENT_DAYS: {{secrets.MAX_FUTURE_APPOINTMENT_DAYS}}
     services:
       postgres:
         image: postgres:latest
