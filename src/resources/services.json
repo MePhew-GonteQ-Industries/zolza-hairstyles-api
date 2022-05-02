@@ -1,0 +1,65 @@
+[
+  {
+    "name": {
+      "pl": "Strzyżenie damskie",
+      "en": "Female haircut"
+    },
+    "min_price": "30",
+    "max_price": "50",
+    "average_time_minutes": "60"
+  },
+  {
+    "name": {
+      "pl": "Strzyżenie męskie",
+      "en": "Male haircut"
+    },
+    "min_price": "25",
+    "max_price": "25",
+    "average_time_minutes": "30"
+  },
+  {
+    "name": {
+      "pl": "Strzyżenie brody",
+      "en": "Beard trim"
+    },
+    "min_price": "25",
+    "max_price": "25",
+    "average_time_minutes": "30"
+  },
+  {
+    "name": {
+      "pl": "Combo (strzyżenie włosów i brody)",
+      "en": "Combo (haircut + beard trim)"
+    },
+    "min_price": "50",
+    "max_price": "50",
+    "average_time_minutes": "60"
+  },
+  {
+    "name": {
+      "pl": "Fryzura ślubna - próbna",
+      "en": "Wedding hairstyle - trial"
+    },
+    "min_price": "70",
+    "max_price": "80",
+    "average_time_minutes": "60"
+  },
+  {
+    "name": {
+      "pl": "Fryzura ślubna - ślub",
+      "en": "Wedding hairstyle - wedding"
+    },
+    "min_price": "100",
+    "max_price": "120",
+    "average_time_minutes": "60"
+  },
+  {
+    "name": {
+      "pl": "Fryzura okolicznościowa",
+      "en": "Occasional hairstyle"
+    },
+    "min_price": "50",
+    "max_price": "80",
+    "average_time_minutes": "60"
+  }
+]
