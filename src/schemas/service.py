@@ -1,7 +1,9 @@
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, Field, UUID4, validator
+
 from .user import ReturnUserDetailed
-from typing import List, Optional, Union
 
 
 class Service(BaseModel):
@@ -9,8 +11,9 @@ class Service(BaseModel):
     min_price: int = Field(gt=0)
     max_price: int = Field(gt=0)
     average_time_minutes: int
-    description: Union[None, str]
+    description: str | None
     available: bool
+    required_slots: int
 
     @validator("max_price")
     def validate(cls, v):
