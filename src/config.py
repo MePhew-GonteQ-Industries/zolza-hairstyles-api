@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     IPINFO_ACCESS_TOKEN: str
 
     SUDO_MODE_TIME_HOURS: int
+    APPOINTMENT_SLOT_TIME_MINUTES: int
+    MAX_FUTURE_APPOINTMENT_DAYS: int
 
     class Config:
         env_file = ".env"
