@@ -447,7 +447,8 @@ def start_scheduler() -> BackgroundScheduler:
 def get_user_language_id(db: Session, user_id: UUID4) -> int:
     language_code = (
         db.query(models.Setting.current_value)
-        .where(models.Setting.user_id == user_id).first()
+        .where(models.Setting.user_id == user_id)
+        .first()
     )
 
     if language_code:
