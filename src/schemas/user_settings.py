@@ -1,3 +1,4 @@
+import langcodes
 from pydantic import BaseModel, validator
 from enum import Enum
 from typing import List, Union
@@ -8,9 +9,9 @@ class AvailableSettings(str, Enum):
     preferred_theme = "preferred_theme"
 
 
-class AvailableContentLanguages(str, Enum):
-    polish = "pl"
-    english = "en"
+class DefaultContentLanguages(str, Enum):
+    polish = langcodes.Language.get(langcodes.standardize_tag('pl')).language
+    english = langcodes.Language.get(langcodes.standardize_tag('en')).language
 
 
 class AvailableThemes(str, Enum):
@@ -32,14 +33,14 @@ class PreferredThemeCreate(PreferredThemeBase):
 
 class LanguageBase(BaseModel):
     name: AvailableSettings = AvailableSettings.language
-    current_value: AvailableContentLanguages
+    current_value: str
 
     class Config:
         orm_mode = True
 
 
 class LanguageCreate(LanguageBase):
-    default_value: Union[AvailableContentLanguages, None] = None
+    default_value: Union[str, None] = None
 
 
 class ReturnSetting(BaseModel):
@@ -64,19 +65,14 @@ class SettingBase(BaseModel):
 
     @validator("current_value", pre=True)
     def ensure_valid_setting(cls, value, values):
-        match values.get("name"):
-            case AvailableSettings.language:
-                if value not in (v for v in AvailableContentLanguages):
-                    raise ValueError(
-                        f"value is not a valid enumeration member; permitted: "
-                        + ", ".join([f"'{v.value}'" for v in AvailableContentLanguages])
-                    )
-            case AvailableSettings.preferred_theme:
-                if value not in (v for v in AvailableThemes):
-                    raise ValueError(
-                        f"value is not a valid enumeration member; permitted: "
-                        + ", ".join([f"'{v.value}'" for v in AvailableThemes])
-                    )
+        if values.get("name") == AvailableSettings.preferred_theme:
+            if value not in (v for v in AvailableThemes):
+                raise ValueError(
+                    f"value is not a valid enumeration member; permitted: "
+                    + ", ".join([f"'{v.value}'" for v in AvailableThemes])
+                )
+        elif not langcodes.Language.get(value).is_valid():
+            raise ValueError("value is not a valid ietf language tag ")
         return value
 
     class Config:
@@ -85,23 +81,18 @@ class SettingBase(BaseModel):
 
 class UpdateSetting(BaseModel):
     name: AvailableSettings
-    new_value: Union[AvailableContentLanguages, AvailableThemes]
+    new_value: Union[str, AvailableThemes]
 
     @validator("new_value", pre=True)
     def ensure_valid_setting(cls, value, values):
-        match values.get("name"):
-            case AvailableSettings.language:
-                if value not in (v for v in AvailableContentLanguages):
-                    raise ValueError(
-                        f"value is not a valid enumeration member; permitted: "
-                        + ", ".join([f"'{v.value}'" for v in AvailableContentLanguages])
-                    )
-            case AvailableSettings.preferred_theme:
-                if value not in (v for v in AvailableThemes):
-                    raise ValueError(
-                        f"value is not a valid enumeration member; permitted: "
-                        + ", ".join([f"'{v.value}'" for v in AvailableThemes])
-                    )
+        if values.get("name") == AvailableSettings.preferred_theme:
+            if value not in (v for v in AvailableThemes):
+                raise ValueError(
+                    f"value is not a valid enumeration member; permitted: "
+                    + ", ".join([f"'{v.value}'" for v in AvailableThemes])
+                )
+        elif not langcodes.Language.get(value).is_valid():
+            raise ValueError("value is not a valid ietf language tag ")
         return value
 
     class Config:
