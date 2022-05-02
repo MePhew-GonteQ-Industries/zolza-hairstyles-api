@@ -1,17 +1,16 @@
 import logging
+from pathlib import Path
 
-from fastapi_mail import FastMail, ConnectionConfig, MessageSchema
+from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
 from fastapi_mail.errors import ConnectionErrors
 from pydantic import EmailStr
 
 from . import models, oauth2
 from .config import settings
-from pathlib import Path
-from .schemas.oauth2 import TokenPayloadBase, TokenType
-from .schemas.email_request import EmailRequest, EmailRequestType
-
 from .exceptions import InvalidEnumerationMemberHTTPException
-from .schemas.user_settings import AvailableContentLanguages
+from .schemas.email_request import EmailRequest, EmailRequestType
+from .schemas.oauth2 import TokenPayloadBase, TokenType
+from .schemas.user_settings import DefaultContentLanguages
 
 MAIL_CONFIG = ConnectionConfig(
     MAIL_USERNAME=settings.MAIL_USERNAME,
@@ -44,13 +43,13 @@ async def send_email(
 
 
 def create_email_verification_email(
-    content_language: AvailableContentLanguages, user, email_verification_token
+    content_language: DefaultContentLanguages, user, email_verification_token
 ):
     match content_language:
-        case AvailableContentLanguages.polish:
+        case DefaultContentLanguages.polish:
             template_name = "account_verification_pl.html"
             subject = "Zołza Hairstyles - weryfikacja konta"
-        case AvailableContentLanguages.english:
+        case DefaultContentLanguages.english:
             template_name = "account_verification_en.html"
             subject = "Zołza Hairstyles - account verification"
         case _:
@@ -71,13 +70,13 @@ def create_email_verification_email(
 
 
 def create_password_reset_email(
-    content_language: AvailableContentLanguages, user, password_reset_token
+    content_language: DefaultContentLanguages, user, password_reset_token
 ):
     match content_language:
-        case AvailableContentLanguages.polish:
+        case DefaultContentLanguages.polish:
             template_name = "password_reset_pl.html"
             subject = "Zołza Hairstyles - resetowanie hasła"
-        case AvailableContentLanguages.english:
+        case DefaultContentLanguages.english:
             template_name = "password_reset_en.html"
             subject = "Zołza Hairstyles - password reset"
         case _:
