@@ -25,7 +25,7 @@ from .exceptions import (
     InsufficientPermissionsHTTPException,
     InvalidTokenHTTPException,
     SessionNotFoundHTTPException,
-    UnverifiedUserHTTPException,
+    UnverifiedUserHTTPException, UserNotFoundException,
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -114,6 +114,9 @@ def get_user(
 ) -> UserSession:
     payload = decode_jwt(token, expected_token_type=TokenType.access_token)
     user = db.query(models.User).where(models.User.id == payload.user_id).first()
+
+    if not user:
+        raise UserNotFoundException()
 
     session_db = (
         db.query(models.Session)
