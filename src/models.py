@@ -1,8 +1,15 @@
 import enum
 from enum import auto
 
-from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, \
-    UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
@@ -109,7 +116,7 @@ class ServiceTranslations(Base):
     name = Column(String, nullable=False, unique=True)
     description = Column(String)
     UniqueConstraint("service_id", "language_id", name="one_translation_per_language")
-    service = relationship('Service')
+    service = relationship("Service")
 
 
 class ServiceEvent(Base):
@@ -147,9 +154,9 @@ class PermissionEvent(Base):
         nullable=False,
         server_default=text("gen_random_uuid()"),
     )
-    event_type = Column(Enum(PermissionEventType,
-                             name='permission_event_type'),
-                        nullable=False)
+    event_type = Column(
+        Enum(PermissionEventType, name="permission_event_type"), nullable=False
+    )
     performed_by_user_id = Column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
     )
@@ -172,9 +179,9 @@ class AppointmentSlot(Base):
         server_default=text("gen_random_uuid()"),
     )
     occupied = Column(Boolean, nullable=False, server_default="false")
-    occupied_by_appointment = Column(UUID(as_uuid=True),
-                                     ForeignKey("appointments.id",
-                                                use_alter=True))
+    occupied_by_appointment = Column(
+        UUID(as_uuid=True), ForeignKey("appointments.id", use_alter=True)
+    )
     reserved = Column(Boolean, nullable=False, server_default="false")
     reserved_reason = Column(String)
     holiday = Column(Boolean, nullable=False, server_default="false")
@@ -184,11 +191,13 @@ class AppointmentSlot(Base):
     date = Column(DATE, nullable=False)
     start_time = Column(TIMESTAMP(timezone=True), unique=True)
     end_time = Column(TIMESTAMP(timezone=True), unique=True)
-    appointment = relationship("Appointment",
-                               cascade="all,delete",
-                               backref="parent",
-                               foreign_keys=[occupied_by_appointment])
-    holiday_info = relationship('Holiday')
+    appointment = relationship(
+        "Appointment",
+        cascade="all,delete",
+        backref="parent",
+        foreign_keys=[occupied_by_appointment],
+    )
+    holiday_info = relationship("Holiday")
 
 
 class Appointment(Base):
@@ -201,26 +210,24 @@ class Appointment(Base):
     )
     service_id = Column(UUID(as_uuid=True), ForeignKey("services.id"), nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    start_slot_id = Column(UUID(as_uuid=True),
-                           ForeignKey("appointment_slots.id"),
-                           nullable=False)
-    end_slot_id = Column(UUID(as_uuid=True),
-                         ForeignKey("appointment_slots.id"),
-                         nullable=False)
+    start_slot_id = Column(
+        UUID(as_uuid=True), ForeignKey("appointment_slots.id"), nullable=False
+    )
+    end_slot_id = Column(
+        UUID(as_uuid=True), ForeignKey("appointment_slots.id"), nullable=False
+    )
     canceled = Column(Boolean, nullable=False, server_default="false")
     archival = Column(Boolean, nullable=False, server_default="false")
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
     start_slot = relationship(
-        'AppointmentSlot',
-        cascade="all,delete",
-        foreign_keys=[start_slot_id])
+        "AppointmentSlot", cascade="all,delete", foreign_keys=[start_slot_id]
+    )
     end_slot = relationship(
-        'AppointmentSlot',
-        cascade="all,delete",
-        foreign_keys=[end_slot_id])
-    service = relationship('Service')
+        "AppointmentSlot", cascade="all,delete", foreign_keys=[end_slot_id]
+    )
+    service = relationship("Service")
 
 
 class Setting(Base):
@@ -239,13 +246,13 @@ class Setting(Base):
 class Holiday(Base):
     __tablename__ = "holidays"
     id = Column(Integer, primary_key=True, nullable=False)
-    translation = relationship('HolidayTranslations')
+    translation = relationship("HolidayTranslations")
 
 
 class HolidayTranslations(Base):
-    __tablename__ = 'holiday_translations'
+    __tablename__ = "holiday_translations"
     id = Column(Integer, primary_key=True, nullable=False)
-    holiday_id = Column(Integer, ForeignKey('holidays.id'), nullable=False)
+    holiday_id = Column(Integer, ForeignKey("holidays.id"), nullable=False)
     language_id = Column(Integer, ForeignKey("languages.id"), nullable=False)
     name = Column(String, nullable=False, unique=True)
     UniqueConstraint("holiday_id", "language_id", name="one_translation_per_language")

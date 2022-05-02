@@ -5,10 +5,14 @@ from fastapi.responses import RedirectResponse
 from .config import settings
 from .database import get_db
 from .routers import appointments, auth, services, user_settings, users
-from .utils import (ensure_appointment_slots_generation_task_exists,
-                    ensure_enough_appointment_slots_available, init_holidays,
-                    init_languages,
-                    init_services, start_scheduler)
+from .utils import (
+    ensure_appointment_slots_generation_task_exists,
+    ensure_enough_appointment_slots_available,
+    init_holidays,
+    init_languages,
+    init_services,
+    start_scheduler,
+)
 
 app = FastAPI(
     docs_url=settings.BASE_URL + "/docs",
