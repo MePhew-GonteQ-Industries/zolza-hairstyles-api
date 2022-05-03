@@ -261,5 +261,5 @@ class HolidayTranslations(Base):
 class Language(Base):
     __tablename__ = "languages"
     id = Column(Integer, primary_key=True, nullable=False)
-    code = Column(String, nullable=False)
-    name = Column(String, nullable=False)
+    code = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False, unique=True)
