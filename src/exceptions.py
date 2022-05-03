@@ -8,7 +8,7 @@ from src.config import settings
 class UserNotFoundException(HTTPException):
     def __init__(self):
         self.status_code = status.HTTP_404_NOT_FOUND
-        self.detail = "User was not found on the server"
+        self.detail = "Could not validate credentials"
 
 
 class AdditionalAuthenticationRequiredHTTPException(HTTPException):
@@ -23,9 +23,10 @@ class AdditionalAuthenticationRequiredHTTPException(HTTPException):
 
 
 class ResourceNotFoundHTTPException(HTTPException):
-    def __init__(self):
+    def __init__(self, *,
+                 detail: str = "Requested resource was not found on the server"):
         self.status_code = status.HTTP_404_NOT_FOUND
-        self.detail = "Requested resource was not found on the server"
+        self.detail = detail
 
 
 class IncorrectTokenDataException(Exception):
