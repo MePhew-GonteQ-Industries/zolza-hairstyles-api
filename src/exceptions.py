@@ -23,8 +23,9 @@ class AdditionalAuthenticationRequiredHTTPException(HTTPException):
 
 
 class ResourceNotFoundHTTPException(HTTPException):
-    def __init__(self, *,
-                 detail: str = "Requested resource was not found on the server"):
+    def __init__(
+        self, *, detail: str = "Requested resource was not found on the server"
+    ):
         self.status_code = status.HTTP_404_NOT_FOUND
         self.detail = detail
 
