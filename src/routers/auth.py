@@ -217,7 +217,7 @@ def request_password_reset(
         cooldown_end = cooldown_start + timedelta(
             minutes=settings.PASSWORD_RESET_COOLDOWN_MINUTES
         )
-        now = datetime.now().astimezone()
+        now = datetime.now()
         # noinspection PyTypeChecker,PydanticTypeChecker
         cooldown_left = cooldown_end - now
 
@@ -324,7 +324,7 @@ def enter_sudo_mode(
 
     verify_password(password=password, user_id=user_session.user.id, db=db)
 
-    sudo_mode_start = datetime.now().astimezone()
+    sudo_mode_start = datetime.now()
 
     user_session.session.sudo_mode_activated = sudo_mode_start
 

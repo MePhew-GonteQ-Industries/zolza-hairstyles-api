@@ -129,7 +129,7 @@ def get_user(
     if not session_db:
         raise SessionNotFoundHTTPException()
 
-    session_db.last_accessed = datetime.now().astimezone()
+    session_db.last_accessed = datetime.now()
     session_db.last_user_agent = user_agent
     session_db.last_ip_address = request.client.host
 
@@ -180,7 +180,7 @@ def ensure_sudo(session):
     if not session.sudo_mode_activated:
         raise AdditionalAuthenticationRequiredHTTPException()
 
-    if not session.sudo_mode_expires > datetime.now().astimezone():
+    if not session.sudo_mode_expires > datetime.now():
         raise AdditionalAuthenticationRequiredHTTPException()
 
 

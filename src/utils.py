@@ -260,7 +260,7 @@ def generate_appointment_slots(db: Session) -> None:
 
     first_slot_start = None
 
-    now = datetime.now().astimezone()
+    now = datetime.now()
 
     if last_appointment_slot:
         if last_appointment_slot.end_time:

@@ -36,7 +36,7 @@ class User(Base):
     verified = Column(Boolean, nullable=False, server_default="false")
     disabled = Column(Boolean, nullable=False, server_default="false")
     created_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+        TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
     )
     settings = relationship("Setting")
 
@@ -48,7 +48,7 @@ class Password(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     current = Column(Boolean, nullable=False)
     created_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+        TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
     )
 
 
@@ -68,12 +68,12 @@ class Session(Base):
     last_user_agent = Column(String, nullable=False)
     last_ip_address = Column(String, nullable=False)
     last_accessed = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+        TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
     )
-    sudo_mode_activated = Column(TIMESTAMP(timezone=True))
-    sudo_mode_expires = Column(TIMESTAMP(timezone=True))
+    sudo_mode_activated = Column(TIMESTAMP(timezone=False))
+    sudo_mode_expires = Column(TIMESTAMP(timezone=False))
     first_accessed = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+        TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
     )
 
 
@@ -84,7 +84,7 @@ class EmailRequests(Base):
     request_type = Column(String, nullable=False)
     request_token = Column(String, nullable=False)
     created_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+        TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
     )
     UniqueConstraint("user_id", "request_type", name="limit_email_requests")
 
@@ -104,7 +104,7 @@ class Service(Base):
     available = Column(Boolean, nullable=False, server_default=text("true"))
     deleted = Column(Boolean, nullable=False, server_default=text("false"))
     created_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+        TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
     )
 
 
@@ -137,7 +137,7 @@ class ServiceEvent(Base):
     performed_by = relationship("User", foreign_keys=[performed_by_user_id])
     performed_on = relationship("Service", foreign_keys=[performed_on_service_id])
     performed_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+        TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
     )
 
 
@@ -166,7 +166,7 @@ class PermissionEvent(Base):
     performed_by = relationship("User", foreign_keys=[performed_by_user_id])
     performed_on = relationship("User", foreign_keys=[performed_on_user_id])
     performed_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+        TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
     )
 
 
@@ -189,8 +189,8 @@ class AppointmentSlot(Base):
     break_time = Column(Boolean, nullable=False, server_default="false")
     holiday_id = Column(Integer, ForeignKey("holidays.id"))
     date = Column(DATE, nullable=False)
-    start_time = Column(TIMESTAMP(timezone=True), unique=True)
-    end_time = Column(TIMESTAMP(timezone=True), unique=True)
+    start_time = Column(TIMESTAMP(timezone=False), unique=True)
+    end_time = Column(TIMESTAMP(timezone=False), unique=True)
     appointment = relationship(
         "Appointment",
         cascade="all,delete",
@@ -219,7 +219,7 @@ class Appointment(Base):
     canceled = Column(Boolean, nullable=False, server_default="false")
     archival = Column(Boolean, nullable=False, server_default="false")
     created_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+        TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
     )
     start_slot = relationship(
         "AppointmentSlot", cascade="all,delete", foreign_keys=[start_slot_id]
@@ -238,7 +238,7 @@ class Setting(Base):
     default_value = Column(String)
     current_value = Column(String, nullable=False)
     created_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+        TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
     )
     UniqueConstraint("user_id", "name", name="unique_user_settings")
 
