@@ -1,5 +1,6 @@
 import calendar
 import json
+import logging
 import math
 import os
 from datetime import date, datetime, timedelta
@@ -20,6 +21,8 @@ from .schemas.user_settings import AvailableSettings, DefaultContentLanguages
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+logging.basicConfig(filename='ZHAPI_log.log', encoding='utf-8', level=logging.DEBUG)
+
 
 def init_languages(db: Session) -> None:
     english = langcodes.Language.get(standardize_tag("en-GB"))
@@ -34,6 +37,8 @@ def init_languages(db: Session) -> None:
         english = models.Language(code=english.language, name=english.language_name())
         db.add(english)
 
+        logging.debug(f'English was not found in db (value = {english_db})')
+
     polish = langcodes.Language.get(standardize_tag("pl-PL"))
 
     polish_db = (
@@ -43,6 +48,8 @@ def init_languages(db: Session) -> None:
     if not polish_db:
         polish = models.Language(code=polish.language, name=polish.language_name())
         db.add(polish)
+
+        logging.debug(f'Polish was not found in db (value = {english_db})')
 
     db.commit()
 
@@ -84,6 +91,8 @@ def init_services(db: Session) -> None:
             db.refresh(service_db)
 
             for lang, name in names.items():
+                logging.debug(f'Service {name} was not found in the database')
+
                 language_db = (
                     db.query(models.Language)
                         .where(models.Language.code == lang)
