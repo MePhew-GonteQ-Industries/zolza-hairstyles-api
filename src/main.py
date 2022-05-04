@@ -16,7 +16,7 @@ from .utils import (
     start_scheduler,
 )
 
-logging.basicConfig(filename="ZHAPI_log.log", encoding="utf-8", level=logging.DEBUG,
+logging.basicConfig(filename="app.log", encoding="utf-8", level=logging.DEBUG,
                     format="%(asctime)s;%(levelname)s;%(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S")
 
