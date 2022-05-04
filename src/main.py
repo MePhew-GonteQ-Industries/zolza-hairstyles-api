@@ -24,7 +24,7 @@ formatter = logging.Formatter(
     "%(thread)d;%(threadName)s;%(asctime)s;%(levelname)s;%(message)s",
     "%Y-%m-%d %H:%M:%S")
 
-file_handler = logging.FileHandler(f'{__name__}.log',
+file_handler = logging.FileHandler(f'main.log',
                                    mode='w')
 file_handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
