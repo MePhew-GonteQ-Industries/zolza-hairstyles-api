@@ -36,8 +36,8 @@ def init_languages(db: Session) -> None:
 
     english_db = (
         db.query(models.Language)
-            .where(models.Language.code == english.language)
-            .first()
+        .where(models.Language.code == english.language)
+        .first()
     )
 
     if not english_db:
@@ -57,8 +57,9 @@ def init_languages(db: Session) -> None:
     try:
         db.commit()
     except Exception as e:
-        logger.error(f'Initializing languages with {type(db)} instance'
-                     f'failed with error {e}')
+        logger.error(
+            f"Initializing languages with {type(db)} instance" f"failed with error {e}"
+        )
         raise
 
 
@@ -378,8 +379,8 @@ def generate_appointment_slots(db: Session) -> None:
                 current_date = current_date + timedelta(days=1)
             else:
                 if (
-                        current_date.hour
-                        < weekplan[current_date.weekday()]["work_hours"]["start_hour"]
+                    current_date.hour
+                    < weekplan[current_date.weekday()]["work_hours"]["start_hour"]
                 ):
                     current_date = current_date.replace(
                         hour=weekplan[current_date.weekday()]["work_hours"][
@@ -391,8 +392,8 @@ def generate_appointment_slots(db: Session) -> None:
                     )
                     continue
                 elif (
-                        current_date.hour
-                        > weekplan[current_date.weekday()]["work_hours"]["end_hour"]
+                    current_date.hour
+                    > weekplan[current_date.weekday()]["work_hours"]["end_hour"]
                 ):
                     current_date = current_date + timedelta(days=1)
                     next_day_index = current_date.weekday() + 1
@@ -410,13 +411,12 @@ def generate_appointment_slots(db: Session) -> None:
                     current_date = current_date.replace(hour=hour, minute=minute)
                     continue
                 elif (
-                        current_date.hour
-                        == weekplan[current_date.weekday()]["work_hours"]["end_hour"]
+                    current_date.hour
+                    == weekplan[current_date.weekday()]["work_hours"]["end_hour"]
                 ):
                     if (
-                            current_date.minute
-                            >= weekplan[current_date.weekday()]["work_hours"][
-                        "end_minute"]
+                        current_date.minute
+                        >= weekplan[current_date.weekday()]["work_hours"]["end_minute"]
                     ):
                         current_date = current_date + timedelta(days=1)
                         next_day_index = current_date.weekday() + 1
@@ -441,8 +441,7 @@ def generate_appointment_slots(db: Session) -> None:
                                 date=current_date,
                                 start_time=current_date,
                                 end_time=current_date
-                                         + timedelta(
-                                    minutes=break_time["time_minutes"]),
+                                + timedelta(minutes=break_time["time_minutes"]),
                                 break_time=True,
                             )
                             current_date = current_date + timedelta(
@@ -454,8 +453,8 @@ def generate_appointment_slots(db: Session) -> None:
                 date=current_date,
                 start_time=current_date,
                 end_time=(
-                        current_date
-                        + timedelta(minutes=settings.APPOINTMENT_SLOT_TIME_MINUTES)
+                    current_date
+                    + timedelta(minutes=settings.APPOINTMENT_SLOT_TIME_MINUTES)
                 ),
             )
 
@@ -479,9 +478,9 @@ def start_scheduler() -> BackgroundScheduler:
 def get_user_language_id(db: Session, user_id: UUID4) -> int:
     language_code = (
         db.query(models.Setting.current_value)
-            .where(models.Setting.name == AvailableSettings.language.value)
-            .where(models.Setting.user_id == user_id)
-            .first()
+        .where(models.Setting.name == AvailableSettings.language.value)
+        .where(models.Setting.user_id == user_id)
+        .first()
     )
 
     if language_code:
@@ -489,8 +488,8 @@ def get_user_language_id(db: Session, user_id: UUID4) -> int:
 
     language_id = (
         db.query(models.Language.id)
-            .where(models.Language.code == language_code)
-            .first()
+        .where(models.Language.code == language_code)
+        .first()
     )
 
     if language_id:
@@ -499,8 +498,8 @@ def get_user_language_id(db: Session, user_id: UUID4) -> int:
     if not language_id:
         language_id = (
             db.query(models.Language.id)
-                .where(models.Language.code == DefaultContentLanguages.english)
-                .first()[0]
+            .where(models.Language.code == DefaultContentLanguages.english)
+            .first()[0]
         )
 
     return language_id
@@ -509,9 +508,9 @@ def get_user_language_id(db: Session, user_id: UUID4) -> int:
 def verify_password(*, password, user_id, db) -> None:
     current_password_hash = (
         db.query(models.Password.password_hash)
-            .where(models.Password.user_id == user_id)
-            .where(models.Password.current == True)
-            .first()
+        .where(models.Password.user_id == user_id)
+        .where(models.Password.current == True)
+        .first()
     )
 
     if not compare_passwords(password, *current_password_hash):
@@ -534,11 +533,11 @@ def change_password(*, new_password, user_id, db: Session) -> None:
 
     old_passwords = (
         db.query(models.Password)
-            .where(models.Password.user_id == user_id)
-            .where(models.Password.current == False)
-            .order_by(models.Password.created_at.desc())
-            .offset(4)
-            .all()
+        .where(models.Password.user_id == user_id)
+        .where(models.Password.current == False)
+        .order_by(models.Password.created_at.desc())
+        .offset(4)
+        .all()
     )
 
     for old_password in old_passwords:
@@ -548,9 +547,9 @@ def change_password(*, new_password, user_id, db: Session) -> None:
 
     current_password = (
         db.query(models.Password)
-            .where(models.Password.user_id == user_id)
-            .where(models.Password.current)
-            .first()
+        .where(models.Password.user_id == user_id)
+        .where(models.Password.current)
+        .first()
     )
 
     current_password.current = False
