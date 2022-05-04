@@ -24,7 +24,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 formatter = logging.Formatter(
     "%(asctime)s;%(levelname)s;%(message)s", "%Y-%m-%d %H:%M:%S"
 )
-file_handler = logging.FileHandler(f"utils.log", mode="w")
+file_handler = logging.FileHandler(f"utils.log")
 file_handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

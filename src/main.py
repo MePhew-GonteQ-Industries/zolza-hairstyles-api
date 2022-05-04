@@ -25,7 +25,7 @@ formatter = logging.Formatter(
     "%Y-%m-%d %H:%M:%S",
 )
 
-file_handler = logging.FileHandler(f"main.log", mode="w")
+file_handler = logging.FileHandler(f"main.log")
 file_handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
