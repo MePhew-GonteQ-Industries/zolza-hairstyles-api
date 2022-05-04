@@ -42,7 +42,7 @@ app.include_router(services.router)
 
 @app.on_event("startup")
 def startup():
-    logger.info('Application is in startup')
+    logger.info("Application is in startup")
 
 
 @app.get(settings.BASE_URL, tags=["Zołza Hairstyles Redirection"])
