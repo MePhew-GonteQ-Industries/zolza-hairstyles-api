@@ -16,9 +16,13 @@ from .utils import (
     start_scheduler,
 )
 
-logging.basicConfig(filename="app.log", encoding="utf-8", level=logging.DEBUG,
-                    format="%(asctime)s;%(levelname)s;%(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S")
+logging.basicConfig(
+    filename="app.log",
+    encoding="utf-8",
+    level=logging.DEBUG,
+    format="%(asctime)s;%(levelname)s;%(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 formatter = logging.Formatter(
     "%(thread)d;%(threadName)s;%(asctime)s;%(levelname)s;%(message)s",
