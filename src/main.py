@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, status
 from fastapi.responses import RedirectResponse
 
@@ -12,6 +14,18 @@ from .utils import (
     init_services,
     start_scheduler,
 )
+
+logging.basicConfig(filename="ZHAPI_log.log", encoding="utf-8", level=logging.DEBUG,
+                    format="%(asctime)s;%(levelname)s;%(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S")
+
+formatter = logging.Formatter("%(asctime)s;%(levelname)s;%(message)s",
+                              "%Y-%m-%d %H:%M:%S")
+file_handler = logging.FileHandler(__file__)
+file_handler.setFormatter(formatter)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
 
 app = FastAPI(
     docs_url=settings.BASE_URL + "/docs",
