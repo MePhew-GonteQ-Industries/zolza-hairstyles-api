@@ -23,7 +23,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 formatter = logging.Formatter("%(asctime)s;%(levelname)s;%(message)s",
                               "%Y-%m-%d %H:%M:%S")
-file_handler = logging.FileHandler(__file__)
+file_handler = logging.FileHandler(f'{__name__}.log',
+                                   mode='w')
 file_handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -53,7 +54,12 @@ def init_languages(db: Session) -> None:
         polish = models.Language(code=polish.language, name=polish.language_name())
         db.add(polish)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception as e:
+        logger.error(f'Initializing languages with {type(db)} instance'
+                     f'failed with error {e}')
+        raise
 
 
 def init_services(db: Session) -> None:
@@ -103,7 +109,12 @@ def init_services(db: Session) -> None:
                     service_id=service_db.id, language_id=language_db.id, name=name
                 )
                 db.add(service_translation)
-                db.commit()
+                try:
+                    db.commit()
+                except Exception as e:
+                    logger.error(f'Adding service translation with {type(db)} instance'
+                                 f'failed with error {e}')
+                    raise
 
 
 def init_holidays(db: Session) -> None:
@@ -131,7 +142,12 @@ def init_holidays(db: Session) -> None:
         if not holiday_in_db:
             holiday_db = models.Holiday()
             db.add(holiday_db)
-            db.commit()
+            try:
+                db.commit()
+            except Exception as e:
+                logger.error(f'Adding holiday with {type(db)} instance'
+                             f'failed with error {e}')
+                raise
             db.refresh(holiday_db)
 
             for lang, name in holiday.items():
@@ -145,7 +161,12 @@ def init_holidays(db: Session) -> None:
                     holiday_id=holiday_db.id, language_id=language_db.id, name=name
                 )
                 db.add(holiday_translation)
-                db.commit()
+                try:
+                    db.commit()
+                except Exception as e:
+                    logger.error(f'Adding holiday translation with {type(db)} instance'
+                                 f'failed with error {e}')
+                    raise
 
 
 def ensure_enough_appointment_slots_available(get_db_func: callable) -> None:
