@@ -1,20 +1,10 @@
 import logging
-import threading
 
 from fastapi import FastAPI, status
 from fastapi.responses import RedirectResponse
 
 from .config import settings
-from .database import get_db
 from .routers import appointments, auth, services, user_settings, users
-from .utils import (
-    ensure_appointment_slots_generation_task_exists,
-    ensure_enough_appointment_slots_available,
-    init_holidays,
-    init_languages,
-    init_services,
-    start_scheduler,
-)
 
 logging.basicConfig(
     filename="app.log",
@@ -52,31 +42,7 @@ app.include_router(services.router)
 
 @app.on_event("startup")
 def startup():
-    logger.info("Application is in startup")
-
-    scheduler = start_scheduler()
-
-    logger.info("Scheduler started")
-
-    db = next(get_db())
-
-    logger.info(f"Created new {type(db)} object #{id(db)}")
-
-    init_languages(db)
-
-    logger.info(f"Successfully initialized languages using {type(db)} object #{id(db)}")
-
-    init_services(db)
-
-    logger.info(f"Successfully initialized services using {type(db)} object #{id(db)}")
-
-    init_holidays(db)
-
-    logger.info(f"Successfully initialized holidays using {type(db)} object #{id(db)}")
-
-    ensure_enough_appointment_slots_available(get_db)
-
-    ensure_appointment_slots_generation_task_exists(scheduler)
+    logger.info('Application is in startup')
 
 
 @app.get(settings.BASE_URL, tags=["Zołza Hairstyles Redirection"])
