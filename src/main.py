@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import FastAPI, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from .config import settings
@@ -38,6 +39,18 @@ app.include_router(auth.router)
 app.include_router(user_settings.router)
 app.include_router(appointments.router)
 app.include_router(services.router)
+
+ALLOWED_ORIGINS = [
+    "*",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
