@@ -23,9 +23,9 @@ logger.addHandler(file_handler)
 def get_user_language_id(db: Session, user_id: UUID4) -> int:
     language_code = (
         db.query(models.Setting.current_value)
-            .where(models.Setting.name == AvailableSettings.language.value)
-            .where(models.Setting.user_id == user_id)
-            .first()
+        .where(models.Setting.name == AvailableSettings.language.value)
+        .where(models.Setting.user_id == user_id)
+        .first()
     )
 
     if language_code:
@@ -33,8 +33,8 @@ def get_user_language_id(db: Session, user_id: UUID4) -> int:
 
     language_id = (
         db.query(models.Language.id)
-            .where(models.Language.code == language_code)
-            .first()
+        .where(models.Language.code == language_code)
+        .first()
     )
 
     if language_id:
@@ -43,8 +43,8 @@ def get_user_language_id(db: Session, user_id: UUID4) -> int:
     if not language_id:
         language_id = (
             db.query(models.Language.id)
-                .where(models.Language.code == DefaultContentLanguages.english)
-                .first()[0]
+            .where(models.Language.code == DefaultContentLanguages.english)
+            .first()[0]
         )
 
     return language_id
@@ -53,9 +53,9 @@ def get_user_language_id(db: Session, user_id: UUID4) -> int:
 def verify_password(*, password, user_id, db) -> None:
     current_password_hash = (
         db.query(models.Password.password_hash)
-            .where(models.Password.user_id == user_id)
-            .where(models.Password.current == True)
-            .first()
+        .where(models.Password.user_id == user_id)
+        .where(models.Password.current == True)
+        .first()
     )
 
     if not compare_passwords(password, *current_password_hash):
@@ -78,11 +78,11 @@ def change_password(*, new_password, user_id, db: Session) -> None:
 
     old_passwords = (
         db.query(models.Password)
-            .where(models.Password.user_id == user_id)
-            .where(models.Password.current == False)
-            .order_by(models.Password.created_at.desc())
-            .offset(4)
-            .all()
+        .where(models.Password.user_id == user_id)
+        .where(models.Password.current == False)
+        .order_by(models.Password.created_at.desc())
+        .offset(4)
+        .all()
     )
 
     for old_password in old_passwords:
@@ -92,9 +92,9 @@ def change_password(*, new_password, user_id, db: Session) -> None:
 
     current_password = (
         db.query(models.Password)
-            .where(models.Password.user_id == user_id)
-            .where(models.Password.current)
-            .first()
+        .where(models.Password.user_id == user_id)
+        .where(models.Password.current)
+        .first()
     )
 
     current_password.current = False

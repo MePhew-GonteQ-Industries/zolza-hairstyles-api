@@ -32,8 +32,8 @@ def init_languages(db: Session) -> None:
 
     english_db = (
         db.query(models.Language)
-            .where(models.Language.code == english.language)
-            .first()
+        .where(models.Language.code == english.language)
+        .first()
     )
 
     if not english_db:
@@ -74,8 +74,8 @@ def init_services(db: Session) -> None:
         for lang, name in names.items():
             service_translation = (
                 db.query(models.ServiceTranslations)
-                    .where(models.ServiceTranslations.name == name)
-                    .first()
+                .where(models.ServiceTranslations.name == name)
+                .first()
             )
 
             if service_translation:
@@ -87,8 +87,8 @@ def init_services(db: Session) -> None:
                 max_price=service["max_price"],
                 average_time_minutes=service["average_time_minutes"],
                 required_slots=(
-                        int(service["average_time_minutes"])
-                        // settings.APPOINTMENT_SLOT_TIME_MINUTES
+                    int(service["average_time_minutes"])
+                    // settings.APPOINTMENT_SLOT_TIME_MINUTES
                 ),
             )
             db.add(service_db)
@@ -98,8 +98,8 @@ def init_services(db: Session) -> None:
             for lang, name in names.items():
                 language_db = (
                     db.query(models.Language)
-                        .where(models.Language.code == lang)
-                        .first()
+                    .where(models.Language.code == lang)
+                    .first()
                 )
 
                 service_translation = models.ServiceTranslations(
@@ -130,9 +130,9 @@ def init_holidays(db: Session) -> None:
         for lang, name in holiday.items():
             holiday_db = (
                 db.query(models.Holiday)
-                    .join(models.HolidayTranslations)
-                    .where(models.HolidayTranslations.name == name)
-                    .first()
+                .join(models.HolidayTranslations)
+                .where(models.HolidayTranslations.name == name)
+                .first()
             )
 
             if holiday_db:
@@ -153,8 +153,8 @@ def init_holidays(db: Session) -> None:
             for lang, name in holiday.items():
                 language_db = (
                     db.query(models.Language)
-                        .where(models.Language.code == lang)
-                        .first()
+                    .where(models.Language.code == lang)
+                    .first()
                 )
 
                 holiday_translation = models.HolidayTranslations(
@@ -179,7 +179,7 @@ def ensure_enough_appointment_slots_available(get_db_func: callable) -> None:
 
 
 def ensure_appointment_slots_generation_task_exists(
-        background_scheduler: BackgroundScheduler,
+    background_scheduler: BackgroundScheduler,
 ) -> None:
     appointment_slots_generation_task = background_scheduler.get_job(
         "appointment_slots_generation"
@@ -197,7 +197,7 @@ def start_scheduler() -> BackgroundScheduler:
 
 
 def add_appointment_slots_generation_task(
-        background_scheduler: BackgroundScheduler,
+    background_scheduler: BackgroundScheduler,
 ) -> None:
     background_scheduler.add_job(
         ensure_enough_appointment_slots_available,
@@ -215,8 +215,8 @@ def add_appointment_slots_generation_task(
 def appointment_slots_generated(db: Session) -> bool:
     last_appointment_slot = (
         db.query(models.AppointmentSlot)
-            .order_by(models.AppointmentSlot.date.desc())
-            .first()
+        .order_by(models.AppointmentSlot.date.desc())
+        .first()
     )
 
     if not last_appointment_slot:
@@ -249,9 +249,9 @@ def generate_appointment_slots(db: Session) -> None:
     for holiday in holiday_names:
         holiday_id = (
             db.query(models.Holiday.id)
-                .join(models.HolidayTranslations)
-                .where(models.HolidayTranslations.name == list(holiday.values())[0])
-                .first()[0]
+            .join(models.HolidayTranslations)
+            .where(models.HolidayTranslations.name == list(holiday.values())[0])
+            .first()[0]
         )
         holiday_ids.append(holiday_id)
 
@@ -293,8 +293,8 @@ def generate_appointment_slots(db: Session) -> None:
 
     last_appointment_slot = (
         db.query(models.AppointmentSlot)
-            .order_by(models.AppointmentSlot.end_time.desc().nullslast())
-            .first()
+        .order_by(models.AppointmentSlot.end_time.desc().nullslast())
+        .first()
     )
 
     first_slot_start = None
@@ -387,8 +387,8 @@ def generate_appointment_slots(db: Session) -> None:
                 current_date = current_date + timedelta(days=1)
             else:
                 if (
-                        current_date.hour
-                        < weekplan[current_date.weekday()]["work_hours"]["start_hour"]
+                    current_date.hour
+                    < weekplan[current_date.weekday()]["work_hours"]["start_hour"]
                 ):
                     current_date = current_date.replace(
                         hour=weekplan[current_date.weekday()]["work_hours"][
@@ -400,8 +400,8 @@ def generate_appointment_slots(db: Session) -> None:
                     )
                     continue
                 elif (
-                        current_date.hour
-                        > weekplan[current_date.weekday()]["work_hours"]["end_hour"]
+                    current_date.hour
+                    > weekplan[current_date.weekday()]["work_hours"]["end_hour"]
                 ):
                     current_date = current_date + timedelta(days=1)
                     next_day_index = current_date.weekday() + 1
@@ -419,13 +419,12 @@ def generate_appointment_slots(db: Session) -> None:
                     current_date = current_date.replace(hour=hour, minute=minute)
                     continue
                 elif (
-                        current_date.hour
-                        == weekplan[current_date.weekday()]["work_hours"]["end_hour"]
+                    current_date.hour
+                    == weekplan[current_date.weekday()]["work_hours"]["end_hour"]
                 ):
                     if (
-                            current_date.minute
-                            >= weekplan[current_date.weekday()]["work_hours"][
-                        "end_minute"]
+                        current_date.minute
+                        >= weekplan[current_date.weekday()]["work_hours"]["end_minute"]
                     ):
                         current_date = current_date + timedelta(days=1)
                         next_day_index = current_date.weekday() + 1
@@ -450,8 +449,7 @@ def generate_appointment_slots(db: Session) -> None:
                                 date=current_date,
                                 start_time=current_date,
                                 end_time=current_date
-                                         + timedelta(
-                                    minutes=break_time["time_minutes"]),
+                                + timedelta(minutes=break_time["time_minutes"]),
                                 break_time=True,
                             )
                             current_date = current_date + timedelta(
@@ -463,8 +461,8 @@ def generate_appointment_slots(db: Session) -> None:
                 date=current_date,
                 start_time=current_date,
                 end_time=(
-                        current_date
-                        + timedelta(minutes=settings.APPOINTMENT_SLOT_TIME_MINUTES)
+                    current_date
+                    + timedelta(minutes=settings.APPOINTMENT_SLOT_TIME_MINUTES)
                 ),
             )
 
