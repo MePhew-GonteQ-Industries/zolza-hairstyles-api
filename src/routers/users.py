@@ -250,8 +250,7 @@ def request_email_verification(
 
 @router.put("/verify-email", response_model=ReturnUser)
 def verify_email(
-    email_verification_request: EmailVerificationRequest,
-        db: Session = Depends(get_db)
+    email_verification_request: EmailVerificationRequest, db: Session = Depends(get_db)
 ) -> ReturnUser:
     request_db = (
         db.query(models.EmailRequests)
