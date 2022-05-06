@@ -40,6 +40,7 @@ async def send_email(
         await fast_mail_client.send_message(email, template_name)
     except ConnectionErrors:
         logging.error("Failed to send message")  # todo: update logs
+        raise
 
 
 def create_email_verification_email(
@@ -60,7 +61,9 @@ def create_email_verification_email(
         recipients=[user.email],
         template_body={
             "user": user.name,
-            "account_confirmation_link": f"https://mephew.ddns.net/email-verification"
+            "zolza_hairstyles_link": settings.ZOLZA_HAIRSTYLES_URL,
+            "account_confirmation_link": f"{settings.ZOLZA_HAIRSTYLES_URL}"
+                                         f"/email-verification"
             f"?token={email_verification_token}",
         },
         subtype="html",

@@ -161,6 +161,7 @@ def create_user(
 
     # TODO: Check if email was sent successfully before adding request to db
     db.add(email_verification_request)
+    db.commit()
 
     message, template_name = create_email_verification_email(
         content_language, new_user, email_verification_request.request_token
@@ -249,7 +250,8 @@ def request_email_verification(
 
 @router.put("/verify-email", response_model=ReturnUser)
 def verify_email(
-    email_verification_request: EmailVerificationRequest, db: Session = Depends(get_db)
+    email_verification_request: EmailVerificationRequest,
+        db: Session = Depends(get_db)
 ) -> ReturnUser:
     request_db = (
         db.query(models.EmailRequests)

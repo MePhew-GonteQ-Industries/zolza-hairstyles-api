@@ -37,7 +37,7 @@ def create_jwt(token_data: TokenPayloadBase):
 
     match token_data.token_type:
         case TokenType.email_verification_token:
-            expire_minutes = settings.MAIL_VERIFICATION_TOKEN_EXPIRE_MINUTES
+            expire_minutes = None
         case TokenType.password_reset_token:
             expire_minutes = settings.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES
         case TokenType.access_token:
@@ -52,7 +52,7 @@ def create_jwt(token_data: TokenPayloadBase):
     now = datetime.utcnow()
     encode_data["iat"] = now
 
-    if token_data.token_type != TokenType.refresh_token:
+    if expire_minutes:
         expires = now + timedelta(minutes=expire_minutes)
         encode_data["exp"] = expires
 
