@@ -63,7 +63,7 @@ def create_email_verification_email(
             "user": user.name,
             "zolza_hairstyles_link": settings.ZOLZA_HAIRSTYLES_URL,
             "account_confirmation_link": f"{settings.ZOLZA_HAIRSTYLES_URL}"
-                                         f"/email-verification"
+            f"/email-verification"
             f"?token={email_verification_token}",
         },
         subtype="html",
