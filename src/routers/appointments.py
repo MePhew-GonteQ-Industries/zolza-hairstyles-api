@@ -66,6 +66,11 @@ def get_your_appointments(
         db.query(models.Appointment).where(models.Appointment.user_id == user.id).all()
     )
 
+    for appointment in appointments_db:
+        appointment.service = appointment.service
+        appointment.start_slot = appointment.start_slot
+        appointment.end_slot = appointment.end_slot
+
     return {"appointments": appointments_db}
 
 
