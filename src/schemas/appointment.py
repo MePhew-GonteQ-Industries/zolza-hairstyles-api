@@ -2,6 +2,9 @@ import datetime
 
 from pydantic import BaseModel, UUID4
 
+from src.schemas.service import ReturnService
+from src.schemas.user import ReturnUserDetailed
+
 
 class AppointmentSlot(BaseModel):
     id: UUID4
@@ -35,5 +38,25 @@ class CreateAppointment(BaseAppointment):
     first_slot_id: UUID4
 
 
-class ReturnAppointment(BaseAppointment):
-    pass
+class ReturnAppointment(BaseModel):
+    id: UUID4
+    canceled: bool
+    archival: bool
+    created_at: datetime.datetime
+    start_slot: AppointmentSlot
+    end_slot: AppointmentSlot
+    service: ReturnService
+
+    class Config:
+        orm_mode = True
+
+
+class ReturnAppointmentDetailed(ReturnAppointment):
+    user: ReturnUserDetailed  # todo: relationship user
+
+
+class ReturnAppointments(BaseModel):
+    appointments: list[ReturnAppointment]
+
+    class Config:
+        orm_mode = True
