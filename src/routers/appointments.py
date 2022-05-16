@@ -1,6 +1,5 @@
-import uuid
-from datetime import timedelta
 import datetime
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import UUID4
@@ -12,7 +11,7 @@ from ..database import get_db
 from ..exceptions import ResourceNotFoundHTTPException
 from ..jobs import send_appointment_reminder
 from ..scheduler import scheduler
-from ..schemas.appointment import AppointmentSlot, CreateAppointment, ReturnAppointments
+from ..schemas.appointment import AppointmentSlot, CreateAppointment, ReturnAppointment
 from ..utils import get_user_language_id
 
 router = APIRouter(prefix=settings.BASE_URL + "/appointments", tags=["Appointments"])
@@ -57,7 +56,7 @@ def get_appointment_slots(
     return slots
 
 
-@router.get("/mine", response_model=ReturnAppointments)
+@router.get("/mine", response_model=list[ReturnAppointment])
 def get_your_appointments(
         db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)
 ):
@@ -80,7 +79,7 @@ def get_your_appointments(
         appointment.service.name = service_translation[0]
         appointment.service.description = service_translation[1]
 
-    return {"appointments": appointments_db}
+    return appointments_db
 
 
 @router.get("/mine/{id}")

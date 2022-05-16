@@ -53,10 +53,3 @@ class ReturnAppointment(BaseModel):
 
 class ReturnAppointmentDetailed(ReturnAppointment):
     user: ReturnUserDetailed  # todo: relationship user
-
-
-class ReturnAppointments(BaseModel):
-    appointments: list[ReturnAppointment]
-
-    class Config:
-        orm_mode = True
