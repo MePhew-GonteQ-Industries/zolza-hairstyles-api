@@ -269,12 +269,6 @@ def generate_appointment_slots(db: Session) -> None:
         )
         holiday_ids.append(holiday_id)
 
-    with open(holiday_dates, "r", encoding="utf-8") as holiday_dates:
-        holiday_dates = json.loads(holiday_dates.read())
-
-    with open(weekplan, "r", encoding="utf-8") as weekplan:
-        weekplan = json.loads(weekplan.read())
-
     start_hours = [day["work_hours"]["start_hour"] for day in weekplan]
     start_minutes = [day["work_hours"]["start_minute"] for day in weekplan]
     first_hours_indices = [
@@ -436,11 +430,9 @@ def generate_appointment_slots(db: Session) -> None:
                         current_date.hour
                         == weekplan[current_date.weekday()]["work_hours"]["end_hour"]
                 ):
-                    if (
-                            current_date.minute
+                    if (current_date.minute
                             >= weekplan[current_date.weekday()]["work_hours"][
-                        "end_minute"]
-                    ):
+                            "end_minute"]):
                         current_date = current_date + timedelta(days=1)
                         next_day_index = current_date.weekday() + 1
                         hour = (
@@ -463,8 +455,7 @@ def generate_appointment_slots(db: Session) -> None:
                             appointment_slot = models.AppointmentSlot(
                                 date=current_date,
                                 start_time=current_date,
-                                end_time=current_date
-                                         + timedelta(
+                                end_time=current_date + timedelta(
                                     minutes=break_time["time_minutes"]),
                                 break_time=True,
                             )
