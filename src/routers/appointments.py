@@ -49,11 +49,10 @@ def get_appointment_slots(
                 .first()[0]
             )
 
-            holiday_name = holiday_name
             slot.holiday_name = holiday_name
 
     slots = [s for s in slots if
-             s.start_time - timedelta(hours=-1) > datetime.datetime.now()]
+             s.start_time - timedelta(hours=1) > datetime.datetime.now()]
 
     return slots
 
