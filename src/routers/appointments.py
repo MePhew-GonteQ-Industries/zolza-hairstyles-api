@@ -52,7 +52,8 @@ def get_appointment_slots(
             slot.holiday_name = holiday_name
 
     slots = [s for s in slots if
-             s.start_time - timedelta(hours=1) > datetime.datetime.now()]
+             s.start_time
+             and s.start_time - timedelta(hours=1) > datetime.datetime.now()]
 
     return slots
 
@@ -153,7 +154,7 @@ def create_appointment(
         .all()
     )
 
-    if not len(available_slots) == required_slots:
+    if len(available_slots) != required_slots:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="not enough free slots available starting from slot "
