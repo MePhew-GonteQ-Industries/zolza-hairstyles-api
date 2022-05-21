@@ -158,7 +158,7 @@ def create_appointment(
             .all()
     )
 
-    if not len(available_slots) == required_slots:
+    if len(available_slots) != required_slots:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="not enough free slots available starting from slot "
