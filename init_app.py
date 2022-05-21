@@ -263,9 +263,9 @@ def generate_appointment_slots(db: Session) -> None:
     for holiday in holiday_names:
         holiday_id = (
             db.query(models.Holiday.id)
-                .join(models.HolidayTranslations)
-                .where(models.HolidayTranslations.name == list(holiday.values())[0])
-                .first()[0]
+            .join(models.HolidayTranslations)
+            .where(models.HolidayTranslations.name == list(holiday.values())[0])
+            .first()[0]
         )
         holiday_ids.append(holiday_id)
 
