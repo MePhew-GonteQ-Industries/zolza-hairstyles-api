@@ -15,8 +15,9 @@ SQLALCHEMY_DATABASE_URL = (
 
 
 def get_db_engine(database_url: str):
-    db_engine = create_engine(database_url,
-                              connect_args={"options": "-c statement_timeout=1000"})
+    db_engine = create_engine(
+        database_url, connect_args={"options": "-c statement_timeout=1000"}
+    )
     return db_engine
 
 
