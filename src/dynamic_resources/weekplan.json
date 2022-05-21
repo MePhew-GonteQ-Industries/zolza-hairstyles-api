@@ -4,7 +4,7 @@
       "start_hour": 8,
       "start_minute": 0,
       "end_hour": 18,
-      "end_minute": 30
+      "end_minute": 0
     },
     "breaks": [
       {
@@ -19,7 +19,7 @@
       "start_hour": 8,
       "start_minute": 0,
       "end_hour": 18,
-      "end_minute": 30
+      "end_minute": 0
     },
     "breaks": [
       {
@@ -34,7 +34,7 @@
       "start_hour": 8,
       "start_minute": 0,
       "end_hour": 18,
-      "end_minute": 30
+      "end_minute": 0
     },
     "breaks": [
       {
@@ -49,7 +49,7 @@
       "start_hour": 8,
       "start_minute": 0,
       "end_hour": 18,
-      "end_minute": 30
+      "end_minute": 0
     },
     "breaks": [
       {
@@ -63,8 +63,8 @@
     "work_hours": {
       "start_hour": 8,
       "start_minute": 0,
-      "end_hour": 20,
-      "end_minute": 30
+      "end_hour": 18,
+      "end_minute": 0
     },
     "breaks": [
       {
