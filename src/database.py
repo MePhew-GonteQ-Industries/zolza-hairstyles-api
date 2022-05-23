@@ -18,7 +18,7 @@ def get_db_engine(database_url: str):
     db_engine = create_engine(
         database_url,
         connect_args={"options": "-c statement_timeout=1000"},
-        pool_pre_ping=True
+        pool_pre_ping=True,
     )
     return db_engine
 
