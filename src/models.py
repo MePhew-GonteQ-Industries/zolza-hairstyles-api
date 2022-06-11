@@ -230,6 +230,20 @@ class Appointment(Base):
     service = relationship("Service")
 
 
+class FcmToken(Base):
+    __tablename__ = "fcm_tokens"
+    id = Column(Integer, primary_key=True, nullable=False)
+    token = Column(String, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    session_id = Column(UUID(as_uuid=True),
+                        ForeignKey("sessions.id"),
+                        nullable=False,
+                        unique=True)
+    created_at = Column(
+        TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
+    )
+
+
 class Setting(Base):
     __tablename__ = "settings"
     id = Column(Integer, primary_key=True, nullable=False)

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from .config import settings
-from .routers import appointments, auth, services, user_settings, users
+from .routers import appointments, auth, services, user_settings, users, notifications
 
 logging.basicConfig(
     filename="app.log",
@@ -39,6 +39,7 @@ app.include_router(auth.router)
 app.include_router(user_settings.router)
 app.include_router(appointments.router)
 app.include_router(services.router)
+app.include_router(notifications.router)
 
 ALLOWED_ORIGINS = [
     "*",
