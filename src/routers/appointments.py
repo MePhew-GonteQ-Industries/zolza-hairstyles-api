@@ -195,10 +195,7 @@ def create_appointment(
         misfire_grace_time=20,
         next_run_time=appointment_start_time - timedelta(hours=2),
         args=[get_db],
-        kwargs={
-            'user_id': verified_user.id,
-            'appointment_id': new_appointment.id
-        }
+        kwargs={"user_id": verified_user.id, "appointment_id": new_appointment.id},
     )
 
     return new_appointment
