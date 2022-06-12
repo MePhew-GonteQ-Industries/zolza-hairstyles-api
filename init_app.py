@@ -328,8 +328,11 @@ def generate_appointment_slots(db: Session) -> None:
             minutes = 0
 
         first_slot_start = now.replace(
-            hour=hours, minute=minutes, second=0, microsecond=0,
-            day=first_slot_start.day + 1  # todo: test
+            hour=hours,
+            minute=minutes,
+            second=0,
+            microsecond=0,
+            day=first_slot_start.day + 1,  # todo: test
         )
 
     days = 366 if calendar.isleap(now.year) else 365
