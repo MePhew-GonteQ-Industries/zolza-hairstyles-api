@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     APPOINTMENT_SLOT_TIME_MINUTES: int
     MAX_FUTURE_APPOINTMENT_DAYS: int
 
+    FIREBASE_SERVICE_ACCOUNT_CREDENTIALS_PATH: str
+
     class Config:
         env_file = ".env"
 
