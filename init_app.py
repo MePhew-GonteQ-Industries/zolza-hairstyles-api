@@ -200,11 +200,9 @@ def ensure_appointment_slots_generation_task_exists(
         add_appointment_slots_generation_task(background_scheduler)
 
 
-def start_scheduler() -> BackgroundScheduler:
+def start_scheduler() -> None:
     configure_scheduler(SQLALCHEMY_DATABASE_URL)
     scheduler.start()
-
-    return scheduler
 
 
 def add_appointment_slots_generation_task(
@@ -330,7 +328,8 @@ def generate_appointment_slots(db: Session) -> None:
             minutes = 0
 
         first_slot_start = now.replace(
-            hour=hours, minute=minutes, second=0, microsecond=0
+            hour=hours, minute=minutes, second=0, microsecond=0,
+            day=first_slot_start.day + 1  # todo: test
         )
 
     days = 366 if calendar.isleap(now.year) else 365
@@ -480,7 +479,7 @@ def generate_appointment_slots(db: Session) -> None:
 def init_app():
     logger.info("Initializing application")
 
-    advanced_scheduler = start_scheduler()
+    start_scheduler()
 
     logger.info("Scheduler started")
 
@@ -502,4 +501,4 @@ def init_app():
 
     ensure_enough_appointment_slots_available(get_db)
 
-    ensure_appointment_slots_generation_task_exists(advanced_scheduler)
+    ensure_appointment_slots_generation_task_exists(scheduler)
