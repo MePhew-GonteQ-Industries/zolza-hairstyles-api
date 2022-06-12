@@ -238,7 +238,7 @@ class FcmToken(Base):
     session_id = Column(
         UUID(as_uuid=True), ForeignKey("sessions.id"), nullable=False, unique=True
     )
-    created_at = Column(
+    last_updated_at = Column(
         TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
     )
 

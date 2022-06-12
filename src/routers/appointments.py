@@ -193,7 +193,12 @@ def create_appointment(
         id=f"Appointment Reminder - Appointment #{new_appointment.id}",
         name=f"Appointment Reminder - Appointment #{new_appointment.id}",
         misfire_grace_time=20,
-        next_run_time=datetime.datetime.now() + timedelta(days=-2),
+        next_run_time=appointment_start_time - timedelta(hours=2),
+        args=[get_db],
+        kwargs={
+            'user_id': verified_user.id,
+            'appointment_id': new_appointment.id
+        }
     )
 
     return new_appointment
