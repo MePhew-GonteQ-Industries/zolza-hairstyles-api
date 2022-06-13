@@ -478,8 +478,6 @@ def init_app():
 
     configure_and_start_scheduler(SQLALCHEMY_DATABASE_URL)
 
-    print(scheduler.running)
-
     logger.info("Scheduler started")
 
     db = next(get_db())

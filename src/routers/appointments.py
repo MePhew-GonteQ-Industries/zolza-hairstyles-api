@@ -188,9 +188,9 @@ def create_appointment(
         db.commit()
 
     scheduler.add_job(
-        send_appointment_reminder,
+        func=send_appointment_reminder,
         trigger="date",
-        id=f"Appointment Reminder - Appointment #{new_appointment.id}",
+        id=f"appointment_reminder_appointment_#{new_appointment.id}",
         name=f"Appointment Reminder - Appointment #{new_appointment.id}",
         misfire_grace_time=20,
         next_run_time=appointment_start_time - timedelta(hours=2),

@@ -181,7 +181,7 @@ def ensure_sudo(session):
     if not session.sudo_mode_activated:
         raise AdditionalAuthenticationRequiredHTTPException()
 
-    if not session.sudo_mode_expires > datetime.now():
+    if session.sudo_mode_expires <= datetime.now():
         raise AdditionalAuthenticationRequiredHTTPException()
 
 

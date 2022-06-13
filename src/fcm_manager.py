@@ -2,7 +2,9 @@ import os
 
 import firebase_admin
 from firebase_admin import credentials, messaging
+from sqlalchemy.orm import Session
 
+from . import models
 from .config import settings
 
 dir_name = os.path.dirname(__file__)
@@ -15,8 +17,14 @@ firebase_admin.initialize_app(cred)
 
 
 def send_multicast_message(
-    title: str, msg: str, registration_tokens: list, data_object: object = None
-):
+        *,
+        db: Session,
+        registration_tokens_db: list[models.FcmToken],
+        title: str,
+        msg: str,
+        registration_tokens: list[str],
+        data_object: object = None
+) -> None:
     message = messaging.MulticastMessage(
         notification=messaging.Notification(title=title, body=msg),
         data=data_object,
@@ -24,6 +32,13 @@ def send_multicast_message(
     )
 
     response = messaging.send_multicast(message)
-    print(f"Successfully sent message: {response}")
 
-    return f"Successfully sent message: {response}"
+    if response.failure_count > 0:
+        responses = response.responses
+        for idx, resp in enumerate(responses):
+            if not resp.success:
+                # The order of responses corresponds to the order of the registration
+                # tokens.
+                registration_tokens_db[idx].delete()
+
+        db.commit()

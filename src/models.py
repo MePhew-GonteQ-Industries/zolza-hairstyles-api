@@ -75,6 +75,7 @@ class Session(Base):
     first_accessed = Column(
         TIMESTAMP(timezone=False), nullable=False, server_default=text("now()")
     )
+    fcm_token = relationship("FcmToken", cascade="all,delete", backref="parent")
 
 
 class EmailRequests(Base):
