@@ -18,4 +18,3 @@ def configure_and_start_scheduler(database_url: str):
 
 def test_sch():
     print(scheduler.running)
-

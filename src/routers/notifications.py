@@ -59,9 +59,6 @@ def send_notification():
         name=f"Appointment Reminder - Appointment #2141412421",
         run_date=datetime.datetime.now(),
         args=[get_db],
-        kwargs={
-            'user_id': 'sadasda2dazs',
-            'appointment_id': '124124rfdsa214rqfwa'
-        }
+        kwargs={"user_id": "sadasda2dazs", "appointment_id": "124124rfdsa214rqfwa"},
     )
     # print(scheduler.get_jobs()[0])
