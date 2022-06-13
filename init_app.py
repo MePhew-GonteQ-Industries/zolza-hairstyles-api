@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from src import models
 from src.config import settings
 from src.database import SQLALCHEMY_DATABASE_URL, get_db
-from src.scheduler import configure_scheduler, scheduler
+from src.scheduler import scheduler, configure_and_start_scheduler
 
 formatter = logging.Formatter(
     "%(thread)d;%(threadName)s;%(asctime)s;%(levelname)s;%(message)s",
@@ -200,11 +200,6 @@ def ensure_appointment_slots_generation_task_exists(
         add_appointment_slots_generation_task(background_scheduler)
 
 
-def start_scheduler() -> None:
-    configure_scheduler(SQLALCHEMY_DATABASE_URL)
-    scheduler.start()
-
-
 def add_appointment_slots_generation_task(
     background_scheduler: BackgroundScheduler,
 ) -> None:
@@ -332,7 +327,6 @@ def generate_appointment_slots(db: Session) -> None:
             minute=minutes,
             second=0,
             microsecond=0,
-            day=first_slot_start.day + 1,  # todo: test
         )
 
     days = 366 if calendar.isleap(now.year) else 365
@@ -482,7 +476,9 @@ def generate_appointment_slots(db: Session) -> None:
 def init_app():
     logger.info("Initializing application")
 
-    start_scheduler()
+    configure_and_start_scheduler(SQLALCHEMY_DATABASE_URL)
+
+    print(scheduler.running)
 
     logger.info("Scheduler started")
 

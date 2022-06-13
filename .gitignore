@@ -4,4 +4,5 @@ __pycache__
 .env
 .pytest_cache
 *.log
-resources/zolza-hairstyles-firebase-adminsdk-xigvi-491b9a17de.json
+zolza-hairstyles-firebase-adminsdk-xigvi-491b9a17de.json
+zolza-hairstyles-firebase-adminsdk-xigvi-4023f5967b.json

@@ -6,11 +6,9 @@ from firebase_admin import credentials, messaging
 from .config import settings
 
 dir_name = os.path.dirname(__file__)
-print(dir_name)
 firebaseServiceAccountCredentialsPath = os.path.join(
     dir_name, settings.FIREBASE_SERVICE_ACCOUNT_CREDENTIALS_PATH
 )
-print(firebaseServiceAccountCredentialsPath)
 
 cred = credentials.Certificate(firebaseServiceAccountCredentialsPath)
 firebase_admin.initialize_app(cred)

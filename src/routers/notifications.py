@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from ..jobs import send_appointment_reminder, test
-from ..scheduler import scheduler
+from ..scheduler import scheduler, test_sch
 from .. import models, oauth2
 from ..config import settings
 from ..database import get_db
@@ -48,17 +48,20 @@ def add_token(
 # DEBUG todo: REMOVE
 @router.post("/send_notification")
 def send_notification():
+    print(scheduler.running)
+    test_sch()
+
     scheduler.add_job(
-        # send_appointment_reminder,
-        test,
+        send_appointment_reminder,
+        # test,
         trigger="date",
         id=f"Appointment Reminder - Appointment #2141412421",
         name=f"Appointment Reminder - Appointment #2141412421",
         run_date=datetime.datetime.now(),
-        # args=[get_db],
-        # kwargs={
-        #     'user_id': 'sadasda2dazs',
-        #     'appointment_id': '124124rfdsa214rqfwa'
-        # }
+        args=[get_db],
+        kwargs={
+            'user_id': 'sadasda2dazs',
+            'appointment_id': '124124rfdsa214rqfwa'
+        }
     )
-    print(scheduler.get_jobs()[0])
+    # print(scheduler.get_jobs()[0])
