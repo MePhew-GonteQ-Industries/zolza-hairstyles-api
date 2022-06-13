@@ -13,9 +13,9 @@ router = APIRouter(prefix=settings.BASE_URL + "/notifications", tags=["Notificat
 
 @router.post("/add_token", response_model=ReturnFcmToken)
 def add_token(
-        fcm_token: FcmToken,
-        db: Session = Depends(get_db),
-        user_session=Depends(oauth2.get_user),
+    fcm_token: FcmToken,
+    db: Session = Depends(get_db),
+    user_session=Depends(oauth2.get_user),
 ):
     user = user_session.user
     session = user_session.session
@@ -32,8 +32,10 @@ def add_token(
         db.commit()
         db.refresh(fcm_token_db)
 
-        return {'fcm_token': fcm_token_db.token,
-                'updated_at': fcm_token_db.last_updated_at}
+        return {
+            "fcm_token": fcm_token_db.token,
+            "updated_at": fcm_token_db.last_updated_at,
+        }
 
     fcm_token_db = models.FcmToken(
         token=fcm_token.fcm_token, user_id=user.id, session_id=session.id
@@ -42,5 +44,4 @@ def add_token(
     db.commit()
     db.refresh(fcm_token_db)
 
-    return {'fcm_token': fcm_token_db.token,
-            'updated_at': fcm_token_db.last_updated_at}
+    return {"fcm_token": fcm_token_db.token, "updated_at": fcm_token_db.last_updated_at}

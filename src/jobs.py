@@ -12,16 +12,18 @@ def send_appointment_reminder(
 
     user = db.query(models.User).where(models.User.id == user_id).first()
 
-    appointment = db.query(models.Appointment).where(
-        models.Appointment.id == appointment_id).first()
+    appointment = (
+        db.query(models.Appointment)
+        .where(models.Appointment.id == appointment_id)
+        .first()
+    )
 
-    user_notification_settings = db.query(
-        models.Setting
-    ).where(
-        models.Setting.user_id == user_id
-    ).where(
-        models.Setting.name == 'notifications'
-    ).all()
+    user_notification_settings = (
+        db.query(models.Setting)
+        .where(models.Setting.user_id == user_id)
+        .where(models.Setting.name == "notifications")
+        .all()
+    )
 
     # send email
 
@@ -29,9 +31,9 @@ def send_appointment_reminder(
 
     # send push notifications
 
-    user_fcm_registration_tokens = db.query(models.FcmToken).where(
-        models.FcmToken.user_id == user_id
-    ).all()
+    user_fcm_registration_tokens = (
+        db.query(models.FcmToken).where(models.FcmToken.user_id == user_id).all()
+    )
 
     tokens = [token_db.fcm_token for token_db in user_fcm_registration_tokens]
 
