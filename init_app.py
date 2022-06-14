@@ -328,7 +328,7 @@ def generate_appointment_slots(db: Session) -> None:
                 minute=minutes,
                 second=0,
                 microsecond=0,
-                day=now.day+1,
+                day=now.day + 1,
             )
         else:
             first_slot_start = now.replace(  # todo: test
