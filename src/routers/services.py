@@ -19,6 +19,7 @@ router = APIRouter(prefix=settings.BASE_URL + "/services", tags=["Services"])
 def get_services(
     db: Session = Depends(get_db), accept_language: str | None = Header(None)
 ):
+    accept_language = accept_language.split(',')[0].split(';')[0]
     if accept_language:
         language = langcodes.Language.get(langcodes.standardize_tag(accept_language))
 
