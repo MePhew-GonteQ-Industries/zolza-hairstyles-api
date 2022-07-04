@@ -1,5 +1,6 @@
 import logging
 
+import langcodes
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from pydantic import UUID4
@@ -20,17 +21,23 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
 
-def get_user_language_id(db: Session, user_id: UUID4) -> int:
-    language_code = (
-        db.query(models.Setting.current_value)
-        .where(models.Setting.name == AvailableSettings.language.value)
-        .where(models.Setting.user_id == user_id)
-        .first()
-    )
+def get_language_code_from_header(accept_language: str):
+    if accept_language:
+        accept_language = accept_language.split(',')[0].split(';')[0]
+        language = langcodes.Language.get(langcodes.standardize_tag(accept_language))
 
-    if language_code:
-        language_code = language_code[0]
+        if language.is_valid():
+            language_code = language.language
+        else:
+            language_code = DefaultContentLanguages.polish.value
+    else:
+        language_code = DefaultContentLanguages.polish.value
 
+    return language_code
+
+
+def get_language_id_from_language_code(db: Session,
+                                       language_code: str):
     language_id = (
         db.query(models.Language.id)
         .where(models.Language.code == language_code)
@@ -46,6 +53,22 @@ def get_user_language_id(db: Session, user_id: UUID4) -> int:
             .where(models.Language.code == DefaultContentLanguages.english)
             .first()[0]
         )
+
+    return language_id
+
+
+def get_user_language_id(db: Session, user_id: UUID4) -> int:
+    language_code = (
+        db.query(models.Setting.current_value)
+        .where(models.Setting.name == AvailableSettings.language.value)
+        .where(models.Setting.user_id == user_id)
+        .first()
+    )
+
+    if language_code:
+        language_code = language_code[0]
+
+    language_id = get_language_id_from_language_code(db, language_code)
 
     return language_id
 

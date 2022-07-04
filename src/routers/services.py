@@ -1,6 +1,4 @@
 from typing import List
-
-import langcodes
 from fastapi import APIRouter, Depends, Header
 from pydantic import UUID4
 from sqlalchemy.orm import Session
@@ -10,25 +8,16 @@ from ..config import settings
 from ..database import get_db
 from ..exceptions import ResourceNotFoundHTTPException
 from ..schemas.service import CreateServices, ReturnService, ReturnServiceDetailed
-from ..schemas.user_settings import DefaultContentLanguages
+from ..utils import get_language_code_from_header
 
 router = APIRouter(prefix=settings.BASE_URL + "/services", tags=["Services"])
 
 
 @router.get("", response_model=list[ReturnService])
 def get_services(
-    db: Session = Depends(get_db), accept_language: str | None = Header(None)
+        db: Session = Depends(get_db), accept_language: str | None = Header(None)
 ):
-    accept_language = accept_language.split(',')[0].split(';')[0]
-    if accept_language:
-        language = langcodes.Language.get(langcodes.standardize_tag(accept_language))
-
-        if language.is_valid():
-            language_code = language.language
-        else:
-            language_code = DefaultContentLanguages.polish.value
-    else:
-        language_code = DefaultContentLanguages.polish.value
+    language_code = get_language_code_from_header(accept_language)
 
     services_db = (
         db.query(models.Service, models.ServiceTranslations)
@@ -56,7 +45,7 @@ def get_services_details(db: Session = Depends(get_db), _=Depends(oauth2.get_adm
 
 @router.get("/details/{uuid}", response_model=ReturnServiceDetailed)
 def get_service_details(
-    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
+        uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
 ):
     service_details = db.query(models.Service).where(models.Service.id == uuid).first()
 
@@ -78,9 +67,9 @@ def get_service(uuid: UUID4, db: Session = Depends(get_db)):
 
 @router.post("")
 def create_services(
-    services: CreateServices,
-    db: Session = Depends(get_db),
-    admin_session=Depends(oauth2.get_admin),
+        services: CreateServices,
+        db: Session = Depends(get_db),
+        admin_session=Depends(oauth2.get_admin),
 ):
     raise NotImplementedError
 
@@ -94,16 +83,16 @@ def update_services(db: Session = Depends(get_db), _=Depends(oauth2.get_admin)):
 
 @router.put("/service/{uuid}")
 def update_service(
-    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
+        uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
 ):
     raise NotImplementedError()
 
 
 @router.delete("")
 def delete_services(
-    services: List[UUID4],
-    db: Session = Depends(get_db),
-    admin_session=Depends(oauth2.get_admin),
+        services: List[UUID4],
+        db: Session = Depends(get_db),
+        admin_session=Depends(oauth2.get_admin),
 ):
     raise NotImplementedError
     # print(services)
