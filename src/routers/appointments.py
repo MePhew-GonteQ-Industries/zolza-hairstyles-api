@@ -13,17 +13,20 @@ from ..exceptions import ResourceNotFoundHTTPException
 from ..jobs import send_appointment_reminder
 from ..scheduler import scheduler
 from ..schemas.appointment import AppointmentSlot, CreateAppointment, ReturnAppointment
-from ..utils import get_language_code_from_header, get_language_id_from_language_code, \
-    get_user_language_id
+from ..utils import (
+    get_language_code_from_header,
+    get_language_id_from_language_code,
+    get_user_language_id,
+)
 
 router = APIRouter(prefix=settings.BASE_URL + "/appointments", tags=["Appointments"])
 
 
 @router.get("/slots", response_model=list[AppointmentSlot])
 def get_appointment_slots(
-        db: Session = Depends(get_db),
-        date: datetime.date | None = None,
-        accept_language: str | None = Header(None)
+    db: Session = Depends(get_db),
+    date: datetime.date | None = None,
+    accept_language: str | None = Header(None),
 ):
     now = datetime.date.today()
     first_available_time = datetime.datetime.now() + timedelta(hours=1)
@@ -38,12 +41,12 @@ def get_appointment_slots(
         slots = slots.where(models.AppointmentSlot.date == date)
     else:
         slots = slots.where(
-            ((models.AppointmentSlot.start_time == None) & # noqa
-             (models.AppointmentSlot.date > first_available_time)) |
-            (models.AppointmentSlot.start_time > first_available_time)
-        ).where(
-            models.AppointmentSlot.date <= last_available_date
-        )
+            (
+                (models.AppointmentSlot.start_time == None)
+                & (models.AppointmentSlot.date > first_available_time)  # noqa
+            )
+            | (models.AppointmentSlot.start_time > first_available_time)
+        ).where(models.AppointmentSlot.date <= last_available_date)
 
     slots = slots.order_by(
         models.AppointmentSlot.date,
@@ -68,13 +71,12 @@ def get_appointment_slots(
 
 
 @router.get("/nearest/{service_id}", response_model=list[AppointmentSlot])
-def get_nearest_slots(service_id: UUID4,
-                      db: Session = Depends(get_db),
-                      limit: int = 9,
-                      ):
-    service_db = db.query(models.Service).where(
-        models.Service.id == service_id
-    ).first()
+def get_nearest_slots(
+    service_id: UUID4,
+    db: Session = Depends(get_db),
+    limit: int = 9,
+):
+    service_db = db.query(models.Service).where(models.Service.id == service_id).first()
 
     if not service_db:
         raise ResourceNotFoundHTTPException(
@@ -87,20 +89,24 @@ def get_nearest_slots(service_id: UUID4,
     first_available_time = datetime.datetime.now() + timedelta(hours=1)
     last_available_date = now + timedelta(days=settings.MAX_FUTURE_APPOINTMENT_DAYS)
 
-    slots_db = db.query(models.AppointmentSlot).where(
-        models.AppointmentSlot.holiday == False
-    ).where(
-        models.AppointmentSlot.sunday == False
-    ).where(
-            ((models.AppointmentSlot.start_time == None) & # noqa
-             (models.AppointmentSlot.date > first_available_time)) |
-            (models.AppointmentSlot.start_time > first_available_time)
-        ).where(
-            models.AppointmentSlot.date <= last_available_date
-        ).order_by(
-        models.AppointmentSlot.date,
-        models.AppointmentSlot.start_time,
-    ).all()
+    slots_db = (
+        db.query(models.AppointmentSlot)
+        .where(models.AppointmentSlot.holiday == False)
+        .where(models.AppointmentSlot.sunday == False)
+        .where(
+            (
+                (models.AppointmentSlot.start_time == None)
+                & (models.AppointmentSlot.date > first_available_time)  # noqa
+            )
+            | (models.AppointmentSlot.start_time > first_available_time)
+        )
+        .where(models.AppointmentSlot.date <= last_available_date)
+        .order_by(
+            models.AppointmentSlot.date,
+            models.AppointmentSlot.start_time,
+        )
+        .all()
+    )
 
     slots = []
 
@@ -109,9 +115,11 @@ def get_nearest_slots(service_id: UUID4,
         for slot_index in range(required_slots):
             if len(slots_db) > index + slot_index:
                 next_slot = slots_db[index + slot_index]
-                if (not next_slot.occupied
-                        and not next_slot.reserved
-                        and not next_slot.break_time):
+                if (
+                    not next_slot.occupied
+                    and not next_slot.reserved
+                    and not next_slot.break_time
+                ):
                     free_slots_found += 1
 
             if free_slots_found == required_slots:
@@ -125,7 +133,7 @@ def get_nearest_slots(service_id: UUID4,
 
 @router.get("/mine", response_model=list[ReturnAppointment])
 def get_your_appointments(
-        db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)
+    db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)
 ):
     user = user_session.user
 
@@ -152,8 +160,8 @@ def get_your_appointments(
 
 @router.get("/mine/{id}")
 def get_your_appointment(
-        db: Session = Depends(get_db),
-        verified_user_session=Depends(oauth2.get_verified_user),
+    db: Session = Depends(get_db),
+    verified_user_session=Depends(oauth2.get_verified_user),
 ):
     verified_user = verified_user_session.verified_user
 
@@ -166,17 +174,17 @@ def get_your_appointment(
 
 @router.put("/mine/{id}", status_code=status.HTTP_201_CREATED)
 async def update_your_appointment(
-        db: Session = Depends(get_db),
-        verified_user_session=Depends(oauth2.get_verified_user),
+    db: Session = Depends(get_db),
+    verified_user_session=Depends(oauth2.get_verified_user),
 ):
     raise NotImplementedError
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_appointment(
-        appointment: CreateAppointment,
-        db: Session = Depends(get_db),
-        verified_user_session=Depends(oauth2.get_verified_user),
+    appointment: CreateAppointment,
+    db: Session = Depends(get_db),
+    verified_user_session=Depends(oauth2.get_verified_user),
 ):
     first_slot_db = (
         db.query(models.AppointmentSlot)
@@ -223,10 +231,10 @@ def create_appointment(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="not enough free slots available starting from slot "
-                   f"with id of {appointment.first_slot_id} to "
-                   "accommodate service with id of "
-                   f"{appointment.service_id} that requires "
-                   f"{required_slots} consecutive free slots",
+            f"with id of {appointment.first_slot_id} to "
+            "accommodate service with id of "
+            f"{appointment.service_id} that requires "
+            f"{required_slots} consecutive free slots",
         )
 
     verified_user = verified_user_session.verified_user
@@ -263,12 +271,12 @@ def create_appointment(
 
 @router.get("/all")
 def get_all_appointments(
-        db: Session = Depends(get_db),
-        _=Depends(oauth2.get_admin),
-        upcoming_only: bool = False,
-        offset: int = 0,
-        limit: int | None = None,
-        user_id: UUID4 | None = None,
+    db: Session = Depends(get_db),
+    _=Depends(oauth2.get_admin),
+    upcoming_only: bool = False,
+    offset: int = 0,
+    limit: int | None = None,
+    user_id: UUID4 | None = None,
 ):
     all_appointments = db.query(models.Appointment)
 
@@ -291,8 +299,7 @@ def get_all_appointments(
 
 @router.get("/any/{id}")
 async def get_any_appointment(
-        appointment_id: UUID4, db: Session = Depends(get_db),
-        _=Depends(oauth2.get_admin)
+    appointment_id: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
 ):
     appointment = (
         db.query(models.Appointment)
@@ -308,9 +315,9 @@ async def get_any_appointment(
 
 @router.put("/any/{id}")
 def update_any_appointment(
-        appointment_id: UUID4,
-        db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin),
+    appointment_id: UUID4,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),
 ):
     appointment_db = (
         db.query(models.Appointment)
