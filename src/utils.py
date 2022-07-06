@@ -23,7 +23,7 @@ logger.addHandler(file_handler)
 
 def get_language_code_from_header(accept_language: str):
     if accept_language:
-        accept_language = accept_language.split(',')[0].split(';')[0]
+        accept_language = accept_language.split(",")[0].split(";")[0]
         language = langcodes.Language.get(langcodes.standardize_tag(accept_language))
 
         if language.is_valid():
@@ -36,8 +36,7 @@ def get_language_code_from_header(accept_language: str):
     return language_code
 
 
-def get_language_id_from_language_code(db: Session,
-                                       language_code: str):
+def get_language_id_from_language_code(db: Session, language_code: str):
     language_id = (
         db.query(models.Language.id)
         .where(models.Language.code == language_code)
