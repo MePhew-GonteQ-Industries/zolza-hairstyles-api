@@ -45,8 +45,8 @@ def get_appointment_slots(
     else:
         slots = slots.where(
             (
-                (models.AppointmentSlot.start_time == None)
-                & (models.AppointmentSlot.date > first_available_time)  # noqa
+                (models.AppointmentSlot.start_time == None) # noqa
+                & (models.AppointmentSlot.date > first_available_time)
             )
             | (models.AppointmentSlot.start_time > first_available_time)
         ).where(models.AppointmentSlot.date <= last_available_date)
