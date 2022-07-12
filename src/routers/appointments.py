@@ -39,8 +39,8 @@ def get_appointment_slots(
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
         slots = slots.where(models.AppointmentSlot.date == date).where(
-            (models.AppointmentSlot.start_time == None) | # noqa
-            (models.AppointmentSlot.start_time > first_available_time)
+            (models.AppointmentSlot.start_time == None)
+            | (models.AppointmentSlot.start_time > first_available_time)  # noqa
         )
     else:
         slots = slots.where(
