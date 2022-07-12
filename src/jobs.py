@@ -31,11 +31,10 @@ def send_appointment_reminder(
 
     # send push notifications
 
-    user_fcm_registration_tokens = (
-        db.query(models.FcmToken).where(models.FcmToken.user_id == user_id).all()
-    )
+    user_fcm_registration_tokens = db.query(
+        models.FcmToken).where(models.FcmToken.user_id == user_id).all()
 
-    tokens = [token_db.fcm_token for token_db in user_fcm_registration_tokens]
+    tokens = [token_db.token for token_db in user_fcm_registration_tokens]
 
     send_multicast_message(
         db=db,
