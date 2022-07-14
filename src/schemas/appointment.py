@@ -52,4 +52,9 @@ class ReturnAppointment(BaseModel):
 
 
 class ReturnAppointmentDetailed(ReturnAppointment):
-    user: ReturnUserDetailed  # todo: relationship user
+    user: ReturnUserDetailed
+
+
+class ReturnAllAppointments(BaseModel):
+    items: list[ReturnAppointmentDetailed]
+    total: int
