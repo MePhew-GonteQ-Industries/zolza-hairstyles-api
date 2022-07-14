@@ -1,5 +1,4 @@
 import datetime
-import random
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Header, status
