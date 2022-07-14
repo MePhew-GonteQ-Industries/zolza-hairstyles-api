@@ -11,8 +11,12 @@ from ..database import get_db
 from ..exceptions import ResourceNotFoundHTTPException
 from ..jobs import send_appointment_reminder
 from ..scheduler import scheduler
-from ..schemas.appointment import AppointmentSlot, CreateAppointment, \
-    ReturnAllAppointments, ReturnAppointment
+from ..schemas.appointment import (
+    AppointmentSlot,
+    CreateAppointment,
+    ReturnAllAppointments,
+    ReturnAppointment,
+)
 from ..utils import (
     get_language_code_from_header,
     get_language_id_from_language_code,
@@ -291,10 +295,7 @@ def get_all_appointments(
 
     appointments_num = db.query(models.Appointment).count()
 
-    return {
-        'items': all_appointments,
-        'total': appointments_num
-    }
+    return {"items": all_appointments, "total": appointments_num}
 
 
 @router.get("/any/{id}")
