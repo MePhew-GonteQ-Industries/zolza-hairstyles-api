@@ -174,14 +174,6 @@ def get_your_appointment(
     return appointment_db
 
 
-@router.put("/mine/{id}", status_code=status.HTTP_201_CREATED)
-async def update_your_appointment(
-    db: Session = Depends(get_db),
-    verified_user_session=Depends(oauth2.get_verified_user),
-):
-    raise NotImplementedError
-
-
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_appointment(
     appointment: CreateAppointment,
