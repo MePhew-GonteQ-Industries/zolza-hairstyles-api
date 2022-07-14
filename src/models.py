@@ -229,6 +229,7 @@ class Appointment(Base):
         "AppointmentSlot", cascade="all,delete", foreign_keys=[end_slot_id]
     )
     service = relationship("Service")
+    user = relationship('User')
 
 
 class FcmToken(Base):
