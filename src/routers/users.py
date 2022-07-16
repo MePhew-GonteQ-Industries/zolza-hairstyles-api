@@ -60,7 +60,7 @@ def create_user(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     fast_mail_client: FastMail = Depends(get_fast_mail_client),
-    content_language: DefaultContentLanguages = Header(Required),
+    content_language: DefaultContentLanguages = Header(Required),  # todo: fix
     preferred_theme: AvailableThemes = Header(Required),
 ) -> dict[str, Union[ReturnUser, List[ReturnSetting]]]:
     """
@@ -117,6 +117,13 @@ def create_user(
     hashed_password = utils.hash_password(new_user.pop("password"))
 
     new_user = models.User(**new_user)
+
+    new_user.name = new_user.name.strip()
+    new_user.name = f'{new_user.name[0].upper()}{new_user.name[1:].lower()}'
+
+    new_user.surname = new_user.surname.strip()
+    new_user.surname = f'{new_user.surname[0].upper()}{new_user.surname[1:].lower()}'
+
     db.add(new_user)
 
     try:
@@ -187,7 +194,7 @@ def request_email_verification(
     user_db = db.query(models.User).where(models.User.email == user_email.email).first()
 
     if not user_db:
-        return user_email
+        return user_email  # todo: Raise Email not found exception
 
     db_email_verification_request = (
         db.query(models.EmailRequests)
