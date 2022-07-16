@@ -13,7 +13,7 @@ from ..schemas.notifications import FcmToken, ReturnFcmToken
 router = APIRouter(prefix=settings.BASE_URL + "/notifications", tags=["Notifications"])
 
 
-@router.post('/test')
+@router.post("/test")
 def test(db: Session = Depends(get_db)):
     scheduler.add_job(
         func=send_appointment_reminder,
@@ -23,17 +23,17 @@ def test(db: Session = Depends(get_db)):
         misfire_grace_time=20,
         next_run_time=datetime.datetime.now() - datetime.timedelta(hours=2),
         args=[get_db],
-        kwargs={"user_id": 'asdsadsadsad', "appointment_id": 'asdsadad'},
+        kwargs={"user_id": "asdsadsadsad", "appointment_id": "asdsadad"},
     )
 
-    return 'ok'
+    return "ok"
 
 
 @router.post("/add_token", response_model=ReturnFcmToken)
 def add_token(
-        fcm_token: FcmToken,
-        db: Session = Depends(get_db),
-        user_session=Depends(oauth2.get_user),
+    fcm_token: FcmToken,
+    db: Session = Depends(get_db),
+    user_session=Depends(oauth2.get_user),
 ):
     user = user_session.user
     session = user_session.session
