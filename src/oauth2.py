@@ -28,6 +28,7 @@ from .exceptions import (
     UnverifiedUserHTTPException,
     UserNotFoundException,
 )
+from secrets import compare_digest
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
@@ -64,15 +65,17 @@ def create_jwt(token_data: TokenPayloadBase):
 
 
 def decode_jwt(
-    token: str,
-    *,
-    expected_token_type: TokenType,
-    on_error: Optional[Callable] = None,
-    **kwargs
+        token: str,
+        *,
+        options: dict | None = None,
+        expected_token_type: TokenType,
+        on_error: Optional[Callable] = None,
+        **kwargs
 ):
     try:
         payload = jwt.decode(
-            token, settings.API_SECRET, algorithms=[settings.ALGORITHM]
+            token, settings.API_SECRET, algorithms=[settings.ALGORITHM],
+            options=options
         )
     except JWTError:
         if on_error:
@@ -107,11 +110,45 @@ def decode_jwt(
     return token_data
 
 
+def get_user_no_verification(
+        token: str = Depends(oauth2_scheme),
+        db: Session = Depends(get_db),
+) -> UserSession:
+    payload = decode_jwt(token, expected_token_type=TokenType.access_token,
+                         options={'verify_exp': False})
+    user = db.query(models.User).where(models.User.id == payload.user_id).first()
+
+    if not user:
+        raise UserNotFoundException()
+
+    sessions_db = (
+        db.query(models.Session)
+        .where(
+            models.Session.user_id == user.id
+        )
+        .all()
+    )
+
+    session_db = None
+
+    for session in sessions_db:
+        if compare_digest(session.access_token, token):
+            session_db = session
+            break
+
+    if not session_db:
+        raise SessionNotFoundHTTPException()
+
+    user_session = UserSession(user=user, session=session_db)
+
+    return user_session
+
+
 def get_user(
-    request: Request,
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
-    user_agent: str | None = Header(None),
+        request: Request,
+        token: str = Depends(oauth2_scheme),
+        db: Session = Depends(get_db),
+        user_agent: str | None = Header(None),
 ) -> UserSession:
     payload = decode_jwt(token, expected_token_type=TokenType.access_token)
     user = db.query(models.User).where(models.User.id == payload.user_id).first()
@@ -119,13 +156,20 @@ def get_user(
     if not user:
         raise UserNotFoundException()
 
-    session_db = (
+    sessions_db = (
         db.query(models.Session)
         .where(
-            models.Session.user_id == user.id and models.Session.access_token == token
+            models.Session.user_id == user.id
         )
-        .first()
+        .all()
     )
+
+    session_db = None
+
+    for session in sessions_db:
+        if compare_digest(session.access_token, token):
+            session_db = session
+            break
 
     if not session_db:
         raise SessionNotFoundHTTPException()
@@ -192,7 +236,7 @@ def get_user_sudo(user_session=Depends(get_user)) -> UserSession:
 
 
 def get_verified_user_sudo(
-    verified_user_session=Depends(get_verified_user),
+        verified_user_session=Depends(get_verified_user),
 ) -> VerifiedUserSession:
     ensure_sudo(verified_user_session.session)
 

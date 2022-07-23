@@ -155,7 +155,8 @@ def token_refresh(
 
 
 @router.post("/logout")
-def logout(db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)):
+def logout(db: Session = Depends(get_db),
+           user_session=Depends(oauth2.get_user_no_verification)):
     user = user_session.user
 
     session_db = (
