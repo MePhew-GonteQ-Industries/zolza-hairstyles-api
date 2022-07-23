@@ -119,10 +119,10 @@ def create_user(
     new_user = models.User(**new_user)
 
     new_user.name = new_user.name.strip()
-    new_user.name = f'{new_user.name[0].upper()}{new_user.name[1:].lower()}'
+    new_user.name = f"{new_user.name[0].upper()}{new_user.name[1:].lower()}"
 
     new_user.surname = new_user.surname.strip()
-    new_user.surname = f'{new_user.surname[0].upper()}{new_user.surname[1:].lower()}'
+    new_user.surname = f"{new_user.surname[0].upper()}{new_user.surname[1:].lower()}"
 
     db.add(new_user)
 
