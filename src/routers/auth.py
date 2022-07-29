@@ -95,14 +95,22 @@ def login(
     db_session = models.Session(**new_session.dict())
 
     db.add(db_session)
-
     db.commit()
+    db.refresh(db_session)
+
+    user_session = session.NewUserSession(
+        id=db_session.id,
+        user_agent=db_session.sign_in_user_agent,
+        ip_address=db_session.sign_in_ip_address,
+        user=user,
+    )
 
     return ReturnAccessToken(
         access_token=access_token,
         token_type="bearer",
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         refresh_token=refresh_token,
+        session=user_session,
     )
 
 

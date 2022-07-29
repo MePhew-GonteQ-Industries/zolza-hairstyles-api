@@ -3,6 +3,7 @@ import ipaddress
 
 from pydantic import BaseModel
 from pydantic import UUID4
+from . import user
 
 
 class Session(BaseModel):
@@ -37,3 +38,10 @@ class ReturnActiveSession(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class NewUserSession(BaseModel):
+    id: UUID4
+    user_agent: str
+    ip_address: str
+    user: user.ReturnUserDetailed

@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, validator
 from enum import Enum
 from pydantic import UUID4
 from src import models
+from . import session
 
 
 class TokenType(str, Enum):
@@ -38,6 +39,7 @@ class ReturnAccessToken(BaseModel):
     token_type: str
     expires_in: int = Field(gt=0)
     refresh_token: str
+    session: session.NewUserSession
 
 
 class PasswordChangeForm(BaseModel):
