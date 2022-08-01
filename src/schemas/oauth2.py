@@ -39,7 +39,7 @@ class ReturnAccessToken(BaseModel):
     token_type: str
     expires_in: int = Field(gt=0)
     refresh_token: str
-    session: session.NewUserSession
+    session: session.ActiveUserSession
 
 
 class PasswordChangeForm(BaseModel):

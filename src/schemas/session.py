@@ -6,42 +6,63 @@ from pydantic import UUID4
 from . import user
 
 
-class Session(BaseModel):
-    user_id: UUID4
-    access_token: str
-    refresh_token: str
-    sign_in_user_agent: str
-    sign_in_ip_address: str
-    last_user_agent: str
-    last_ip_address: str
+class LocationData(BaseModel):
+    country: str | None
+    region: str | None
+    city: str | None
+    latitude: float | None
+    longitude: float | None
 
-    class Config:
-        orm_mode = True
+
+class DeviceInfo(BaseModel):
+    family: str | None
+    brand: str | None
+    model: str | None
+
+
+class OsInfo(BaseModel):
+    family: str | None
+    version: str | None
+
+
+class BrowserInfo(BaseModel):
+    family: str | None
+    version: str | None
+
+
+class UserAgentInfo(BaseModel):
+    device: DeviceInfo
+    os: OsInfo
+    browser: BrowserInfo
+
+
+class LoginData(BaseModel):
+    user_agent: str
+    user_agent_info: UserAgentInfo
+    ip_address: ipaddress.IPv4Address
+    location: LocationData | None
 
 
 class ReturnActiveSession(BaseModel):
     id: UUID4
     first_accessed: datetime
     last_accessed: datetime
-    sign_in_user_agent: str
-    sign_in_ip_address: ipaddress.IPv4Address
-    sign_in_city: str | None
-    sign_in_region: str | None
-    sign_in_country: str | None
-    sign_in_location: str | None
-    last_user_agent: str
-    last_ip_address: ipaddress.IPv4Address
-    last_city: str | None
-    last_region: str | None
-    last_country: str | None
-    last_location: str | None
+    sign_in_data: LoginData
+    last_access_data: LoginData
 
     class Config:
         orm_mode = True
 
 
-class NewUserSession(BaseModel):
+class ActiveUserSession(BaseModel):
     id: UUID4
-    user_agent: str
-    ip_address: str
+    first_accessed: datetime
+    last_accessed: datetime
+    sign_in_user_agent: str
+    sign_in_ip_address: ipaddress.IPv4Address
+    last_user_agent: str
+    last_ip_address: ipaddress.IPv4Address
     user: user.ReturnUserDetailed
+
+    class Config:
+        orm_mode = True

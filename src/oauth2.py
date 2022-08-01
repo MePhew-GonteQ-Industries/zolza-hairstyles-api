@@ -166,9 +166,10 @@ def get_user(
     if not session_db:
         raise SessionNotFoundHTTPException()
 
-    session_db.last_accessed = datetime.now()
+    session_db.last_accessed = datetime.utcnow()
     session_db.last_user_agent = user_agent
     session_db.last_ip_address = request.client.host
+    db.commit()
 
     if user.disabled:
         raise AccountDisabledHTTPException()
@@ -217,7 +218,7 @@ def ensure_sudo(session):
     if not session.sudo_mode_activated:
         raise AdditionalAuthenticationRequiredHTTPException()
 
-    if session.sudo_mode_expires <= datetime.now():
+    if session.sudo_mode_expires <= datetime.utcnow():
         raise AdditionalAuthenticationRequiredHTTPException()
 
 
