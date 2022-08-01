@@ -9,8 +9,14 @@ from sqlalchemy.orm import Session
 
 from src import models
 from .ipinfo import get_ip_address_details
-from .schemas.session import (BrowserInfo, DeviceInfo, LocationData, LoginData, OsInfo,
-                              UserAgentInfo)
+from .schemas.session import (
+    BrowserInfo,
+    DeviceInfo,
+    LocationData,
+    LoginData,
+    OsInfo,
+    UserAgentInfo,
+)
 from .schemas.user_settings import AvailableSettings, DefaultContentLanguages
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -173,7 +179,7 @@ def load_session_data(session_db: models.Session):
         device=DeviceInfo(
             brand=sign_in_user_agent_info.device.brand,
             family=sign_in_user_agent_info.device.family,
-            model=sign_in_user_agent_info.device.model
+            model=sign_in_user_agent_info.device.model,
         ),
         os=OsInfo(
             family=sign_in_user_agent_info.os.family,
@@ -190,16 +196,14 @@ def load_session_data(session_db: models.Session):
         location=None,
         user_agent_info=sign_in_user_agent_info,
     )
-    sign_in_ip_address_details = get_ip_address_details(
-        session_db.sign_in_ip_address
-    )
+    sign_in_ip_address_details = get_ip_address_details(session_db.sign_in_ip_address)
     if sign_in_ip_address_details:
         location_data = LocationData(
-            city=sign_in_ip_address_details.get('city'),
-            region=sign_in_ip_address_details.get('region'),
-            country=sign_in_ip_address_details.get('country'),
-            longitude=sign_in_ip_address_details.get('longitude'),
-            latitude=sign_in_ip_address_details.get('latitude')
+            city=sign_in_ip_address_details.get("city"),
+            region=sign_in_ip_address_details.get("region"),
+            country=sign_in_ip_address_details.get("country"),
+            longitude=sign_in_ip_address_details.get("longitude"),
+            latitude=sign_in_ip_address_details.get("latitude"),
         )
         sign_in_data.location = location_data
     session_db.sign_in_data = sign_in_data
@@ -209,7 +213,7 @@ def load_session_data(session_db: models.Session):
         device=DeviceInfo(
             brand=last_user_agent_info.device.brand,
             family=last_user_agent_info.device.family,
-            model=last_user_agent_info.device.model
+            model=last_user_agent_info.device.model,
         ),
         os=OsInfo(
             family=last_user_agent_info.os.family,
@@ -229,11 +233,11 @@ def load_session_data(session_db: models.Session):
     last_ip_address_details = get_ip_address_details(session_db.last_ip_address)
     if last_ip_address_details:
         location_data = LocationData(
-            city=last_ip_address_details.get('city'),
-            region=last_ip_address_details.get('region'),
-            country=last_ip_address_details.get('country'),
-            longitude=last_ip_address_details.get('longitude'),
-            latitude=last_ip_address_details.get('latitude')
+            city=last_ip_address_details.get("city"),
+            region=last_ip_address_details.get("region"),
+            country=last_ip_address_details.get("country"),
+            longitude=last_ip_address_details.get("longitude"),
+            latitude=last_ip_address_details.get("latitude"),
         )
         last_access_data.location = location_data
     session_db.last_access_data = last_access_data
