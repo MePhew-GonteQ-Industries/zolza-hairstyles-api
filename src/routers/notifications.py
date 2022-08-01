@@ -21,7 +21,7 @@ def test(db: Session = Depends(get_db)):
         id=f"appointment_reminder_appointment_#sadsadsadaoifaoijfoi",
         name=f"Appointment Reminder - Appointment #sdsadadadadadsad",
         misfire_grace_time=20,
-        next_run_time=datetime.datetime.now() - datetime.timedelta(hours=2),
+        next_run_time=datetime.datetime.utcnow() - datetime.timedelta(hours=2),
         args=[get_db],
         kwargs={"user_id": "asdsadsadsad", "appointment_id": "asdsadad"},
     )
@@ -47,7 +47,7 @@ def add_token(
 
     if fcm_token_db:
         fcm_token_db.token = fcm_token.fcm_token
-        fcm_token_db.last_updated_at = datetime.datetime.now()
+        fcm_token_db.last_updated_at = datetime.datetime.utcnow()
         db.commit()
         db.refresh(fcm_token_db)
 

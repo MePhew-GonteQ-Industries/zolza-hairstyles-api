@@ -33,7 +33,7 @@ def get_appointment_slots(
     accept_language: str | None = Header(None),
 ):
     now = datetime.date.today()
-    first_available_time = datetime.datetime.now() + timedelta(hours=1)
+    first_available_time = datetime.datetime.utcnow() + timedelta(hours=1)
     last_available_date = now + timedelta(days=settings.MAX_FUTURE_APPOINTMENT_DAYS)
 
     slots = db.query(models.AppointmentSlot)
@@ -93,7 +93,7 @@ def get_nearest_slots(
     required_slots = service_db.required_slots
 
     now = datetime.date.today()
-    first_available_time = datetime.datetime.now() + timedelta(hours=1)
+    first_available_time = datetime.datetime.utcnow() + timedelta(hours=1)
     last_available_date = now + timedelta(days=settings.MAX_FUTURE_APPOINTMENT_DAYS)
 
     slots_db = (

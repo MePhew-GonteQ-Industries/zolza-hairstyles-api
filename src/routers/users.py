@@ -211,7 +211,7 @@ def request_email_verification(
         cooldown_end = cooldown_start + timedelta(
             minutes=settings.MAIL_VERIFICATION_COOLDOWN_MINUTES
         )
-        now = datetime.now()
+        now = datetime.utcnow()
         # noinspection PyTypeChecker,PydanticTypeChecker
         cooldown_left = cooldown_end - now
 
