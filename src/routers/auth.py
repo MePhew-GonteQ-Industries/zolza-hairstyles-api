@@ -42,9 +42,15 @@ from ..schemas.oauth2 import (
     TokenPayloadBase,
     TokenType,
 )
-from ..schemas.session import BrowserInfo, DeviceInfo, LocationData, LoginData, OsInfo, \
-    ReturnActiveSession, \
-    UserAgentInfo
+from ..schemas.session import (
+    BrowserInfo,
+    DeviceInfo,
+    LocationData,
+    LoginData,
+    OsInfo,
+    ReturnActiveSession,
+    UserAgentInfo,
+)
 from ..schemas.user import UserEmailOnly
 from ..schemas.user_settings import AvailableSettings
 from ..utils import get_user_agent_info, on_decode_error, verify_password
@@ -54,10 +60,10 @@ router = APIRouter(prefix=settings.BASE_URL + "/auth", tags=["Authorization"])
 
 @router.post("/login", response_model=ReturnAccessToken)
 def login(
-        request: Request,
-        user_credentials: OAuth2PasswordRequestFormStrict = Depends(),
-        db: Session = Depends(get_db),
-        user_agent: str | None = Header(None),
+    request: Request,
+    user_credentials: OAuth2PasswordRequestFormStrict = Depends(),
+    db: Session = Depends(get_db),
+    user_agent: str | None = Header(None),
 ):
     if user_credentials.grant_type != "password":
         raise InvalidGrantTypeHTTPException("password")
@@ -121,11 +127,11 @@ def login(
 
 @router.post("/refresh-token", response_model=ReturnAccessToken, name="Refresh Token")
 def token_refresh(
-        request: Request,
-        db: Session = Depends(get_db),
-        refresh_token: str = Form(Required),
-        grant_type: str = Form(Required),
-        user_agent: str | None = Header(None),
+    request: Request,
+    db: Session = Depends(get_db),
+    refresh_token: str = Form(Required),
+    grant_type: str = Form(Required),
+    user_agent: str | None = Header(None),
 ):
     if grant_type != "refresh_token":
         raise InvalidGrantTypeHTTPException("refresh_token")
@@ -207,7 +213,7 @@ def logout(
 
 @router.post("/logout-everywhere")
 def logout_everywhere(
-        db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)
+    db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)
 ):
     user = user_session.user
 
@@ -225,10 +231,10 @@ def logout_everywhere(
     response_model=UserEmailOnly,
 )
 def request_password_reset(
-        user_email: UserEmailOnly,
-        background_tasks: BackgroundTasks,
-        db: Session = Depends(get_db),
-        fast_mail_client: FastMail = Depends(get_fast_mail_client),
+    user_email: UserEmailOnly,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    fast_mail_client: FastMail = Depends(get_fast_mail_client),
 ):
     user_db = db.query(models.User).where(models.User.email == user_email.email).first()
 
@@ -259,7 +265,7 @@ def request_password_reset(
             raise CooldownHTTPException(
                 str(int(cooldown_left.total_seconds())),
                 detail=f"Too many password reset requests, max 1 request per "
-                       f"{settings.PASSWORD_RESET_COOLDOWN_MINUTES} minutes allowed",
+                f"{settings.PASSWORD_RESET_COOLDOWN_MINUTES} minutes allowed",
             )
         db.delete(db_password_reset_request)
 
@@ -292,7 +298,7 @@ def request_password_reset(
 
 @router.put("/reset-password")
 def reset_password(
-        password_reset_request: PasswordResetRequest, db: Session = Depends(get_db)
+    password_reset_request: PasswordResetRequest, db: Session = Depends(get_db)
 ):
     request_db = (
         db.query(models.EmailRequests)
@@ -334,9 +340,9 @@ def reset_password(
 
 @router.post("/change-password")
 def change_password(
-        password_change_form: PasswordChangeForm,
-        db: Session = Depends(get_db),
-        user_session=Depends(oauth2.get_user),
+    password_change_form: PasswordChangeForm,
+    db: Session = Depends(get_db),
+    user_session=Depends(oauth2.get_user),
 ):
     user = user_session.user
 
@@ -350,9 +356,9 @@ def change_password(
 
 @router.post("/enter-sudo-mode", response_model=SudoModeInfo)
 def enter_sudo_mode(
-        password: str = Form(Required),
-        db: Session = Depends(get_db),
-        user_session=Depends(oauth2.get_user),
+    password: str = Form(Required),
+    db: Session = Depends(get_db),
+    user_session=Depends(oauth2.get_user),
 ):
     verify_password(password=password, user_id=user_session.user.id, db=db)
 
@@ -380,11 +386,12 @@ def enter_sudo_mode(
 def get_sessions(db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)):
     user = user_session.user
 
-    sessions = db.query(models.Session).where(
-        models.Session.user_id == user.id
-    ).order_by(
-        models.Session.last_accessed.desc()
-    ).all()
+    sessions = (
+        db.query(models.Session)
+        .where(models.Session.user_id == user.id)
+        .order_by(models.Session.last_accessed.desc())
+        .all()
+    )
 
     for session_db in sessions:
         sign_in_user_agent_info = get_user_agent_info(session_db.sign_in_user_agent)
@@ -392,7 +399,7 @@ def get_sessions(db: Session = Depends(get_db), user_session=Depends(oauth2.get_
             device=DeviceInfo(
                 brand=sign_in_user_agent_info.device.brand,
                 family=sign_in_user_agent_info.device.family,
-                model=sign_in_user_agent_info.device.model
+                model=sign_in_user_agent_info.device.model,
             ),
             os=OsInfo(
                 family=sign_in_user_agent_info.os.family,
@@ -414,11 +421,11 @@ def get_sessions(db: Session = Depends(get_db), user_session=Depends(oauth2.get_
         )
         if sign_in_ip_address_details:
             location_data = LocationData(
-                city=sign_in_ip_address_details.get('city'),
-                region=sign_in_ip_address_details.get('region'),
-                country=sign_in_ip_address_details.get('country'),
-                longitude=sign_in_ip_address_details.get('longitude'),
-                latitude=sign_in_ip_address_details.get('latitude')
+                city=sign_in_ip_address_details.get("city"),
+                region=sign_in_ip_address_details.get("region"),
+                country=sign_in_ip_address_details.get("country"),
+                longitude=sign_in_ip_address_details.get("longitude"),
+                latitude=sign_in_ip_address_details.get("latitude"),
             )
             sign_in_data.location = location_data
         session_db.sign_in_data = sign_in_data
@@ -428,7 +435,7 @@ def get_sessions(db: Session = Depends(get_db), user_session=Depends(oauth2.get_
             device=DeviceInfo(
                 brand=last_user_agent_info.device.brand,
                 family=last_user_agent_info.device.family,
-                model=last_user_agent_info.device.model
+                model=last_user_agent_info.device.model,
             ),
             os=OsInfo(
                 family=last_user_agent_info.os.family,
@@ -448,11 +455,11 @@ def get_sessions(db: Session = Depends(get_db), user_session=Depends(oauth2.get_
         last_ip_address_details = get_ip_address_details(session_db.last_ip_address)
         if last_ip_address_details:
             location_data = LocationData(
-                city=last_ip_address_details.get('city'),
-                region=last_ip_address_details.get('region'),
-                country=last_ip_address_details.get('country'),
-                longitude=last_ip_address_details.get('longitude'),
-                latitude=last_ip_address_details.get('latitude')
+                city=last_ip_address_details.get("city"),
+                region=last_ip_address_details.get("region"),
+                country=last_ip_address_details.get("country"),
+                longitude=last_ip_address_details.get("longitude"),
+                latitude=last_ip_address_details.get("latitude"),
             )
             last_access_data.location = location_data
         session_db.last_access_data = last_access_data
@@ -462,7 +469,7 @@ def get_sessions(db: Session = Depends(get_db), user_session=Depends(oauth2.get_
 
 @router.delete("/remove-session/{session_id}")
 def remove_session(
-        session_id: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_user)
+    session_id: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_user)
 ):
     session_db = db.query(models.Session).where(models.Session.id == session_id).first()
     db.delete(session_db)

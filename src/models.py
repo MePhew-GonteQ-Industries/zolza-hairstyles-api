@@ -36,8 +36,9 @@ class User(Base):
     verified = Column(Boolean, nullable=False, server_default="false")
     disabled = Column(Boolean, nullable=False, server_default="false")
     created_at = Column(
-        TIMESTAMP(timezone=False), nullable=False,
-        server_default=text("(now() at time zone('utc'))")
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=text("(now() at time zone('utc'))"),
     )
     settings = relationship("Setting")
 
@@ -49,8 +50,9 @@ class Password(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     current = Column(Boolean, nullable=False)
     created_at = Column(
-        TIMESTAMP(timezone=False), nullable=False,
-        server_default=text("(now() at time zone('utc'))")
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=text("(now() at time zone('utc'))"),
     )
 
 
@@ -70,14 +72,16 @@ class Session(Base):
     last_user_agent = Column(String, nullable=False)
     last_ip_address = Column(String, nullable=False)
     last_accessed = Column(
-        TIMESTAMP(timezone=False), nullable=False,
-        server_default=text("(now() at time zone('utc'))")
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=text("(now() at time zone('utc'))"),
     )
     sudo_mode_activated = Column(TIMESTAMP(timezone=False))
     sudo_mode_expires = Column(TIMESTAMP(timezone=False))
     first_accessed = Column(
-        TIMESTAMP(timezone=False), nullable=False,
-        server_default=text("(now() at time zone('utc'))")
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=text("(now() at time zone('utc'))"),
     )
     fcm_token = relationship("FcmToken", cascade="all,delete", backref="parent")
 
@@ -89,8 +93,9 @@ class EmailRequests(Base):
     request_type = Column(String, nullable=False)
     request_token = Column(String, nullable=False)
     created_at = Column(
-        TIMESTAMP(timezone=False), nullable=False,
-        server_default=text("(now() at time zone('utc'))")
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=text("(now() at time zone('utc'))"),
     )
     UniqueConstraint("user_id", "request_type", name="limit_email_requests")
 
@@ -110,8 +115,9 @@ class Service(Base):
     available = Column(Boolean, nullable=False, server_default=text("true"))
     deleted = Column(Boolean, nullable=False, server_default=text("false"))
     created_at = Column(
-        TIMESTAMP(timezone=False), nullable=False,
-        server_default=text("(now() at time zone('utc'))")
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=text("(now() at time zone('utc'))"),
     )
 
 
@@ -144,8 +150,9 @@ class ServiceEvent(Base):
     performed_by = relationship("User", foreign_keys=[performed_by_user_id])
     performed_on = relationship("Service", foreign_keys=[performed_on_service_id])
     performed_at = Column(
-        TIMESTAMP(timezone=False), nullable=False,
-        server_default=text("(now() at time zone('utc'))")
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=text("(now() at time zone('utc'))"),
     )
 
 
@@ -174,8 +181,9 @@ class PermissionEvent(Base):
     performed_by = relationship("User", foreign_keys=[performed_by_user_id])
     performed_on = relationship("User", foreign_keys=[performed_on_user_id])
     performed_at = Column(
-        TIMESTAMP(timezone=False), nullable=False,
-        server_default=text("(now() at time zone('utc'))")
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=text("(now() at time zone('utc'))"),
     )
 
 
@@ -228,8 +236,9 @@ class Appointment(Base):
     canceled = Column(Boolean, nullable=False, server_default="false")
     archival = Column(Boolean, nullable=False, server_default="false")
     created_at = Column(
-        TIMESTAMP(timezone=False), nullable=False,
-        server_default=text("(now() at time zone('utc'))")
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=text("(now() at time zone('utc'))"),
     )
     start_slot = relationship(
         "AppointmentSlot", cascade="all,delete", foreign_keys=[start_slot_id]
@@ -250,8 +259,9 @@ class FcmToken(Base):
         UUID(as_uuid=True), ForeignKey("sessions.id"), nullable=False, unique=True
     )
     last_updated_at = Column(
-        TIMESTAMP(timezone=False), nullable=False,
-        server_default=text("(now() at time zone('utc'))")
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=text("(now() at time zone('utc'))"),
     )
 
 
@@ -263,8 +273,9 @@ class Setting(Base):
     default_value = Column(String)
     current_value = Column(String, nullable=False)
     created_at = Column(
-        TIMESTAMP(timezone=False), nullable=False,
-        server_default=text("(now() at time zone('utc'))")
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=text("(now() at time zone('utc'))"),
     )
     UniqueConstraint("user_id", "name", name="unique_user_settings")
 

@@ -56,12 +56,12 @@ router = APIRouter(prefix=settings.BASE_URL + "/users", tags=["Users"])
     response_model=ReturnUserAndSettings,
 )
 def create_user(
-        user: CreateUser,
-        background_tasks: BackgroundTasks,
-        db: Session = Depends(get_db),
-        fast_mail_client: FastMail = Depends(get_fast_mail_client),
-        content_language: DefaultContentLanguages = Header(Required),  # todo: fix
-        preferred_theme: AvailableThemes = Header(Required),
+    user: CreateUser,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    fast_mail_client: FastMail = Depends(get_fast_mail_client),
+    content_language: DefaultContentLanguages = Header(Required),  # todo: fix
+    preferred_theme: AvailableThemes = Header(Required),
 ) -> dict[str, Union[ReturnUser, List[ReturnSetting]]]:
     """
     ## Part of the user creation process is initializing the user's settings
@@ -186,10 +186,10 @@ def create_user(
     response_model=UserEmailOnly,
 )
 def request_email_verification(
-        user_email: UserEmailOnly,
-        background_tasks: BackgroundTasks,
-        db: Session = Depends(get_db),
-        fast_mail_client: FastMail = Depends(get_fast_mail_client),
+    user_email: UserEmailOnly,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    fast_mail_client: FastMail = Depends(get_fast_mail_client),
 ) -> UserEmailOnly:
     user_db = db.query(models.User).where(models.User.email == user_email.email).first()
 
@@ -219,8 +219,8 @@ def request_email_verification(
             raise CooldownHTTPException(
                 str(int(cooldown_left.total_seconds())),
                 detail=f"Too many verification requests, max 1 request per"
-                       f" {settings.MAIL_VERIFICATION_COOLDOWN_MINUTES}"
-                       f" minutes allowed",
+                f" {settings.MAIL_VERIFICATION_COOLDOWN_MINUTES}"
+                f" minutes allowed",
             )
 
         db.delete(db_email_verification_request)
@@ -257,8 +257,7 @@ def request_email_verification(
 
 @router.put("/verify-email", response_model=ReturnUser)
 def verify_email(
-        email_verification_request: EmailVerificationRequest,
-        db: Session = Depends(get_db)
+    email_verification_request: EmailVerificationRequest, db: Session = Depends(get_db)
 ) -> ReturnUser:
     request_db = (
         db.query(models.EmailRequests)
@@ -302,10 +301,10 @@ def verify_email(
     return user
 
 
-@router.get("/me", response_model=ReturnUserDetailed,
-            name="Get info about your account")
-def me(user_session=Depends(oauth2.get_user)
-       ) -> models.User:
+@router.get(
+    "/me", response_model=ReturnUserDetailed, name="Get info about your account"
+)
+def me(user_session=Depends(oauth2.get_user)) -> models.User:
     user = user_session.user
 
     return user
@@ -313,7 +312,7 @@ def me(user_session=Depends(oauth2.get_user)
 
 @router.get("", response_model=ReturnUsers)
 def get_users(
-        db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
+    db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
 ) -> dict[str, ReturnUser]:
     users_db = db.query(models.User).all()
 
@@ -322,9 +321,9 @@ def get_users(
 
 @router.put("/me/update-details", response_model=ReturnUser)
 def update_user_details(
-        user_data: UserData,
-        db: Session = Depends(get_db),
-        user_session=Depends(oauth2.get_user_sudo),
+    user_data: UserData,
+    db: Session = Depends(get_db),
+    user_session=Depends(oauth2.get_user_sudo),
 ) -> ReturnUser:
     user = user_session.user
 
@@ -340,7 +339,7 @@ def update_user_details(
 
 @router.get("/{uuid}", response_model=ReturnUserDetailed, name="Get User")
 def get_user_by_uuid(
-        uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
+    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
 ) -> ReturnUserDetailed:
     user = get_user_from_db(uuid=uuid, db=db)
 
@@ -349,7 +348,7 @@ def get_user_by_uuid(
 
 @router.put("/promote/{uuid}", response_model=ReturnUserDetailed)
 def promote_user(
-        uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin_sudo)
+    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin_sudo)
 ) -> ReturnUserDetailed:
     user = get_user_from_db(uuid=uuid, db=db)
 
@@ -375,7 +374,7 @@ def promote_user(
 
 @router.put("/demote/{uuid}", response_model=ReturnUserDetailed)
 def demote_user(
-        uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_superuser_sudo)
+    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_superuser_sudo)
 ) -> ReturnUserDetailed:
     user = get_user_from_db(uuid=uuid, db=db)
 
@@ -394,15 +393,15 @@ def demote_user(
 
 @router.put("/ban/{uuid}", response_model=ReturnUserDetailed)
 def ban_user(
-        uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin_sudo)
+    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin_sudo)
 ) -> ReturnUserDetailed:
     user = get_user_from_db(uuid=uuid, db=db)
 
     if "admin" in user.permission_level:
         raise HTTPException(
             detail="Cannot ban a user with elevated permissions level, "
-                   "if you are a superuser and really want to perform this action,"
-                   "you need to demote this user first",
+            "if you are a superuser and really want to perform this action,"
+            "you need to demote this user first",
             status_code=status.HTTP_409_CONFLICT,
         )
 
@@ -421,7 +420,7 @@ def ban_user(
 
 @router.put("/unban/{uuid}", response_model=ReturnUserDetailed)
 def unban_user(
-        uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin_sudo)
+    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin_sudo)
 ) -> ReturnUserDetailed:
     user = get_user_from_db(uuid=uuid, db=db)
 
