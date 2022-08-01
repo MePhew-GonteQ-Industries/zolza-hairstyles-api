@@ -81,9 +81,11 @@ jobs:
           key: ${{secrets.DEPLOYMENT_SSH_KEY}}
           passphrase: ${{secrets.DEPLOYMENT_SSH_KEY_PASSPHRASE}}
           script: |
+            echo ${{secrets.DEPLOYMENT_PASSWORD}} | sudo -S apt update && echo ${{secrets.DEPLOYMENT_PASSWORD}} | sudo -S apt upgrade
             cd /home/${{secrets.DEPLOYMENT_USERNAME}}/zolza-hairstyles-api
             git pull
-            source venv/bin/activate 
+            source venv/bin/activate
+            python -m pip install --upgrade pip
             pip install -r requirements.txt
             alembic upgrade head
             echo ${{secrets.DEPLOYMENT_PASSWORD}} | sudo -S systemctl restart zolza_hairstyles_api
