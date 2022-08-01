@@ -1,8 +1,6 @@
-import ipaddress
 from datetime import datetime, timedelta
 from typing import List
 
-import ipinfo
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -30,7 +28,7 @@ from ..email_manager import (
 from ..exceptions import (
     CooldownHTTPException,
     InvalidGrantTypeHTTPException,
-    SessionNotFoundHTTPException,
+    ResourceNotFoundHTTPException, SessionNotFoundHTTPException,
 )
 from ..ipinfo import get_ip_address_details
 from ..schemas import session
@@ -42,12 +40,13 @@ from ..schemas.oauth2 import (
     TokenPayloadBase,
     TokenType,
 )
-from ..schemas.session import BrowserInfo, DeviceInfo, LocationData, LoginData, OsInfo, \
-    ReturnActiveSession, \
-    UserAgentInfo
+from ..schemas.session import (BrowserInfo, DeviceInfo, LocationData, LoginData, OsInfo,
+                               ReturnActiveSession,
+                               UserAgentInfo)
 from ..schemas.user import UserEmailOnly
 from ..schemas.user_settings import AvailableSettings
-from ..utils import get_user_agent_info, on_decode_error, verify_password
+from ..utils import get_user_agent_info, load_session_data, on_decode_error, \
+    verify_password
 
 router = APIRouter(prefix=settings.BASE_URL + "/auth", tags=["Authorization"])
 
@@ -187,7 +186,8 @@ def token_refresh(
 
 @router.post("/logout")
 def logout(
-    db: Session = Depends(get_db), user_session=Depends(oauth2.get_user_no_verification)
+        db: Session = Depends(get_db),
+        user_session=Depends(oauth2.get_user_no_verification)
 ):
     user = user_session.user
 
@@ -287,7 +287,7 @@ def request_password_reset(
 
     background_tasks.add_task(send_email, message, template_name, fast_mail_client)
 
-    return user_email
+    return {"status": "ok"}
 
 
 @router.put("/reset-password")
@@ -386,85 +386,52 @@ def get_sessions(db: Session = Depends(get_db), user_session=Depends(oauth2.get_
         models.Session.last_accessed.desc()
     ).all()
 
+    sessions_with_data = []
+
     for session_db in sessions:
-        sign_in_user_agent_info = get_user_agent_info(session_db.sign_in_user_agent)
-        sign_in_user_agent_info = UserAgentInfo(
-            device=DeviceInfo(
-                brand=sign_in_user_agent_info.device.brand,
-                family=sign_in_user_agent_info.device.family,
-                model=sign_in_user_agent_info.device.model
-            ),
-            os=OsInfo(
-                family=sign_in_user_agent_info.os.family,
-                version=sign_in_user_agent_info.os.version_string,
-            ),
-            browser=BrowserInfo(
-                family=sign_in_user_agent_info.browser.family,
-                version=sign_in_user_agent_info.browser.version_string,
-            ),
-        )
-        sign_in_data = LoginData(
-            user_agent=session_db.sign_in_user_agent,
-            ip_address=session_db.sign_in_ip_address,
-            location=None,
-            user_agent_info=sign_in_user_agent_info,
-        )
-        sign_in_ip_address_details = get_ip_address_details(
-            session_db.sign_in_ip_address
-        )
-        if sign_in_ip_address_details:
-            location_data = LocationData(
-                city=sign_in_ip_address_details.get('city'),
-                region=sign_in_ip_address_details.get('region'),
-                country=sign_in_ip_address_details.get('country'),
-                longitude=sign_in_ip_address_details.get('longitude'),
-                latitude=sign_in_ip_address_details.get('latitude')
-            )
-            sign_in_data.location = location_data
-        session_db.sign_in_data = sign_in_data
+        session_with_data = load_session_data(session_db)
+        sessions_with_data.append(session_with_data)
 
-        last_user_agent_info = get_user_agent_info(session_db.last_user_agent)
-        last_user_agent_info = UserAgentInfo(
-            device=DeviceInfo(
-                brand=last_user_agent_info.device.brand,
-                family=last_user_agent_info.device.family,
-                model=last_user_agent_info.device.model
-            ),
-            os=OsInfo(
-                family=last_user_agent_info.os.family,
-                version=last_user_agent_info.os.version_string,
-            ),
-            browser=BrowserInfo(
-                family=last_user_agent_info.browser.family,
-                version=last_user_agent_info.browser.version_string,
-            ),
-        )
-        last_access_data = LoginData(
-            user_agent=session_db.last_user_agent,
-            ip_address=session_db.last_ip_address,
-            location=None,
-            user_agent_info=last_user_agent_info,
-        )
-        last_ip_address_details = get_ip_address_details(session_db.last_ip_address)
-        if last_ip_address_details:
-            location_data = LocationData(
-                city=last_ip_address_details.get('city'),
-                region=last_ip_address_details.get('region'),
-                country=last_ip_address_details.get('country'),
-                longitude=last_ip_address_details.get('longitude'),
-                latitude=last_ip_address_details.get('latitude')
-            )
-            last_access_data.location = location_data
-        session_db.last_access_data = last_access_data
-
-    return sessions
+    return sessions_with_data
 
 
-@router.delete("/remove-session/{session_id}")
-def remove_session(
-        session_id: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_user)
+@router.get("/sessions/{session_id}", response_model=ReturnActiveSession)
+def get_session(session_id: UUID4,
+                db: Session = Depends(get_db),
+                user_session=Depends(oauth2.get_user),
+                ):
+    user = user_session.user
+
+    session_db = db.query(models.Session).where(
+        models.Session.user_id == user.id
+    ).where(
+        models.Session.id == session_id
+    ).first()
+
+    if not session_db:
+        raise ResourceNotFoundHTTPException
+
+    session_db = load_session_data(session_db)
+
+    return session_db
+
+
+@router.delete("/revoke-session/{session_id}")
+def revoke_session(
+        session_id: UUID4,
+        db: Session = Depends(get_db),
+        user_session=Depends(oauth2.get_user)
 ):
-    session_db = db.query(models.Session).where(models.Session.id == session_id).first()
+    user = user_session.user
+    session_db = db.query(models.Session).where(
+        models.Session.user_id == user.id
+    ).where(
+        models.Session.id == session_id
+    ).first()
+
+    if not session_db:
+        raise ResourceNotFoundHTTPException
+
     db.delete(session_db)
     db.commit()
 
