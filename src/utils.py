@@ -1,6 +1,7 @@
 import logging
 
 import langcodes
+import user_agents
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from pydantic import UUID4
@@ -157,3 +158,7 @@ def get_user_from_db(*, uuid: UUID4, db: Session):
         )
 
     return user
+
+
+def get_user_agent_info(user_agent: str) -> user_agents.parsers.UserAgent:
+    return user_agents.parse(user_agent)
