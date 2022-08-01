@@ -8,6 +8,9 @@ from pydantic import UUID4
 from sqlalchemy.orm import Session
 
 from src import models
+from .ipinfo import get_ip_address_details
+from .schemas.session import (BrowserInfo, DeviceInfo, LocationData, LoginData, OsInfo,
+                              UserAgentInfo)
 from .schemas.user_settings import AvailableSettings, DefaultContentLanguages
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -162,3 +165,77 @@ def get_user_from_db(*, uuid: UUID4, db: Session):
 
 def get_user_agent_info(user_agent: str) -> user_agents.parsers.UserAgent:
     return user_agents.parse(user_agent)
+
+
+def load_session_data(session_db: models.Session):
+    sign_in_user_agent_info = get_user_agent_info(session_db.sign_in_user_agent)
+    sign_in_user_agent_info = UserAgentInfo(
+        device=DeviceInfo(
+            brand=sign_in_user_agent_info.device.brand,
+            family=sign_in_user_agent_info.device.family,
+            model=sign_in_user_agent_info.device.model
+        ),
+        os=OsInfo(
+            family=sign_in_user_agent_info.os.family,
+            version=sign_in_user_agent_info.os.version_string,
+        ),
+        browser=BrowserInfo(
+            family=sign_in_user_agent_info.browser.family,
+            version=sign_in_user_agent_info.browser.version_string,
+        ),
+    )
+    sign_in_data = LoginData(
+        user_agent=session_db.sign_in_user_agent,
+        ip_address=session_db.sign_in_ip_address,
+        location=None,
+        user_agent_info=sign_in_user_agent_info,
+    )
+    sign_in_ip_address_details = get_ip_address_details(
+        session_db.sign_in_ip_address
+    )
+    if sign_in_ip_address_details:
+        location_data = LocationData(
+            city=sign_in_ip_address_details.get('city'),
+            region=sign_in_ip_address_details.get('region'),
+            country=sign_in_ip_address_details.get('country'),
+            longitude=sign_in_ip_address_details.get('longitude'),
+            latitude=sign_in_ip_address_details.get('latitude')
+        )
+        sign_in_data.location = location_data
+    session_db.sign_in_data = sign_in_data
+
+    last_user_agent_info = get_user_agent_info(session_db.last_user_agent)
+    last_user_agent_info = UserAgentInfo(
+        device=DeviceInfo(
+            brand=last_user_agent_info.device.brand,
+            family=last_user_agent_info.device.family,
+            model=last_user_agent_info.device.model
+        ),
+        os=OsInfo(
+            family=last_user_agent_info.os.family,
+            version=last_user_agent_info.os.version_string,
+        ),
+        browser=BrowserInfo(
+            family=last_user_agent_info.browser.family,
+            version=last_user_agent_info.browser.version_string,
+        ),
+    )
+    last_access_data = LoginData(
+        user_agent=session_db.last_user_agent,
+        ip_address=session_db.last_ip_address,
+        location=None,
+        user_agent_info=last_user_agent_info,
+    )
+    last_ip_address_details = get_ip_address_details(session_db.last_ip_address)
+    if last_ip_address_details:
+        location_data = LocationData(
+            city=last_ip_address_details.get('city'),
+            region=last_ip_address_details.get('region'),
+            country=last_ip_address_details.get('country'),
+            longitude=last_ip_address_details.get('longitude'),
+            latitude=last_ip_address_details.get('latitude')
+        )
+        last_access_data.location = location_data
+    session_db.last_access_data = last_access_data
+
+    return session_db
