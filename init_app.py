@@ -209,7 +209,7 @@ def add_appointment_slots_generation_task(
         trigger="interval",
         days=1,
         name="Appointment Slots Generation",
-        next_run_time=datetime.now() + timedelta(days=1),
+        next_run_time=datetime.utcnow() + timedelta(days=1),
         coalesce=True,
         max_instances=1,
         id="appointment_slots_generation",
@@ -293,7 +293,7 @@ def generate_appointment_slots(db: Session) -> None:
 
     first_slot_start = None
 
-    now = datetime.now()
+    now = datetime.utcnow()
 
     if last_appointment_slot:
         if last_appointment_slot.end_time:
