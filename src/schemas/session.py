@@ -18,6 +18,10 @@ class DeviceInfo(BaseModel):
     family: str | None
     brand: str | None
     model: str | None
+    is_mobile: bool | None
+    is_tablet: bool | None
+    is_pc: bool | None
+    supports_touch: bool | None
 
 
 class OsInfo(BaseModel):
@@ -31,6 +35,7 @@ class BrowserInfo(BaseModel):
 
 
 class UserAgentInfo(BaseModel):
+    is_bot: bool | None
     device: DeviceInfo
     os: OsInfo
     browser: BrowserInfo

@@ -170,10 +170,15 @@ def get_user_agent_info(user_agent: str) -> user_agents.parsers.UserAgent:
 def load_session_data(session_db: models.Session):
     sign_in_user_agent_info = get_user_agent_info(session_db.sign_in_user_agent)
     sign_in_user_agent_info = UserAgentInfo(
+        is_bot=sign_in_user_agent_info.is_bot,
         device=DeviceInfo(
             brand=sign_in_user_agent_info.device.brand,
             family=sign_in_user_agent_info.device.family,
-            model=sign_in_user_agent_info.device.model
+            model=sign_in_user_agent_info.device.model,
+            is_mobile=sign_in_user_agent_info.is_mobile,
+            is_tablet=sign_in_user_agent_info.is_tablet,
+            is_pc=sign_in_user_agent_info.is_pc,
+            supports_touch=sign_in_user_agent_info.is_touch_capable,
         ),
         os=OsInfo(
             family=sign_in_user_agent_info.os.family,
@@ -206,10 +211,15 @@ def load_session_data(session_db: models.Session):
 
     last_user_agent_info = get_user_agent_info(session_db.last_user_agent)
     last_user_agent_info = UserAgentInfo(
+        is_bot=last_user_agent_info.is_bot,
         device=DeviceInfo(
             brand=last_user_agent_info.device.brand,
             family=last_user_agent_info.device.family,
-            model=last_user_agent_info.device.model
+            model=last_user_agent_info.device.model,
+            is_mobile=last_user_agent_info.is_mobile,
+            is_tablet=last_user_agent_info.is_tablet,
+            is_pc=last_user_agent_info.is_pc,
+            supports_touch=last_user_agent_info.is_touch_capable,
         ),
         os=OsInfo(
             family=last_user_agent_info.os.family,
