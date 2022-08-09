@@ -6,7 +6,7 @@ from fastapi import (
     APIRouter,
     BackgroundTasks,
     Depends,
-    HTTPException,
+    Form, HTTPException,
     Header,
     status,
 )
@@ -14,6 +14,7 @@ from fastapi_mail import FastMail
 from pydantic import Required, UUID4
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from sqlalchemy import delete
 
 from .. import models, oauth2, utils
 from ..config import settings
@@ -25,7 +26,7 @@ from ..email_manager import (
     send_email,
 )
 from ..exceptions import CooldownHTTPException
-from ..models import PermissionEventType
+from ..models import PermissionEventType, User
 from ..schemas.email_request import EmailRequestType, EmailVerificationRequest
 from ..schemas.oauth2 import TokenType
 from ..schemas.user import (
@@ -45,7 +46,7 @@ from ..schemas.user_settings import (
     PreferredThemeBase,
     ReturnSetting,
 )
-from ..utils import get_user_from_db, on_decode_error
+from ..utils import get_user_from_db, on_decode_error, verify_password
 
 router = APIRouter(prefix=settings.BASE_URL + "/users", tags=["Users"])
 
@@ -183,24 +184,24 @@ def create_user(
 @router.post(
     "/request-email-verification",
     status_code=status.HTTP_202_ACCEPTED,
-    response_model=UserEmailOnly,
 )
 def request_email_verification(
     user_email: UserEmailOnly,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     fast_mail_client: FastMail = Depends(get_fast_mail_client),
-) -> UserEmailOnly:
+) -> dict[str, str]:
     user_db = db.query(models.User).where(models.User.email == user_email.email).first()
 
     if not user_db:
-        return user_email  # todo: Raise Email not found exception
+        raise NotImplementedError  # todo: Raise Email not found exception
 
     db_email_verification_request = (
         db.query(models.EmailRequests)
         .where(
             models.EmailRequests.user_id == user_db.id
-            and models.EmailRequests.request_type
+        ).where(
+            models.EmailRequests.request_type
             == EmailRequestType.email_verification_request
         )
         .first()
@@ -239,7 +240,8 @@ def request_email_verification(
         db.query(models.Setting)
         .where(
             models.Setting.name == AvailableSettings.language
-            and models.Setting.user_id == user_db.id
+        ).where(
+            models.Setting.user_id == user_db.id
         )
         .first()
     )
@@ -252,7 +254,7 @@ def request_email_verification(
 
     background_tasks.add_task(send_email, message, template_name, fast_mail_client)
 
-    return user_email
+    return {'status': 'ok'}
 
 
 @router.put("/verify-email", response_model=ReturnUser)
@@ -264,7 +266,8 @@ def verify_email(
         .where(
             models.EmailRequests.request_type
             == EmailRequestType.email_verification_request
-            and models.EmailRequests.request_token
+        ).where(
+            models.EmailRequests.request_token
             == email_verification_request.verification_token
         )
         .first()
@@ -313,7 +316,7 @@ def me(user_session=Depends(oauth2.get_user)) -> models.User:
 @router.get("", response_model=ReturnUsers)
 def get_users(
     db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
-) -> dict[str, ReturnUser]:
+) -> dict[str, list[User]]:
     users_db = db.query(models.User).all()
 
     return {"users": users_db}
@@ -335,6 +338,64 @@ def update_user_details(
     db.refresh(user)
 
     return user
+
+
+@router.put('/me/delete')
+def delete_user(
+        password: str = Form(Required),
+        db: Session = Depends(get_db),
+        user_session=Depends(oauth2.get_user),
+) -> dict[str, str]:
+    user = user_session.user
+
+    verify_password(password=password, user_id=user.id, db=db)
+
+    db.query(models.EmailRequests).where(
+        models.EmailRequests.user_id == user.id
+    ).delete()
+
+    db.query(models.Password).where(
+        models.Password.user_id == user.id
+    ).delete()
+
+    db.query(models.FcmToken).where(
+        models.FcmToken.user_id == user.id
+    ).delete()
+
+    db.query(models.Session).where(
+        models.Session.user_id == user.id
+    ).delete()
+
+    db.query(models.Setting).where(
+        models.Setting.user_id == user.id
+    ).delete()
+
+    q_appointments = db.query(models.Appointment).where(
+        models.Appointment.user_id == user.id
+    )
+
+    appointments = q_appointments.all()
+    if appointments:
+        for appointment in appointments:
+            occupied_slots = db.query(
+                models.AppointmentSlot
+            ).where(
+                models.AppointmentSlot.occupied_by_appointment == appointment.id
+            ).all()
+
+            for slot in occupied_slots:
+                slot.occupied = False
+                slot.occupied_by_appointment = None
+
+    q_appointments.delete()
+
+    db.query(models.User).where(
+        models.User.id == user.id
+    ).delete()
+
+    db.commit()
+
+    return {'status': 'ok'}
 
 
 @router.get("/{uuid}", response_model=ReturnUserDetailed, name="Get User")
