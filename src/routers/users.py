@@ -6,7 +6,8 @@ from fastapi import (
     APIRouter,
     BackgroundTasks,
     Depends,
-    Form, HTTPException,
+    Form,
+    HTTPException,
     Header,
     status,
 )
@@ -198,9 +199,8 @@ def request_email_verification(
 
     db_email_verification_request = (
         db.query(models.EmailRequests)
+        .where(models.EmailRequests.user_id == user_db.id)
         .where(
-            models.EmailRequests.user_id == user_db.id
-        ).where(
             models.EmailRequests.request_type
             == EmailRequestType.email_verification_request
         )
@@ -238,11 +238,8 @@ def request_email_verification(
 
     content_language = (
         db.query(models.Setting)
-        .where(
-            models.Setting.name == AvailableSettings.language
-        ).where(
-            models.Setting.user_id == user_db.id
-        )
+        .where(models.Setting.name == AvailableSettings.language)
+        .where(models.Setting.user_id == user_db.id)
         .first()
     )
 
@@ -254,7 +251,7 @@ def request_email_verification(
 
     background_tasks.add_task(send_email, message, template_name, fast_mail_client)
 
-    return {'status': 'ok'}
+    return {"status": "ok"}
 
 
 @router.put("/verify-email", response_model=ReturnUser)
@@ -266,7 +263,8 @@ def verify_email(
         .where(
             models.EmailRequests.request_type
             == EmailRequestType.email_verification_request
-        ).where(
+        )
+        .where(
             models.EmailRequests.request_token
             == email_verification_request.verification_token
         )
@@ -340,11 +338,11 @@ def update_user_details(
     return user
 
 
-@router.put('/me/delete')
+@router.put("/me/delete")
 def delete_user(
-        password: str = Form(Required),
-        db: Session = Depends(get_db),
-        user_session=Depends(oauth2.get_user),
+    password: str = Form(Required),
+    db: Session = Depends(get_db),
+    user_session=Depends(oauth2.get_user),
 ) -> dict[str, str]:
     user = user_session.user
 
@@ -354,21 +352,13 @@ def delete_user(
         models.EmailRequests.user_id == user.id
     ).delete()
 
-    db.query(models.Password).where(
-        models.Password.user_id == user.id
-    ).delete()
+    db.query(models.Password).where(models.Password.user_id == user.id).delete()
 
-    db.query(models.FcmToken).where(
-        models.FcmToken.user_id == user.id
-    ).delete()
+    db.query(models.FcmToken).where(models.FcmToken.user_id == user.id).delete()
 
-    db.query(models.Session).where(
-        models.Session.user_id == user.id
-    ).delete()
+    db.query(models.Session).where(models.Session.user_id == user.id).delete()
 
-    db.query(models.Setting).where(
-        models.Setting.user_id == user.id
-    ).delete()
+    db.query(models.Setting).where(models.Setting.user_id == user.id).delete()
 
     q_appointments = db.query(models.Appointment).where(
         models.Appointment.user_id == user.id
@@ -377,11 +367,11 @@ def delete_user(
     appointments = q_appointments.all()
     if appointments:
         for appointment in appointments:
-            occupied_slots = db.query(
-                models.AppointmentSlot
-            ).where(
-                models.AppointmentSlot.occupied_by_appointment == appointment.id
-            ).all()
+            occupied_slots = (
+                db.query(models.AppointmentSlot)
+                .where(models.AppointmentSlot.occupied_by_appointment == appointment.id)
+                .all()
+            )
 
             for slot in occupied_slots:
                 slot.occupied = False
@@ -389,13 +379,11 @@ def delete_user(
 
     q_appointments.delete()
 
-    db.query(models.User).where(
-        models.User.id == user.id
-    ).delete()
+    db.query(models.User).where(models.User.id == user.id).delete()
 
     db.commit()
 
-    return {'status': 'ok'}
+    return {"status": "ok"}
 
 
 @router.get("/{uuid}", response_model=ReturnUserDetailed, name="Get User")
