@@ -252,7 +252,8 @@ def create_appointment(
     for slot in available_slots:
         slot.occupied = True
         slot.occupied_by_appointment = new_appointment.id
-        db.commit()
+
+    db.commit()
 
     scheduler.add_job(
         func=send_appointment_reminder,
