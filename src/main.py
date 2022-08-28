@@ -8,6 +8,7 @@ from .config import settings
 from .database import SQLALCHEMY_DATABASE_URL
 from .routers import appointments, auth, services, user_settings, users, notifications
 from .scheduler import configure_and_start_scheduler
+from . import github_client
 
 logging.basicConfig(
     filename="app.log",
@@ -64,7 +65,14 @@ def startup():
 
 
 @app.get(settings.BASE_URL, tags=["Zołza Hairstyles Redirection"])
-async def zolza_hairstyles_redirection():
+def zolza_hairstyles_redirection():
     return RedirectResponse(
         settings.ZOLZA_HAIRSTYLES_URL, status_code=status.HTTP_308_PERMANENT_REDIRECT
     )
+
+
+@app.get(settings.BASE_URL + '/github_user/{username}')
+def get_github_user_data(username: str):
+    data = github_client.get_user_data(username)
+
+    return data
