@@ -41,6 +41,9 @@ class Settings(BaseSettings):
 
     FIREBASE_SERVICE_ACCOUNT_CREDENTIALS_PATH: str
 
+    GH_APP_CLIENT_ID: str
+    GH_APP_CLIENT_SECRET: str
+
     class Config:
         env_file = ".env"
 
