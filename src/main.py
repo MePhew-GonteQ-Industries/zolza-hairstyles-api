@@ -71,7 +71,7 @@ def zolza_hairstyles_redirection():
     )
 
 
-@app.get(settings.BASE_URL + '/github_user/{username}')
+@app.get(settings.BASE_URL + "/github_user/{username}")
 def get_github_user_data(username: str):
     data = github_client.get_user_data(username)
 
