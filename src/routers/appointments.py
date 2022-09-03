@@ -299,7 +299,7 @@ def get_all_appointments(
     return {"items": all_appointments, "total": appointments_num}
 
 
-@router.get("/any/{id}")
+@router.get("/any/{appointment_id}")
 async def get_any_appointment(
     appointment_id: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
 ):
