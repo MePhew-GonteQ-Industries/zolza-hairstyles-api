@@ -189,9 +189,11 @@ def token_refresh(
 def logout(
     db: Session = Depends(get_db), user_session=Depends(oauth2.get_user_no_verification)
 ):
-    session_query = db.query(models.Session).where(
-        models.Session.user_id == user_session.user.id
-    ).where(models.Session.access_token == user_session.session.access_token)
+    session_query = (
+        db.query(models.Session)
+        .where(models.Session.user_id == user_session.user.id)
+        .where(models.Session.access_token == user_session.session.access_token)
+    )
 
     session_db = session_query.first()
 
