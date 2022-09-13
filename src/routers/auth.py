@@ -189,9 +189,17 @@ def token_refresh(
 def logout(
     db: Session = Depends(get_db), user_session=Depends(oauth2.get_user_no_verification)
 ):
-    db.query(models.Session).where(
+    session_query = db.query(models.Session).where(
         models.Session.user_id == user_session.user.id
-    ).where(models.Session.access_token == user_session.session.access_token).delete()
+    ).where(models.Session.access_token == user_session.session.access_token)
+
+    session_db = session_query.first()
+
+    db.query(models.FcmToken).where(
+        models.FcmToken.session_id == session_db.id
+    ).delete()
+
+    session_query.delete()
 
     db.commit()
 
