@@ -38,22 +38,34 @@ def add_token(
     user = user_session.user
     session = user_session.session
 
-    fcm_token_db = (
+    existing_token = (db.query(models.FcmToken)
+                      .where(models.FcmToken.user_id == user.id)
+                      .where(models.FcmToken.token == fcm_token.fcm_token) # noqa
+                      .first()
+    )
+
+    if existing_token:
+        return {
+            "fcm_token": existing_token.token,
+            "created_at": existing_token.last_updated_at,
+        }
+
+    existing_session = (
         db.query(models.FcmToken)
         .where(models.FcmToken.user_id == user.id)
         .where(models.FcmToken.session_id == session.id)
         .first()
     )
 
-    if fcm_token_db:
-        fcm_token_db.token = fcm_token.fcm_token
-        fcm_token_db.last_updated_at = datetime.datetime.utcnow()
+    if existing_session:
+        existing_session.token = fcm_token.fcm_token
+        existing_session.last_updated_at = datetime.datetime.utcnow()
         db.commit()
-        db.refresh(fcm_token_db)
+        db.refresh(existing_session)
 
         return {
-            "fcm_token": fcm_token_db.token,
-            "updated_at": fcm_token_db.last_updated_at,
+            "fcm_token": existing_session.token,
+            "updated_at": existing_session.last_updated_at,
         }
 
     fcm_token_db = models.FcmToken(

@@ -253,7 +253,7 @@ class Appointment(Base):
 class FcmToken(Base):
     __tablename__ = "fcm_tokens"
     id = Column(Integer, primary_key=True, nullable=False)
-    token = Column(String, nullable=False)
+    token = Column(String, nullable=False, unique=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     session_id = Column(
         UUID(as_uuid=True), ForeignKey("sessions.id"), nullable=False, unique=True
