@@ -15,7 +15,8 @@ from ..schemas.appointment import (
     AppointmentSlot,
     CreateAppointment,
     ReturnAllAppointments,
-    ReturnAppointment, ReturnAppointmentDetailed,
+    ReturnAppointment,
+    ReturnAppointmentDetailed,
 )
 from ..utils import (
     get_language_code_from_header,
