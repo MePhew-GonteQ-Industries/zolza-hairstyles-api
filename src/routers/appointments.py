@@ -15,7 +15,7 @@ from ..schemas.appointment import (
     AppointmentSlot,
     CreateAppointment,
     ReturnAllAppointments,
-    ReturnAppointment,
+    ReturnAppointment, ReturnAppointmentDetailed,
 )
 from ..utils import (
     get_language_code_from_header,
@@ -299,7 +299,7 @@ def get_all_appointments(
     return {"items": all_appointments, "total": appointments_num}
 
 
-@router.get("/any/{appointment_id}")
+@router.get("/any/{appointment_id}", response_model=ReturnAppointmentDetailed)
 async def get_any_appointment(
     appointment_id: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
 ):
