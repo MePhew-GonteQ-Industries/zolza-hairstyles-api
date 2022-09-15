@@ -38,10 +38,11 @@ def add_token(
     user = user_session.user
     session = user_session.session
 
-    existing_token = (db.query(models.FcmToken)
-                      .where(models.FcmToken.user_id == user.id)
-                      .where(models.FcmToken.token == fcm_token.fcm_token) # noqa
-                      .first()
+    existing_token = (
+        db.query(models.FcmToken)
+        .where(models.FcmToken.user_id == user.id)
+        .where(models.FcmToken.token == fcm_token.fcm_token)  # noqa
+        .first()
     )
 
     if existing_token:
