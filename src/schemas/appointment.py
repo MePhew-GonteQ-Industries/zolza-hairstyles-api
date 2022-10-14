@@ -34,8 +34,15 @@ class BaseAppointment(BaseModel):
         orm_mode = True
 
 
-class CreateAppointment(BaseAppointment):
+class FirstSlot(BaseModel):
     first_slot_id: UUID4
+
+    class Config:
+        orm_mode = True
+
+
+class CreateAppointment(BaseAppointment, FirstSlot):
+    pass
 
 
 class ReturnAppointment(BaseModel):

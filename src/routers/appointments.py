@@ -16,7 +16,7 @@ from ..schemas.appointment import (
     CreateAppointment,
     ReturnAllAppointments,
     ReturnAppointment,
-    ReturnAppointmentDetailed,
+    ReturnAppointmentDetailed, FirstSlot,
 )
 from ..utils import (
     get_language_code_from_header,
@@ -316,8 +316,9 @@ async def get_any_appointment(
     return appointment
 
 
-@router.put("/any/{id}")
+@router.put("/any/{appointment_id}")
 def update_any_appointment(
+    new_start_slot: FirstSlot,
     appointment_id: UUID4,
     db: Session = Depends(get_db),
     admin_session=Depends(oauth2.get_admin),
@@ -331,6 +332,82 @@ def update_any_appointment(
     if not appointment_db:
         raise ResourceNotFoundHTTPException()
 
-    # TODO: Update appointment
+    first_slot_db = (
+        db.query(models.AppointmentSlot)
+        .where(models.AppointmentSlot.id == new_start_slot.first_slot_id)
+        .first()
+    )
+
+    if not first_slot_db:
+        raise ResourceNotFoundHTTPException(
+            detail=f"Slot with id of {new_start_slot.first_slot_id} does not exist"
+        )
+
+    appointment_start_time = first_slot_db.start_time
+    required_slots = appointment_db.service.required_slots
+    appointment_end_time = appointment_start_time + timedelta(
+        minutes=settings.APPOINTMENT_SLOT_TIME_MINUTES * required_slots
+    )
+
+    available_slots = (
+        db.query(models.AppointmentSlot)
+        .where(models.AppointmentSlot.start_time >= appointment_start_time)
+        .where(models.AppointmentSlot.end_time <= appointment_end_time)
+        .where(models.AppointmentSlot.reserved == False)
+        .where(models.AppointmentSlot.holiday == False)
+        .where(models.AppointmentSlot.sunday == False)
+        .where(models.AppointmentSlot.break_time == False)
+        .where(models.AppointmentSlot.occupied_by_appointment != appointment_db.id)
+        .order_by(models.AppointmentSlot.start_time)
+        .all()
+    )
+
+    print(len(available_slots))
+
+    if len(available_slots) < required_slots:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="not enough free slots available starting from slot "
+            f"with id of {new_start_slot.first_slot_id} to "
+            "accommodate service with id of "
+            f"{appointment_db.service.id} that requires "
+            f"{required_slots} consecutive free slots",
+        )
+
+    appointment_db.start_slot_id = new_start_slot.first_slot_id
+    appointment_db.end_slot_id = available_slots[-1].id
+
+    db.commit()
+    db.refresh(appointment_db)
+
+    current_slots = (
+        db.query(models.AppointmentSlot)
+        .where(models.AppointmentSlot.occupied == True)
+        .where(models.AppointmentSlot.occupied_by_appointment == appointment_db.id)
+        .order_by(models.AppointmentSlot.start_time)
+        .all()
+    )
+
+    for slot in current_slots:
+        slot.occupied = False
+        slot.occupied_by_appointment = None
+
+    for slot in available_slots:
+        slot.occupied = True
+        slot.occupied_by_appointment = appointment_db.id
+
+    db.commit()
+
+    scheduler.remove_job(f"appointment_reminder_appointment_#{appointment_db.id}")
+    scheduler.add_job(
+        func=send_appointment_reminder,
+        trigger="date",
+        id=f"appointment_reminder_appointment_#{appointment_db.id}",
+        name=f"Appointment Reminder - Appointment #{appointment_db.id}",
+        misfire_grace_time=20,
+        next_run_time=appointment_start_time - timedelta(hours=2),
+        args=[get_db],
+        kwargs={"user_id": appointment_db.user_id, "appointment_id": appointment_db.id},
+    )
 
     return appointment_db
