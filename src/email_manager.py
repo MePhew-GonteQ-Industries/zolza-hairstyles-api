@@ -39,7 +39,7 @@ async def send_email(
     try:
         await fast_mail_client.send_message(email, template_name)
     except ConnectionErrors:
-        logging.error("Failed to send message")  # todo: update logs
+        logging.error("Failed to send message")
         raise
 
 

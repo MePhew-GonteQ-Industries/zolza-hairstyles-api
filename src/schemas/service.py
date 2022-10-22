@@ -11,7 +11,9 @@ class Service(BaseModel):
     min_price: int = Field(gt=0)
     max_price: int = Field(gt=0)
     average_time_minutes: int
-    description: str | None
+    description: str = Field(min_length=60,
+                             max_length=140,
+                             default=None)
     available: bool
     required_slots: int
 
@@ -27,6 +29,7 @@ class Service(BaseModel):
 
 class CreateService(Service):
     description: Optional[str] = None
+    created_at: datetime
 
 
 class CreateServices(BaseModel):
@@ -35,7 +38,6 @@ class CreateServices(BaseModel):
 
 class ReturnService(Service):
     id: UUID4
-    created_at: datetime
 
 
 class ReturnServiceDetailed(ReturnService):

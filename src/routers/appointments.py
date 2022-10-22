@@ -1,4 +1,5 @@
 import datetime
+import logging
 from datetime import timedelta
 
 import apscheduler.jobstores.base
@@ -414,7 +415,7 @@ def update_any_appointment(
     try:
         scheduler.remove_job(f"appointment_reminder_appointment_#{appointment_db.id}")
     except apscheduler.jobstores.base.JobLookupError:
-        pass  # TODO: Log potential error
+        logging.info(f'Appointment reminder for appointment {appointment_db.id}')
     scheduler.add_job(
         func=send_appointment_reminder,
         trigger="date",
