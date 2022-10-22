@@ -23,17 +23,19 @@ def add_appointment_slot():
 def get_stats(db: Session = Depends(get_db), _=Depends(oauth2.get_admin)):
     registered_users = db.query(models.User.id).count()
 
-    upcoming_appointments = db.query(models.Appointment).where(
-        models.Appointment.archival == False
-    ).count()
+    upcoming_appointments = (
+        db.query(models.Appointment).where(models.Appointment.archival == False).count()
+    )
 
-    archival_appointments = db.query(models.Appointment).where(
-        models.Appointment.archival == True
-    ).count()
+    archival_appointments = (
+        db.query(models.Appointment).where(models.Appointment.archival == True).count()
+    )
 
     total_appointments = db.query(models.Appointment).count()
 
-    return {'registered_users': registered_users,
-            'total_appointments': total_appointments,
-            'upcoming_appointments': upcoming_appointments,
-            'archival_appointments': archival_appointments}
+    return {
+        "registered_users": registered_users,
+        "total_appointments": total_appointments,
+        "upcoming_appointments": upcoming_appointments,
+        "archival_appointments": archival_appointments,
+    }
