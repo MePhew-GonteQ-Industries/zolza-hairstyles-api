@@ -11,9 +11,7 @@ class Service(BaseModel):
     min_price: int = Field(gt=0)
     max_price: int = Field(gt=0)
     average_time_minutes: int
-    description: str = Field(min_length=60,
-                             max_length=140,
-                             default=None)
+    description: str = Field(min_length=60, max_length=140, default=None)
     available: bool
     required_slots: int
 
