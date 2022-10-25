@@ -1,23 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Zołza Hairstyles - account activation</title>
-    </head>
-    <body style="font-family:arial,helvetica,sans-serif; text-align: center;">
-        <h1 style="font-size: 25px;">Hello, {{user}}!</h1>
-        <h2>Thank you for signing up at <a href="https://mephew.ddns.net">zolza-hairstyles.pl.</a></h2>
-        <h2 style="font-weight: normal;">In order to verify your account's email address click the below button</h2>
-        <div style="text-align: center; display: flex; align-items: center; justify-content:center;">
-            <a href="{{account_confirmation_link}}" style="display: block; text-decoration: none; margin: 5px 0;
+<head>
+    <meta charset="UTF-8">
+    <title>Zołza Hairstyles - account activation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body style="font-family: 'Open Sans', sans-serif;; text-align: center;">
+<h1>Hello, {{user}}!</h1> <!-- TODO: Polish all templates -->
+<h2>Thank you for signing up at <a href="{{zolza_hairstyles_link}}">{{zolza_hairstyles_link}}</a></h2>
+<h2 style="font-weight: normal;">In order to verify your account's email address click the below button</h2>
+<div style="text-align: center; display: flex; align-items: center; justify-content:center;">
+    <a href="{{account_confirmation_link}}" style="display: block; text-decoration: none; margin: 5px 0;
              background-color: rgb(34, 188, 102); color: white; padding: 10px 20px; padding-left: 20px; padding-right:
               20px; padding-top: 10px; padding-bottom: 10px; font-size: 20px; border-radius: 10px; text-align: center;
                width: 50%;">Confirm your account</a>
-        </div>
-        <h2 style="font-weight: normal;">If the above button doesn't work, please copy the below URL and paste it into your web browser's search bar</h2>
-        <p style="background-color: rgb(237, 239, 242); display: block; margin: 5px 0;
+</div>
+<h2 style="font-weight: normal;">If the above button doesn't work, please copy the below URL and paste it into your web
+    browser's search bar</h2>
+<p style="background-color: rgb(237, 239, 242); display: block; margin: 5px 0;
           color: rgb(116, 120, 126); padding: 10px 20px; padding-left: 20px; padding-right: 20px; padding-top: 10px;
-          padding-bottom: 10px; border-radius: 10px; font-size: 18px; text-align: left; word-break: break-all;">{{account_confirmation_link}}</p>
-        <h2 style="font-weight: normal; font-size: 15px; text-align: center;">© 2021 Zołza Hairstyles</h2>
-    </body>
+          padding-bottom: 10px; border-radius: 10px; font-size: 18px; text-align: left; word-break: break-all;">
+    {{account_confirmation_link}}</p>
+<h2 style="font-weight: normal; text-align: center;">© 2021 Zołza Hairstyles</h2>
+</body>
 </html>
