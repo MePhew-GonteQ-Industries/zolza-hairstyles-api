@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field, UUID4, validator
 
@@ -30,13 +30,18 @@ class CreateService(Service):
     created_at: datetime
 
 
-class CreateServices(BaseModel):
-    services: List[Service]
-
-
 class ReturnService(Service):
     id: UUID4
 
 
 class ReturnServiceDetailed(ReturnService):
     created_by: ReturnUserDetailed
+
+
+class UpdateService(BaseModel):
+    name: str
+    min_price: int = Field(gt=0)
+    max_price: int = Field(gt=0)
+    average_time_minutes: int
+    description: str = Field(min_length=60, max_length=140, default=None)
+    available: bool
