@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends, Header
 from pydantic import UUID4
 from sqlalchemy.orm import Session
@@ -6,8 +7,7 @@ from .. import models, oauth2
 from ..config import settings
 from ..database import get_db
 from ..exceptions import ResourceNotFoundHTTPException
-from ..schemas.service import ReturnService, ReturnServiceDetailed, \
-    Service, UpdateService
+from ..schemas.service import CreateServices, ReturnService, ReturnServiceDetailed
 from ..utils import get_language_code_from_header
 
 router = APIRouter(prefix=settings.BASE_URL + "/services", tags=["Services"])
@@ -15,7 +15,7 @@ router = APIRouter(prefix=settings.BASE_URL + "/services", tags=["Services"])
 
 @router.get("", response_model=list[ReturnService])
 def get_services(
-        db: Session = Depends(get_db), accept_language: str | None = Header(None)
+    db: Session = Depends(get_db), accept_language: str | None = Header(None)
 ):
     language_code = get_language_code_from_header(accept_language)
 
@@ -45,7 +45,7 @@ def get_services_details(db: Session = Depends(get_db), _=Depends(oauth2.get_adm
 
 @router.get("/details/{uuid}", response_model=ReturnServiceDetailed)
 def get_service_details(
-        uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
+    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
 ):
     service_details = db.query(models.Service).where(models.Service.id == uuid).first()
 
@@ -66,60 +66,34 @@ def get_service(uuid: UUID4, db: Session = Depends(get_db)):
 
 
 @router.post("")
-def create_service(
-        service: Service,
-        db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin),  # TODO: events
+def create_services(
+    services: CreateServices,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),
 ):
-    new_service = models.Service(**service.dict())
-
-    db.add(new_service)
-    db.commit()
-
-    return new_service
-
-
-@router.put("/service/{service_id}")
-def update_service(
-        service_id: UUID4,
-        service_data: UpdateService,
-        db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin)  # TODO: events
-):
-    service_db = db.query(models.Service).where(
-        models.Service.id == service_id
-    ).first()
-
-    if not service_db:
-        raise ResourceNotFoundHTTPException()
-
-    service_db.name = service_data.name
-    service_db.min_price = service_data.min_price
-    service_db.max_price = service_data.max_price
-    service_db.average_time_minutes = service_data.average_time_minutes
-    service_db.description = service_data.description
-
-    db.commit()
-
-    return service_db
-
-
-@router.post("/service/service_id")
-def delete_service(
-        service_id: UUID4,
-        db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin),  # TODO: events
-):
-    service_db = db.query(models.Service).where(
-        models.Service.id == service_id
-    ).first()
-
-    if not service_db:
-        raise ResourceNotFoundHTTPException()
-
     raise NotImplementedError
-    service_db.deleted = True
 
-    db.commit()
+    # return services
 
-    return service_db
+
+@router.put("")
+def update_services(db: Session = Depends(get_db), _=Depends(oauth2.get_admin)):
+    raise NotImplementedError()
+
+
+@router.put("/service/{uuid}")
+def update_service(
+    uuid: UUID4, db: Session = Depends(get_db), _=Depends(oauth2.get_admin)
+):
+    raise NotImplementedError()
+
+
+@router.delete("")
+def delete_services(
+    services: List[UUID4],
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),
+):
+    raise NotImplementedError
+    # print(services)
+    # return services
