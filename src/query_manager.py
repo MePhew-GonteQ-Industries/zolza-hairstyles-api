@@ -1,6 +1,6 @@
 import pydantic
 from fastapi import Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from sqlalchemy.orm import Session
 
 
@@ -30,12 +30,30 @@ def sorting_params(sort: str | None = None) -> SortingQueryParams:
                             detail=e.errors())
 
 
+class FilteringQueryParams(BaseModel):
+    filters: str
+
+    @validator("filters")
+    def validate(cls, value) -> BaseModel:
+        print(value)
+
+
+def filtering_params(filters: str) -> FilteringQueryParams:
+    try:
+        return FilteringQueryParams(filters=filters)
+    except pydantic.error_wrappers.ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=e.errors())
+
+
 class CommonQueryParams:
-    def __init__(self, pagination_query_params: PaginationQueryParams = Depends(
-        pagination_params),
-                 sorting_query_params: SortingQueryParams = Depends(sorting_params)):
+    def __init__(self,
+                 pagination_query_params: PaginationQueryParams = Depends(pagination_params),
+                 sorting_query_params: SortingQueryParams = Depends(sorting_params),
+                 filtering_query_params: FilteringQueryParams = Depends(filtering_params)):
         self.pagination_query_params = pagination_query_params
         self.sorting_query_params = sorting_query_params
+        self.filtering_query_params = filtering_query_params
 
 
 class Query:
