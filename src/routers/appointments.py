@@ -13,7 +13,7 @@ from ..config import settings
 from ..database import get_db
 from ..exceptions import ResourceNotFoundHTTPException
 from ..jobs import send_appointment_reminder
-from ..query_manager import CommonQueryParams
+from ..query_manager import CommonQueryParams, ParametrizedQuery
 from ..scheduler import scheduler
 from ..schemas.appointment import (
     AppointmentSlot,
@@ -278,7 +278,7 @@ def create_appointment(
 
 @router.get("/all", response_model=ReturnAllAppointments)  # TODO: search
 def get_all_appointments(
-        pagination_query_params: CommonQueryParams = Depends(),
+        common_query_params: CommonQueryParams = Depends(),
         db: Session = Depends(get_db),
         _=Depends(oauth2.get_admin),
         upcoming_only: bool = False,
@@ -286,8 +286,7 @@ def get_all_appointments(
         limit: int | None = None,
         user_id: UUID4 | None = None,
 ):
-    print(pagination_query_params.pagination_query_params)
-    print(pagination_query_params.sorting_query_params)
+    appointments = ParametrizedQuery(db, models.Appointment, common_query_params)
     all_appointments = db.query(models.Appointment)
 
     if upcoming_only:
