@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -23,13 +25,15 @@ def add_appointment_slot():
 def get_stats(db: Session = Depends(get_db), _=Depends(oauth2.get_admin)):
     registered_users = db.query(models.User.id).count()
 
-    upcoming_appointments = (
-        db.query(models.Appointment).where(models.Appointment.archival == False).count()
-    )
+    upcoming_appointments = db.query(models.Appointment).filter(
+        models.Appointment.end_slot.has(
+            models.AppointmentSlot.end_time > datetime.utcnow()
+        )).count()
 
-    archival_appointments = (
-        db.query(models.Appointment).where(models.Appointment.archival == True).count()
-    )
+    archival_appointments = db.query(models.Appointment).filter(
+        models.Appointment.end_slot.has(
+            models.AppointmentSlot.end_time < datetime.utcnow()
+        )).count()
 
     total_appointments = db.query(models.Appointment).count()
 
