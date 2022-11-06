@@ -234,7 +234,6 @@ class Appointment(Base):
         UUID(as_uuid=True), ForeignKey("appointment_slots.id"), nullable=False
     )
     canceled = Column(Boolean, nullable=False, server_default="false")
-    archival = Column(Boolean, nullable=False, server_default="false")
     created_at = Column(
         TIMESTAMP(timezone=False),
         nullable=False,
