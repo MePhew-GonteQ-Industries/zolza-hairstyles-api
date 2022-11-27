@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 import langcodes
@@ -253,3 +254,7 @@ def load_session_data(session_db: models.Session):
     session_db.last_access_data = last_access_data
 
     return session_db
+
+
+def is_archival(appointment: models.Appointment):
+    return appointment.end_slot.end_time < datetime.datetime.utcnow()
