@@ -338,18 +338,18 @@ def get_any_appointment(
         appointment_id: UUID4, db: Session = Depends(get_db),
         _=Depends(oauth2.get_admin)
 ):
-    appointment = (
+    appointment_db = (
         db.query(models.Appointment)
         .where(models.Appointment.id == appointment_id)
         .first()
     )
 
-    if not appointment:
+    if not appointment_db:
         raise ResourceNotFoundHTTPException()
 
-    appointment.archival = appointment.end_slot.end_time < datetime.datetime.utcnow()
+    appointment_db.archival = is_archival(appointment_db)
 
-    return appointment
+    return appointment_db
 
 
 @router.put("/any/{appointment_id}")
