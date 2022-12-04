@@ -168,7 +168,6 @@ def get_your_appointments(
         appointment_db.service.name = service_translation[0]
         appointment_db.service.description = service_translation[1]
 
-    for appointment_db in appointments_db:
         appointment_db.archival = is_archival(appointment_db)
 
     return appointments_db
@@ -293,7 +292,7 @@ def get_all_appointments(
 ):
     admin = admin_session.admin
 
-    all_appointments = db.query(models.Appointment)
+    appointments_db = db.query(models.Appointment)
 
     # TODO: fix
     # if upcoming_only:
@@ -301,37 +300,37 @@ def get_all_appointments(
     #         models.Appointment.archival == False)
 
     if user_id:
-        all_appointments = all_appointments.where(models.Appointment.user_id == user_id)
+        appointments_db = appointments_db.where(models.Appointment.user_id == user_id)
 
     if offset:
-        all_appointments = all_appointments.offset(offset)
+        appointments_db = appointments_db.offset(offset)
 
     if limit:
-        all_appointments = all_appointments.limit(limit)
+        appointments_db = appointments_db.limit(limit)
 
-    all_appointments = all_appointments.all()
+    appointments_db = appointments_db.all()
 
     appointments_num = db.query(models.Appointment).count()
 
     language_id = get_user_language_id(db, admin.id)
 
-    for appointment in all_appointments:
+    for appointment_db in appointments_db:
         service_translation = (
             db.query(
                 models.ServiceTranslations.name, models.ServiceTranslations.description
             )
             .where(models.ServiceTranslations.language_id == language_id)
-            .where(models.ServiceTranslations.service_id == appointment.service.id)
+            .where(models.ServiceTranslations.service_id == appointment_db.service.id)
             .first()
         )
-        appointment.service.name = service_translation[0]
-        appointment.service.description = service_translation[1]
+        appointment_db.service.name = service_translation[0]
+        appointment_db.service.description = service_translation[1]
 
-        appointment.archival = (
-                appointment.end_slot.end_time < datetime.datetime.utcnow()
+        appointment_db.archival = (
+                appointment_db.end_slot.end_time < datetime.datetime.utcnow()
         )
 
-    return {"items": all_appointments, "total": appointments_num}
+    return {"items": appointments_db, "total": appointments_num}
 
 
 @router.get("/any/{appointment_id}", response_model=ReturnAppointmentDetailed)
