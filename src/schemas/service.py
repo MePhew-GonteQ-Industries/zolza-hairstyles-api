@@ -1,47 +1,43 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field, UUID4, validator
 
 from .user import ReturnUserDetailed
 
 
-class Service(BaseModel):
+class CreateService(BaseModel):
     name: str
     min_price: int = Field(gt=0)
     max_price: int = Field(gt=0)
     average_time_minutes: int
-    description: str = Field(min_length=60, max_length=140, default=None)
     available: bool
-    required_slots: int
+    description: str | None
 
-    @validator("max_price")
-    def validate(cls, v):
-        if v.min_price > v.max_price:
-            raise ValueError("ensure max_price is greater than the min_price")
+    @validator("description")
+    def validate_description(cls, v):
+        if not v:
+            return None
+
+        if len(v) < 60:
+            raise ValueError("ensure this value has at least 60 characters")
+        elif len(v) > 140:
+            raise ValueError("ensure this value has at most 140 characters")
         return v
 
-    class Config:
-        orm_mode = True
+    @validator("max_price")
+    def validate_max_price(cls, v, values):
+        if 'min_price' in values and v < values['min_price']:
+            raise ValueError(
+                "ensure max_price is greater than or equal to the min_price"
+            )
+        return v
 
 
-class CreateService(Service):
-    description: Optional[str] = None
-    created_at: datetime
-
-
-class ReturnService(Service):
+class ReturnService(CreateService):
+    required_slots: int
     id: UUID4
 
 
 class ReturnServiceDetailed(ReturnService):
     created_by: ReturnUserDetailed
-
-
-class UpdateService(BaseModel):
-    name: str
-    min_price: int = Field(gt=0)
-    max_price: int = Field(gt=0)
-    average_time_minutes: int
-    description: str = Field(min_length=60, max_length=140, default=None)
-    available: bool
+    created_at: datetime
