@@ -2,8 +2,6 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, UUID4, validator
 
-from .user import ReturnUserDetailed
-
 
 class CreateService(BaseModel):
     name: str
@@ -42,5 +40,5 @@ class ReturnService(CreateService):
 
 
 class ReturnServiceDetailed(ReturnService):
-    created_by: ReturnUserDetailed
+    # created_by: ReturnUserDetailed TODO: feat-detailed_entity_info
     created_at: datetime
