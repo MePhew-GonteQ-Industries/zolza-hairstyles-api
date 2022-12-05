@@ -7,7 +7,8 @@ from ..config import settings
 from ..database import get_db
 from ..exceptions import ResourceNotFoundHTTPException
 from ..schemas.service import (
-    CreateService, ReturnService,
+    CreateService,
+    ReturnService,
     ReturnServiceDetailed,
 )
 from ..utils import get_language_code_from_header, get_user_language_id
@@ -39,8 +40,9 @@ def get_services(
 
 
 @router.get("/details", response_model=list[ReturnServiceDetailed])
-def get_services_details(db: Session = Depends(get_db),
-                         admin_session=Depends(oauth2.get_admin)):
+def get_services_details(
+    db: Session = Depends(get_db), admin_session=Depends(oauth2.get_admin)
+):
     admin = admin_session.admin
 
     language_id = get_user_language_id(db, admin.id)
@@ -64,8 +66,7 @@ def get_services_details(db: Session = Depends(get_db),
 
 @router.get("/details/{uuid}", response_model=ReturnServiceDetailed)
 def get_service_details(
-        uuid: UUID4, db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin)
+    uuid: UUID4, db: Session = Depends(get_db), admin_session=Depends(oauth2.get_admin)
 ):
     service_db = db.query(models.Service).where(models.Service.id == uuid).first()
 
@@ -90,15 +91,21 @@ def get_service_details(
 
 
 @router.get("/{uuid}", response_model=ReturnService)
-def get_service(uuid: UUID4, db: Session = Depends(get_db),
-                accept_language: str | None = Header(None)):
+def get_service(
+    uuid: UUID4,
+    db: Session = Depends(get_db),
+    accept_language: str | None = Header(None),
+):
     language_code = get_language_code_from_header(accept_language)
 
-    service_db = (db.query(models.Service, models.ServiceTranslations)
-                  .join(models.ServiceTranslations)
-                  .join(models.Language)
-                  .where(models.Language.code == language_code)
-                  .where(models.Service.id == uuid).first())
+    service_db = (
+        db.query(models.Service, models.ServiceTranslations)
+        .join(models.ServiceTranslations)
+        .join(models.Language)
+        .where(models.Language.code == language_code)
+        .where(models.Service.id == uuid)
+        .first()
+    )
 
     if not service_db:
         raise ResourceNotFoundHTTPException()
@@ -114,9 +121,9 @@ def get_service(uuid: UUID4, db: Session = Depends(get_db),
 
 @router.post("")
 def create_service(
-        service: CreateService,
-        db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin),  # TODO: events
+    service: CreateService,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
     raise NotImplementedError  # todo: finish
     new_service = models.Service(**service.dict())
@@ -129,10 +136,10 @@ def create_service(
 
 @router.put("/service/{service_id}")
 def update_service(
-        service_id: UUID4,
-        service_data: CreateService,
-        db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin),  # TODO: events
+    service_id: UUID4,
+    service_data: CreateService,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
     raise NotImplementedError  # todo: finish
     service_db = db.query(models.Service).where(models.Service.id == service_id).first()
