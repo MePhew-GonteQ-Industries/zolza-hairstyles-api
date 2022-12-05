@@ -379,6 +379,7 @@ def get_any_appointment(
     return appointment_db
 
 
+# TODO: find potential bug when checking free space
 @router.put("/any/{appointment_id}")
 def update_any_appointment(
         new_start_slot: FirstSlot,
