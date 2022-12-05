@@ -32,6 +32,9 @@ class CreateService(BaseModel):
             )
         return v
 
+    class Config:
+        orm_mode = True
+
 
 class ReturnService(CreateService):
     required_slots: int
