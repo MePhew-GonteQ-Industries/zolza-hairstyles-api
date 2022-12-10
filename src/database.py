@@ -1,8 +1,8 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+
 from .config import settings
-from sqlalchemy import engine
 
 SQLALCHEMY_DATABASE_URL = (
     f"postgresql://"
@@ -17,14 +17,14 @@ SQLALCHEMY_DATABASE_URL = (
 def get_db_engine(database_url: str):
     db_engine = create_engine(
         database_url,
-        connect_args={"options": "-c statement_timeout=1000"},
+        connect_args={"options": "-c statement_timeout=4000"},
         pool_pre_ping=True,
     )
     return db_engine
 
 
 def get_session(db_engine: engine):
-    session = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
+    session = sessionmaker(autoflush=False, bind=db_engine)
     return session
 
 
