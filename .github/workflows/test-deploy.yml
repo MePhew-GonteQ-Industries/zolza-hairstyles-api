@@ -81,7 +81,7 @@ jobs:
           key: ${{secrets.DEPLOYMENT_SSH_KEY}}
           passphrase: ${{secrets.DEPLOYMENT_SSH_KEY_PASSPHRASE}}
           script: |
-            echo ${{secrets.DEPLOYMENT_PASSWORD}} | sudo -S apt update && echo ${{secrets.DEPLOYMENT_PASSWORD}} | sudo -S apt upgrade
+            echo '${{secrets.DEPLOYMENT_PASSWORD}}' | sudo -S apt update && echo ${{secrets.DEPLOYMENT_PASSWORD}} | sudo -S apt -y upgrade
             cd ${{secrets.DEPLOYMENT_PATH}}zolza-hairstyles-api
             git pull
             source venv/bin/activate
