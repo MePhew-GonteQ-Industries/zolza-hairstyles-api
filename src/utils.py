@@ -259,5 +259,5 @@ def load_session_data(session_db: models.Session):
 
 def is_archival(appointment: models.Appointment):
     return appointment.end_slot.end_time < datetime.datetime.now(
-        pytz.timezone('Poland')
+        pytz.timezone("Poland")
     )
