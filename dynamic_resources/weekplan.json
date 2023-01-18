@@ -1,14 +1,14 @@
 [
   {
     "work_hours": {
-      "start_hour": 8,
+      "start_hour": 10,
       "start_minute": 0,
-      "end_hour": 18,
+      "end_hour": 20,
       "end_minute": 0
     },
     "breaks": [
       {
-        "start_hour": 11,
+        "start_hour": 13,
         "start_minute": 30,
         "time_minutes": 30
       }
@@ -16,14 +16,14 @@
   },
   {
     "work_hours": {
-      "start_hour": 8,
+      "start_hour": 10,
       "start_minute": 0,
-      "end_hour": 18,
+      "end_hour": 20,
       "end_minute": 0
     },
     "breaks": [
       {
-        "start_hour": 11,
+        "start_hour": 13,
         "start_minute": 30,
         "time_minutes": 30
       }
@@ -31,14 +31,14 @@
   },
   {
     "work_hours": {
-      "start_hour": 8,
+      "start_hour": 10,
       "start_minute": 0,
-      "end_hour": 18,
+      "end_hour": 20,
       "end_minute": 0
     },
     "breaks": [
       {
-        "start_hour": 11,
+        "start_hour": 13,
         "start_minute": 30,
         "time_minutes": 30
       }
@@ -46,14 +46,14 @@
   },
   {
     "work_hours": {
-      "start_hour": 8,
+      "start_hour": 10,
       "start_minute": 0,
-      "end_hour": 18,
+      "end_hour": 20,
       "end_minute": 0
     },
     "breaks": [
       {
-        "start_hour": 11,
+        "start_hour": 13,
         "start_minute": 30,
         "time_minutes": 30
       }
@@ -61,14 +61,14 @@
   },
   {
     "work_hours": {
-      "start_hour": 8,
+      "start_hour": 10,
       "start_minute": 0,
-      "end_hour": 18,
+      "end_hour": 20,
       "end_minute": 0
     },
     "breaks": [
       {
-        "start_hour": 11,
+        "start_hour": 13,
         "start_minute": 30,
         "time_minutes": 30
       }
@@ -76,9 +76,9 @@
   },
   {
     "work_hours": {
-      "start_hour": 4,
+      "start_hour": 6,
       "start_minute": 0,
-      "end_hour": 12,
+      "end_hour": 14,
       "end_minute": 30
     },
     "breaks": []

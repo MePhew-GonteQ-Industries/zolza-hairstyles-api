@@ -7,6 +7,7 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 import langcodes
+import pytz
 from apscheduler.schedulers.background import BackgroundScheduler
 from langcodes import standardize_tag
 from sqlalchemy.orm import Session
@@ -245,6 +246,8 @@ def generate_appointment_slots(db: Session) -> None:
     holiday_names = load_json_file("resources/holiday_names.json")
     weekplan = load_json_file("dynamic_resources/weekplan.json")
 
+    pl_timezone = pytz.timezone('Poland')
+
     holiday_ids = []
     for holiday in holiday_names:
         holiday_id = (
@@ -454,8 +457,8 @@ def generate_appointment_slots(db: Session) -> None:
                         if current_date.minute == break_time["start_minute"]:
                             appointment_slot = models.AppointmentSlot(
                                 date=current_date,
-                                start_time=current_date,
-                                end_time=current_date
+                                start_time=current_date.astimezone(pl_timezone),
+                                end_time=current_date.astimezone(pl_timezone)
                                          + timedelta(
                                     minutes=break_time["time_minutes"]),
                                 break_time=True,
@@ -467,9 +470,9 @@ def generate_appointment_slots(db: Session) -> None:
         if not appointment_slot:
             appointment_slot = models.AppointmentSlot(
                 date=current_date,
-                start_time=current_date,
+                start_time=current_date.astimezone(pl_timezone),
                 end_time=(
-                        current_date
+                        current_date.astimezone(pl_timezone)
                         + timedelta(minutes=settings.APPOINTMENT_SLOT_TIME_MINUTES)
                 ),
             )
