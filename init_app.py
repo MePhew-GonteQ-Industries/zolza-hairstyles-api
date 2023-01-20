@@ -312,7 +312,7 @@ def generate_appointment_slots(db: Session) -> None:
                 minute=first_start_minute,
                 second=0,
                 microsecond=0,
-            ).astimezone(tz=pytz.timezone('Poland'))
+            ).astimezone(tz=pl_timezone)
 
     if not first_slot_start:
         hours = now.hour
@@ -332,14 +332,14 @@ def generate_appointment_slots(db: Session) -> None:
                 second=0,
                 microsecond=0,
                 day=now.day + 1,
-            ).astimezone(tz=pytz.timezone('Poland'))
+            ).astimezone(tz=pl_timezone)
         else:
             first_slot_start = now.replace(
                 hour=hours,
                 minute=minutes,
                 second=0,
                 microsecond=0,
-            ).astimezone(tz=pytz.timezone('Poland'))
+            ).astimezone(tz=pl_timezone)
 
     days = 366 if calendar.isleap(now.year) else 365
 
@@ -347,7 +347,7 @@ def generate_appointment_slots(db: Session) -> None:
 
     last_slot_end = last_slot_end.replace(
         hour=last_end_hour, minute=last_end_minute, second=0, microsecond=0
-    ).astimezone(pytz.timezone('Poland'))
+    ).astimezone(pl_timezone)
 
     current_date = first_slot_start
 
