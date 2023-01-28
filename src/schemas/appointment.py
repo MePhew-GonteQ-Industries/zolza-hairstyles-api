@@ -1,6 +1,6 @@
 import datetime
 
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel, UUID4, validator
 
 from src.schemas.service import ReturnService
 from src.schemas.user import ReturnUserDetailed
@@ -65,3 +65,22 @@ class ReturnAppointmentDetailed(ReturnAppointment):
 class ReturnAllAppointments(BaseModel):
     items: list[ReturnAppointmentDetailed]
     total: int
+
+
+class SlotsReservation(BaseModel):
+    slots: list[UUID4]
+
+    @validator("slots")
+    def validate_slots(cls, v):
+        if len(set(v)) != len(v):
+            raise ValueError("ensure all slots are unique")
+
+        return v
+
+
+class ReserveSlots(SlotsReservation):
+    reason: str = None
+
+
+class UnreserveSlots(SlotsReservation):
+    pass
