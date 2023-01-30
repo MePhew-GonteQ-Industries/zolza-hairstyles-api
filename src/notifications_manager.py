@@ -7,4 +7,3 @@ class NotificationsManager:
 
     def send_notification(self):
         settings = self.get_notification_settings()
-
