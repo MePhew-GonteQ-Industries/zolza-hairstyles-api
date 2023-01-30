@@ -40,8 +40,8 @@
       "pl": "Strzyżenie dziecięce",
       "en": "Children's haircut"
     },
-    "min_price": "25",
-    "max_price": "25",
+    "min_price": "30",
+    "max_price": "30",
     "average_time_minutes": "30"
   },
   {
@@ -49,8 +49,8 @@
       "pl": "Fryzura ślubna - próbna",
       "en": "Wedding hairstyle - trial"
     },
-    "min_price": "70",
-    "max_price": "90",
+    "min_price": "130",
+    "max_price": "150",
     "average_time_minutes": "90"
   },
   {
@@ -58,8 +58,8 @@
       "pl": "Fryzura ślubna - ślub",
       "en": "Wedding hairstyle - wedding"
     },
-    "min_price": "110",
-    "max_price": "150",
+    "min_price": "150",
+    "max_price": "180",
     "average_time_minutes": "60"
   },
   {
@@ -67,8 +67,8 @@
       "pl": "Fryzura okolicznościowa",
       "en": "Occasional hairstyle"
     },
-    "min_price": "70",
-    "max_price": "90",
+    "min_price": "110",
+    "max_price": "130",
     "average_time_minutes": "60"
   }
 ]
