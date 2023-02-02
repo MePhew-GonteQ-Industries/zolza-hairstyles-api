@@ -17,18 +17,18 @@ firebase_admin.initialize_app(cred)
 
 
 def send_multicast_message(
-    *,
-    db: Session,
-    registration_tokens_db: list[models.FcmToken],
-    title: str,
-    msg: str,
-    registration_tokens: list[str],
-    data_object: object = None
+        *,
+        db: Session,
+        fcm_tokens_db: list[models.FcmToken],
+        title: str,
+        msg: str,
+        fcm_tokens: list[str],
+        data_object: object = None
 ) -> None:
     message = messaging.MulticastMessage(
         notification=messaging.Notification(title=title, body=msg),
         data=data_object,
-        tokens=registration_tokens,
+        tokens=fcm_tokens,
     )
 
     response = messaging.send_multicast(message)
@@ -39,6 +39,6 @@ def send_multicast_message(
             if not resp.success:
                 # The order of responses corresponds to the order of the registration
                 # tokens.
-                registration_tokens_db[idx].delete()
+                fcm_tokens_db[idx].delete()
 
         db.commit()
