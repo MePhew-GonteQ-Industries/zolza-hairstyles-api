@@ -3,18 +3,19 @@ import datetime
 from pydantic import UUID4
 
 from .notifications_manager import (
-    AppointmentCanceledNotification, AppointmentUpdatedNotification,
+    AppointmentCanceledNotification,
+    AppointmentUpdatedNotification,
     NewAppointmentNotification,
-    UpcomingAppointmentNotification
+    UpcomingAppointmentNotification,
 )
 
 
 def send_upcoming_appointment_notification(
-        get_db_func: callable,
-        *,
-        user_id: UUID4,
-        appointment_id: UUID4,
-        minutes_to_appointment: int,
+    get_db_func: callable,
+    *,
+    user_id: UUID4,
+    appointment_id: UUID4,
+    minutes_to_appointment: int,
 ):
     db = next(get_db_func())
 
@@ -28,12 +29,12 @@ def send_upcoming_appointment_notification(
 
 
 def send_new_appointment_notification(
-        get_db_func: callable,
-        *,
-        user_name: str,
-        user_surname: str,
-        service_id: UUID4,
-        appointment_date: datetime.datetime,
+    get_db_func: callable,
+    *,
+    user_name: str,
+    user_surname: str,
+    service_id: UUID4,
+    appointment_date: datetime.datetime,
 ):
     db = next(get_db_func())
 
@@ -48,11 +49,11 @@ def send_new_appointment_notification(
 
 
 def send_appointment_updated_notification(
-        get_db_func: callable,
-        *,
-        user_id: UUID4,
-        service_id: UUID4,
-        new_appointment_date: datetime.datetime,
+    get_db_func: callable,
+    *,
+    user_id: UUID4,
+    service_id: UUID4,
+    new_appointment_date: datetime.datetime,
 ):
     db = next(get_db_func())
 
@@ -66,11 +67,11 @@ def send_appointment_updated_notification(
 
 
 def send_appointment_canceled_notification(
-        get_db_func: callable,
-        *,
-        user_id: UUID4,
-        service_id: UUID4,
-        appointment_date: datetime.datetime,
+    get_db_func: callable,
+    *,
+    user_id: UUID4,
+    service_id: UUID4,
+    appointment_date: datetime.datetime,
 ):
     db = next(get_db_func())
 
