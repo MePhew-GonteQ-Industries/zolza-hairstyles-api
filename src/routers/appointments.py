@@ -27,12 +27,9 @@ from ..schemas.appointment import (
     ReturnAppointmentDetailed,
     UnreserveSlots,
 )
-from ..utils import (
-    get_language_code_from_header,
-    get_language_id_from_language_code,
-    get_user_language_id,
-    is_archival,
-)
+from ..utils import (PL_TIMEZONE, get_language_code_from_header,
+                     get_language_id_from_language_code, get_user_language_id,
+                     is_archival)
 
 router = APIRouter(prefix=settings.BASE_URL + "/appointments", tags=["Appointments"])
 
@@ -624,6 +621,9 @@ def reserve_slots(
         .where(models.AppointmentSlot.holiday == False)
         .where(models.AppointmentSlot.sunday == False)
         .where(models.AppointmentSlot.break_time == False)
+        .where(models.AppointmentSlot.start_time > datetime.datetime.now().astimezone(
+            PL_TIMEZONE
+        ))
         .all()
     )
 
@@ -638,8 +638,8 @@ def reserve_slots(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"These slots cannot be reserved: {invalid_slots}"
                    f" (This most likely means these slots are either"
-                   f" already reserved or occupied, holiday, sunday or"
-                   f" break time)",
+                   f" already reserved or occupied, holiday, sunday, break time"
+                   f" or archival)",
         )
 
     for slot_db in slots_db:
@@ -667,6 +667,9 @@ def unreserve_slots(
         .where(models.AppointmentSlot.holiday == False)
         .where(models.AppointmentSlot.sunday == False)
         .where(models.AppointmentSlot.break_time == False)
+        .where(models.AppointmentSlot.start_time > datetime.datetime.now().astimezone(
+            PL_TIMEZONE
+        ))
         .all()
     )
 
@@ -681,8 +684,8 @@ def unreserve_slots(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"These slots cannot be reserved: {invalid_slots}"
                    f" (This most likely means these slots are either"
-                   f" not reserved or occupied, holiday, sunday or"
-                   f" break time)",
+                   f" not reserved or occupied, holiday, sunday, break time"
+                   f" or archival)",
         )
 
     for slot_db in slots_db:
