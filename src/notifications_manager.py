@@ -40,21 +40,23 @@ class UpcomingAppointmentNotification(Notification):
     user: models.User
     appointment: models.Appointment
 
-    def __init__(self, *,
-                 db: Session,
-                 user_id: UUID4,
-                 appointment_id: UUID4,
-                 minutes_to_appointment: int,
-                 ):
+    def __init__(
+        self,
+        *,
+        db: Session,
+        user_id: UUID4,
+        appointment_id: UUID4,
+        minutes_to_appointment: int,
+    ):
         self.db = db
         self.user_id = user_id
         self.appointment_id = appointment_id
         self.minutes_to_appointment = minutes_to_appointment
 
         self.fcm_tokens_db = (
-            db.query(models.FcmToken).where(
-                models.FcmToken.user_id == self.user_id
-            ).all()
+            db.query(models.FcmToken)
+            .where(models.FcmToken.user_id == self.user_id)
+            .all()
         )
 
         if self.fcm_tokens_db:
@@ -87,15 +89,18 @@ class UpcomingAppointmentNotification(Notification):
             #     case _:
             #         raise ValueError()
 
-            service_db = db.query(models.Service).where(
-                models.Service.id == self.appointment.service_id).first()
+            service_db = (
+                db.query(models.Service)
+                .where(models.Service.id == self.appointment.service_id)
+                .first()
+            )
 
             language_id = get_user_language_id(db, self.user.id)
 
             service_translation = (
                 db.query(
                     models.ServiceTranslations.name,
-                    models.ServiceTranslations.description
+                    models.ServiceTranslations.description,
                 )
                 .where(models.ServiceTranslations.language_id == language_id)
                 .where(models.ServiceTranslations.service_id == service_db.id)
@@ -107,11 +112,9 @@ class UpcomingAppointmentNotification(Notification):
 
             match minutes_to_appointment:
                 case 30:
-                    self.msg = f"Twoja wizyta odbędzie się za" \
-                               f" 30 minut"
+                    self.msg = f"Twoja wizyta odbędzie się za" f" 30 minut"
                 case 120:
-                    self.msg = f"Twoja wizyta odbędzie się za" \
-                               f" 2 godziny"
+                    self.msg = f"Twoja wizyta odbędzie się za" f" 2 godziny"
         else:
             self.abort_send = True
 
@@ -122,19 +125,18 @@ class UpcomingAppointmentNotification(Notification):
 class AppointmentUpdatedNotification(Notification):
     user_id: UUID4
 
-    def __init__(self,
-                 *,
-                 db: Session,
-                 user_id: UUID4,
-                 service_id: UUID4,
-                 new_appointment_date: datetime.datetime,
-                 ):
+    def __init__(
+        self,
+        *,
+        db: Session,
+        user_id: UUID4,
+        service_id: UUID4,
+        new_appointment_date: datetime.datetime,
+    ):
         self.db = db
 
         self.fcm_tokens_db = (
-            db.query(models.FcmToken).where(
-                models.FcmToken.user_id == user_id
-            ).all()
+            db.query(models.FcmToken).where(models.FcmToken.user_id == user_id).all()
         )
 
         # TODO: Notification settings
@@ -147,7 +149,7 @@ class AppointmentUpdatedNotification(Notification):
             service_translation = (
                 db.query(
                     models.ServiceTranslations.name,
-                    models.ServiceTranslations.description
+                    models.ServiceTranslations.description,
                 )
                 .where(models.ServiceTranslations.language_id == language_id)
                 .where(models.ServiceTranslations.service_id == service_id)
@@ -168,19 +170,18 @@ class AppointmentUpdatedNotification(Notification):
 class AppointmentCanceledNotification(Notification):
     user_id: UUID4
 
-    def __init__(self,
-                 *,
-                 db: Session,
-                 user_id: UUID4,
-                 service_id: UUID4,
-                 appointment_date: datetime.datetime,
-                 ):
+    def __init__(
+        self,
+        *,
+        db: Session,
+        user_id: UUID4,
+        service_id: UUID4,
+        appointment_date: datetime.datetime,
+    ):
         self.db = db
 
         self.fcm_tokens_db = (
-            db.query(models.FcmToken).where(
-                models.FcmToken.user_id == user_id
-            ).all()
+            db.query(models.FcmToken).where(models.FcmToken.user_id == user_id).all()
         )
 
         # TODO: Notification settings
@@ -193,7 +194,7 @@ class AppointmentCanceledNotification(Notification):
             service_translation = (
                 db.query(
                     models.ServiceTranslations.name,
-                    models.ServiceTranslations.description
+                    models.ServiceTranslations.description,
                 )
                 .where(models.ServiceTranslations.language_id == language_id)
                 .where(models.ServiceTranslations.service_id == service_id)
@@ -225,14 +226,15 @@ class NewAppointmentNotification(Notification):
 
     notifications: list[Notification]
 
-    def __init__(self,
-                 *,
-                 db: Session,
-                 user_name: str,
-                 user_surname: str,
-                 service_id: UUID4,
-                 appointment_date: datetime.datetime,
-                 ):
+    def __init__(
+        self,
+        *,
+        db: Session,
+        user_name: str,
+        user_surname: str,
+        service_id: UUID4,
+        appointment_date: datetime.datetime,
+    ):
         self.user_name = user_name
         self.user_surname = user_surname
         self.service_id = service_id
@@ -241,19 +243,18 @@ class NewAppointmentNotification(Notification):
         # TODO: Notification settings
 
         notification_recipients = (
-            db.query(models.User).where(
-                'owner' in models.User.permission_level
-            ).all()
+            db.query(models.User).where("owner" in models.User.permission_level).all()
         )
 
         if notification_recipients:
-            service_db = db.query(models.Service).where(
-                models.Service.id == self.service_id).first()
+            service_db = (
+                db.query(models.Service)
+                .where(models.Service.id == self.service_id)
+                .first()
+            )
 
             for recipient in notification_recipients:
-                recipient_fcm_tokens_db = db.query(
-                    models.FcmToken
-                ).where(
+                recipient_fcm_tokens_db = db.query(models.FcmToken).where(
                     models.FcmToken.user_id == recipient.id
                 )
 
@@ -267,7 +268,7 @@ class NewAppointmentNotification(Notification):
                     service_translation = (
                         db.query(
                             models.ServiceTranslations.name,
-                            models.ServiceTranslations.description
+                            models.ServiceTranslations.description,
                         )
                         .where(models.ServiceTranslations.language_id == language_id)
                         .where(models.ServiceTranslations.service_id == service_db.id)
@@ -278,12 +279,14 @@ class NewAppointmentNotification(Notification):
                     title = f"{self.user_name} {self.user_surname} umówił/a wizytę"
                     msg = f"{service_name} - {self.appointment_date}"
 
-                    self.notifications.append({
-                        'fcm_tokens_db': recipient_fcm_tokens_db,
-                        'fcm_tokens': recipient_fcm_tokens,
-                        'title': title,
-                        'msg': msg,
-                    })
+                    self.notifications.append(
+                        {
+                            "fcm_tokens_db": recipient_fcm_tokens_db,
+                            "fcm_tokens": recipient_fcm_tokens,
+                            "title": title,
+                            "msg": msg,
+                        }
+                    )
 
         else:
             self.abort_send = True
@@ -293,10 +296,10 @@ class NewAppointmentNotification(Notification):
             for notification in self.notifications:
                 send_multicast_message(
                     db=self.db,
-                    fcm_tokens_db=notification.get('fcm_tokens_db'),
-                    title=notification.get('title'),
-                    msg=notification.get('msg'),
-                    fcm_tokens=notification.get('fcm_tokens'),
+                    fcm_tokens_db=notification.get("fcm_tokens_db"),
+                    title=notification.get("title"),
+                    msg=notification.get("msg"),
+                    fcm_tokens=notification.get("fcm_tokens"),
                 )
 
                 # TODO: send email
