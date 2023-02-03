@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from src import models
 from src.fcm_manager import send_multicast_message
-from src.utils import get_user_language_id
+from src.utils import format_datetime_str, get_user_language_id
 
 
 class Notification:
@@ -41,12 +41,12 @@ class UpcomingAppointmentNotification(Notification):
     appointment: models.Appointment
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_id: UUID4,
-        appointment_id: UUID4,
-        minutes_to_appointment: int,
+            self,
+            *,
+            db: Session,
+            user_id: UUID4,
+            appointment_id: UUID4,
+            minutes_to_appointment: int,
     ):
         self.db = db
         self.user_id = user_id
@@ -126,12 +126,12 @@ class AppointmentUpdatedNotification(Notification):
     user_id: UUID4
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_id: UUID4,
-        service_id: UUID4,
-        new_appointment_date: datetime.datetime,
+            self,
+            *,
+            db: Session,
+            user_id: UUID4,
+            service_id: UUID4,
+            new_appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -158,7 +158,8 @@ class AppointmentUpdatedNotification(Notification):
             service_name = service_translation[0]
 
             self.title = service_name
-            self.msg = f"Zmieniono datę wizyty na {new_appointment_date}"
+            self.msg = f"Zmieniono datę wizyty na" \
+                       f" {format_datetime_str(new_appointment_date)}"
 
         else:
             self.abort_send = True
@@ -171,12 +172,12 @@ class AppointmentCanceledNotification(Notification):
     user_id: UUID4
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_id: UUID4,
-        service_id: UUID4,
-        appointment_date: datetime.datetime,
+            self,
+            *,
+            db: Session,
+            user_id: UUID4,
+            service_id: UUID4,
+            appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -203,7 +204,8 @@ class AppointmentCanceledNotification(Notification):
             service_name = service_translation[0]
 
             self.title = service_name
-            self.msg = f"Wizyta ({appointment_date}) została odwołana"
+            self.msg = f"Wizyta ({format_datetime_str(appointment_date)})" \
+                       f" została odwołana"
 
         else:
             self.abort_send = True
@@ -227,13 +229,13 @@ class NewAppointmentNotification(Notification):
     notifications: list[Notification] = []
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_name: str,
-        user_surname: str,
-        service_id: UUID4,
-        appointment_date: datetime.datetime,
+            self,
+            *,
+            db: Session,
+            user_name: str,
+            user_surname: str,
+            service_id: UUID4,
+            appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -279,7 +281,8 @@ class NewAppointmentNotification(Notification):
                     service_name = service_translation[0]
 
                     title = f"{self.user_name} {self.user_surname} umówił/a wizytę"
-                    msg = f"{service_name} - {self.appointment_date}"
+                    msg = f"{service_name} - " \
+                          f"{format_datetime_str(self.appointment_date)}"
 
                     self.notifications.append(
                         {
