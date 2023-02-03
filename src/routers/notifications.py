@@ -58,4 +58,4 @@ def add_token(
     db.commit()
     db.refresh(fcm_token_db)
 
-    return {"fcm_token": fcm_token_db.token, "created_at": fcm_token_db.last_updated_at}
+    return {"fcm_token": fcm_token_db.token, "updated_at": fcm_token_db.last_updated_at}
