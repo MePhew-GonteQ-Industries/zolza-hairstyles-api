@@ -12,7 +12,7 @@ from src.utils import get_user_language_id
 
 class Notification:
     db: Session
-    abort_send: bool
+    abort_send: bool = False
     fcm_tokens_db: list[models.FcmToken]
     fcm_tokens: list[str]
     title: str
@@ -112,9 +112,9 @@ class UpcomingAppointmentNotification(Notification):
 
             match minutes_to_appointment:
                 case 30:
-                    self.msg = f"Twoja wizyta odbędzie się za" f" 30 minut"
+                    self.msg = "Twoja wizyta odbędzie się za 30 minut"
                 case 120:
-                    self.msg = f"Twoja wizyta odbędzie się za" f" 2 godziny"
+                    self.msg = "Twoja wizyta odbędzie się za 2 godziny"
         else:
             self.abort_send = True
 
@@ -224,7 +224,7 @@ class NewAppointmentNotification(Notification):
         title: str
         msg: str
 
-    notifications: list[Notification]
+    notifications: list[Notification] = []
 
     def __init__(
         self,
@@ -235,6 +235,8 @@ class NewAppointmentNotification(Notification):
         service_id: UUID4,
         appointment_date: datetime.datetime,
     ):
+        self.db = db
+
         self.user_name = user_name
         self.user_surname = user_surname
         self.service_id = service_id
@@ -243,7 +245,7 @@ class NewAppointmentNotification(Notification):
         # TODO: Notification settings
 
         notification_recipients = (
-            db.query(models.User).where("owner" in models.User.permission_level).all()
+            db.query(models.User).where(models.User.permission_level.any("owner")).all()
         )
 
         if notification_recipients:
