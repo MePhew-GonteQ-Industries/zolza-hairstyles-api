@@ -41,12 +41,12 @@ class UpcomingAppointmentNotification(Notification):
     appointment: models.Appointment
 
     def __init__(
-            self,
-            *,
-            db: Session,
-            user_id: UUID4,
-            appointment_id: UUID4,
-            minutes_to_appointment: int,
+        self,
+        *,
+        db: Session,
+        user_id: UUID4,
+        appointment_id: UUID4,
+        minutes_to_appointment: int,
     ):
         self.db = db
         self.user_id = user_id
@@ -126,12 +126,12 @@ class AppointmentUpdatedNotification(Notification):
     user_id: UUID4
 
     def __init__(
-            self,
-            *,
-            db: Session,
-            user_id: UUID4,
-            service_id: UUID4,
-            new_appointment_date: datetime.datetime,
+        self,
+        *,
+        db: Session,
+        user_id: UUID4,
+        service_id: UUID4,
+        new_appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -171,12 +171,12 @@ class AppointmentCanceledNotification(Notification):
     user_id: UUID4
 
     def __init__(
-            self,
-            *,
-            db: Session,
-            user_id: UUID4,
-            service_id: UUID4,
-            appointment_date: datetime.datetime,
+        self,
+        *,
+        db: Session,
+        user_id: UUID4,
+        service_id: UUID4,
+        appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -227,16 +227,16 @@ class NewAppointmentNotification(Notification):
     notifications: list[Notification] = []
 
     def __init__(
-            self,
-            *,
-            db: Session,
-            user_name: str,
-            user_surname: str,
-            service_id: UUID4,
-            appointment_date: datetime.datetime,
+        self,
+        *,
+        db: Session,
+        user_name: str,
+        user_surname: str,
+        service_id: UUID4,
+        appointment_date: datetime.datetime,
     ):
         self.db = db
-        
+
         self.user_name = user_name
         self.user_surname = user_surname
         self.service_id = service_id
@@ -245,9 +245,7 @@ class NewAppointmentNotification(Notification):
         # TODO: Notification settings
 
         notification_recipients = (
-            db.query(models.User).where(
-                models.User.permission_level.any("owner")
-            ).all()
+            db.query(models.User).where(models.User.permission_level.any("owner")).all()
         )
 
         if notification_recipients:
