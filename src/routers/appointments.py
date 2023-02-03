@@ -322,10 +322,10 @@ def create_appointment(
     background_tasks.add_task(
         send_new_appointment_notification,
         db,
-        verified_user.name,
-        verified_user.surname,
-        service_db.id,
-        first_slot_db.start_time,
+        user_name=verified_user.name,
+        user_surname=verified_user.surname,
+        service_id=service_db.id,
+        appointment_date=first_slot_db.start_time,
     )
 
     return new_appointment
@@ -554,9 +554,9 @@ def update_any_appointment(
     background_tasks.add_task(
         send_appointment_updated_notification,
         db,
-        appointment_db.user.id,
-        appointment_db.service.id,
-        appointment_db.start_slot.start_time,
+        user_id=appointment_db.user.id,
+        service_id=appointment_db.service.id,
+        new_appointment_date=appointment_db.start_slot.start_time,
     )
 
     return appointment_db
@@ -615,9 +615,9 @@ def cancel_appointment(
     background_tasks.add_task(
         send_appointment_canceled_notification,
         db,
-        appointment_db.user.id,
-        appointment_db.service.id,
-        appointment_db.start_slot.start_time,
+        user_id=appointment_db.user.id,
+        service_id=appointment_db.service.id,
+        appointment_date=appointment_db.start_slot.start_time,
     )
 
     return appointment_db
