@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from src import models
 from src.fcm_manager import send_multicast_message
-from src.utils import get_user_language_id
+from src.utils import format_datetime_str, get_user_language_id
 
 
 class Notification:
@@ -158,7 +158,10 @@ class AppointmentUpdatedNotification(Notification):
             service_name = service_translation[0]
 
             self.title = service_name
-            self.msg = f"Zmieniono datę wizyty na {new_appointment_date}"
+            self.msg = (
+                f"Zmieniono datę wizyty na"
+                f" {format_datetime_str(new_appointment_date)}"
+            )
 
         else:
             self.abort_send = True
@@ -203,7 +206,9 @@ class AppointmentCanceledNotification(Notification):
             service_name = service_translation[0]
 
             self.title = service_name
-            self.msg = f"Wizyta ({appointment_date}) została odwołana"
+            self.msg = (
+                f"Wizyta ({format_datetime_str(appointment_date)})" f" została odwołana"
+            )
 
         else:
             self.abort_send = True
@@ -279,7 +284,10 @@ class NewAppointmentNotification(Notification):
                     service_name = service_translation[0]
 
                     title = f"{self.user_name} {self.user_surname} umówił/a wizytę"
-                    msg = f"{service_name} - {self.appointment_date}"
+                    msg = (
+                        f"{service_name} - "
+                        f"{format_datetime_str(self.appointment_date)}"
+                    )
 
                     self.notifications.append(
                         {

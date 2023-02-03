@@ -262,3 +262,7 @@ PL_TIMEZONE = pytz.timezone("Poland")
 
 def is_archival(appointment: models.Appointment):
     return appointment.end_slot.end_time < datetime.datetime.now(PL_TIMEZONE)
+
+
+def format_datetime_str(datetime_obj: datetime.datetime) -> str:
+    return datetime_obj.strftime("%d.%m.%Y, %H:%M")
