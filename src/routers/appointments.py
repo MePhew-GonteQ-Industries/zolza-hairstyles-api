@@ -7,6 +7,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header, 
 from pydantic import UUID4
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import extract
 
 from .. import models, oauth2
 from ..config import settings
@@ -42,9 +43,9 @@ router = APIRouter(prefix=settings.BASE_URL + "/appointments", tags=["Appointmen
 
 @router.get("/slots", response_model=list[AppointmentSlot])
 def get_appointment_slots(
-    db: Session = Depends(get_db),
-    date: datetime.date | None = None,
-    accept_language: str | None = Header(None),
+        db: Session = Depends(get_db),
+        date: datetime.date | None = None,
+        accept_language: str | None = Header(None),
 ):
     now = datetime.date.today()
     first_available_time = datetime.datetime.utcnow() + timedelta(hours=1)
@@ -63,8 +64,8 @@ def get_appointment_slots(
     else:
         slots = slots.where(
             (
-                (models.AppointmentSlot.start_time == None)  # noqa
-                & (models.AppointmentSlot.date > first_available_time)
+                    (models.AppointmentSlot.start_time == None)  # noqa
+                    & (models.AppointmentSlot.date > first_available_time)
             )
             | (models.AppointmentSlot.start_time > first_available_time)
         ).where(models.AppointmentSlot.date <= last_available_date)
@@ -93,9 +94,9 @@ def get_appointment_slots(
 
 @router.get("/nearest/{service_id}", response_model=list[AppointmentSlot])
 def get_nearest_slots(
-    service_id: UUID4,
-    db: Session = Depends(get_db),
-    limit: int = 9,
+        service_id: UUID4,
+        db: Session = Depends(get_db),
+        limit: int = 9,
 ):
     service_db = db.query(models.Service).where(models.Service.id == service_id).first()
 
@@ -116,8 +117,8 @@ def get_nearest_slots(
         .where(models.AppointmentSlot.sunday == False)
         .where(
             (
-                (models.AppointmentSlot.start_time == None)
-                & (models.AppointmentSlot.date > first_available_time)  # noqa
+                    (models.AppointmentSlot.start_time == None)
+                    & (models.AppointmentSlot.date > first_available_time)  # noqa
             )
             | (models.AppointmentSlot.start_time > first_available_time)
         )
@@ -137,9 +138,9 @@ def get_nearest_slots(
             if len(slots_db) > index + slot_index:
                 next_slot = slots_db[index + slot_index]
                 if (
-                    not next_slot.occupied
-                    and not next_slot.reserved
-                    and not next_slot.break_time
+                        not next_slot.occupied
+                        and not next_slot.reserved
+                        and not next_slot.break_time
                 ):
                     free_slots_found += 1
 
@@ -154,7 +155,7 @@ def get_nearest_slots(
 
 @router.get("/mine", response_model=list[ReturnAppointment])
 def get_your_appointments(
-    db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)
+        db: Session = Depends(get_db), user_session=Depends(oauth2.get_user)
 ):
     user = user_session.user
 
@@ -183,8 +184,8 @@ def get_your_appointments(
 
 @router.get("/mine/{id}")
 def get_your_appointment(
-    db: Session = Depends(get_db),
-    verified_user_session=Depends(oauth2.get_verified_user),
+        db: Session = Depends(get_db),
+        verified_user_session=Depends(oauth2.get_verified_user),
 ):
     verified_user = verified_user_session.verified_user
 
@@ -212,10 +213,10 @@ def get_your_appointment(
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_appointment(
-    appointment: CreateAppointment,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    verified_user_session=Depends(oauth2.get_verified_user),
+        appointment: CreateAppointment,
+        background_tasks: BackgroundTasks,
+        db: Session = Depends(get_db),
+        verified_user_session=Depends(oauth2.get_verified_user),
 ):
     first_slot_db = (
         db.query(models.AppointmentSlot)
@@ -254,6 +255,7 @@ def create_appointment(
         .where(models.AppointmentSlot.holiday == False)
         .where(models.AppointmentSlot.sunday == False)
         .where(models.AppointmentSlot.break_time == False)
+        .where(extract('dow', models.AppointmentSlot.date) != 6)
         .order_by(models.AppointmentSlot.start_time)
         .all()
     )
@@ -262,10 +264,10 @@ def create_appointment(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="not enough free slots available starting from slot "
-            f"with id of {appointment.first_slot_id} to "
-            "accommodate service with id of "
-            f"{appointment.service_id} that requires "
-            f"{required_slots} consecutive free slots",
+                   f"with id of {appointment.first_slot_id} to "
+                   "accommodate service with id of "
+                   f"{appointment.service_id} that requires "
+                   f"{required_slots} consecutive free slots",
         )
 
     verified_user = verified_user_session.verified_user
@@ -333,12 +335,12 @@ def create_appointment(
 
 @router.get("/all", response_model=ReturnAllAppointments)
 def get_all_appointments(
-    db: Session = Depends(get_db),
-    admin_session=Depends(oauth2.get_admin),
-    # upcoming_only: bool = False, # TODO: fix
-    offset: int = 0,
-    limit: int | None = None,
-    user_id: UUID4 | None = None,
+        db: Session = Depends(get_db),
+        admin_session=Depends(oauth2.get_admin),
+        # upcoming_only: bool = False, # TODO: fix
+        offset: int = 0,
+        limit: int | None = None,
+        user_id: UUID4 | None = None,
 ):
     admin = admin_session.admin
 
@@ -383,9 +385,9 @@ def get_all_appointments(
 
 @router.get("/any/{appointment_id}", response_model=ReturnAppointmentDetailed)
 def get_any_appointment(
-    appointment_id: UUID4,
-    db: Session = Depends(get_db),
-    admin_session=Depends(oauth2.get_admin),
+        appointment_id: UUID4,
+        db: Session = Depends(get_db),
+        admin_session=Depends(oauth2.get_admin),
 ):
     appointment_db = (
         db.query(models.Appointment)
@@ -418,11 +420,11 @@ def get_any_appointment(
 # TODO: find potential bug when checking free space
 @router.put("/any/{appointment_id}")
 def update_any_appointment(
-    new_start_slot: FirstSlot,
-    appointment_id: UUID4,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    admin_session=Depends(oauth2.get_admin),  # TODO: events
+        new_start_slot: FirstSlot,
+        appointment_id: UUID4,
+        background_tasks: BackgroundTasks,
+        db: Session = Depends(get_db),
+        admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
     appointment_db = (
         db.query(models.Appointment)
@@ -477,10 +479,10 @@ def update_any_appointment(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="not enough free slots available starting from slot "
-            f"with id of {new_start_slot.first_slot_id} to "
-            "accommodate service with id of "
-            f"{appointment_db.service.id} that requires "
-            f"{required_slots} consecutive free slots",
+                   f"with id of {new_start_slot.first_slot_id} to "
+                   "accommodate service with id of "
+                   f"{appointment_db.service.id} that requires "
+                   f"{required_slots} consecutive free slots",
         )
 
     appointment_db.start_slot_id = new_start_slot.first_slot_id
@@ -564,10 +566,10 @@ def update_any_appointment(
 
 @router.post("/any/{appointment_id}")
 def cancel_appointment(
-    appointment_id: UUID4,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    admin_session=Depends(oauth2.get_admin),  # TODO: events
+        appointment_id: UUID4,
+        background_tasks: BackgroundTasks,
+        db: Session = Depends(get_db),
+        admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
     appointment_db = (
         db.query(models.Appointment)
@@ -625,9 +627,9 @@ def cancel_appointment(
 
 @router.post("/reserve_slots")
 def reserve_slots(
-    reserve_slots_data: ReserveSlots,
-    db: Session = Depends(get_db),
-    admin_session=Depends(oauth2.get_admin),  # TODO: events
+        reserve_slots_data: ReserveSlots,
+        db: Session = Depends(get_db),
+        admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
     slots_db = (
         db.query(models.AppointmentSlot)
@@ -654,9 +656,9 @@ def reserve_slots(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"These slots cannot be reserved: {invalid_slots}"
-            f" (This most likely means these slots are either"
-            f" already reserved or occupied, holiday, sunday, break time"
-            f" or archival)",
+                   f" (This most likely means these slots are either"
+                   f" already reserved or occupied, holiday, sunday, break time"
+                   f" or archival)",
         )
 
     for slot_db in slots_db:
@@ -672,9 +674,9 @@ def reserve_slots(
 
 @router.post("/unreserve_slots")
 def unreserve_slots(
-    unreserve_slots_data: UnreserveSlots,
-    db: Session = Depends(get_db),
-    admin_session=Depends(oauth2.get_admin),  # TODO: events
+        unreserve_slots_data: UnreserveSlots,
+        db: Session = Depends(get_db),
+        admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
     slots_db = (
         db.query(models.AppointmentSlot)
@@ -701,9 +703,9 @@ def unreserve_slots(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"These slots cannot be reserved: {invalid_slots}"
-            f" (This most likely means these slots are either"
-            f" not reserved or occupied, holiday, sunday, break time"
-            f" or archival)",
+                   f" (This most likely means these slots are either"
+                   f" not reserved or occupied, holiday, sunday, break time"
+                   f" or archival)",
         )
 
     for slot_db in slots_db:
