@@ -13,13 +13,15 @@ class PaginationQueryParams(BaseModel):
     items_per_page: int | None
 
 
-def pagination_params(page: int | None = None,
-                      items_per_page: int | None = None) -> PaginationQueryParams:
+def pagination_params(
+    page: int | None = None, items_per_page: int | None = None
+) -> PaginationQueryParams:
     try:
         return PaginationQueryParams(page=page, items_per_page=items_per_page)
     except pydantic.error_wrappers.ValidationError as e:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail=e.errors())
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+        )
 
 
 class SortingQueryParams(BaseModel):
@@ -30,8 +32,9 @@ def sorting_params(sort: str | None = None) -> SortingQueryParams:
     try:
         return SortingQueryParams(sort=sort)
     except pydantic.error_wrappers.ValidationError as e:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail=e.errors())
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+        )
 
 
 class FilteringQueryParams(BaseModel):
@@ -42,32 +45,35 @@ class FilteringQueryParams(BaseModel):
         try:
             return json.loads(value)
         except json.decoder.JSONDecodeError:
-            raise ValueError('Value is not a valid dict')
+            raise ValueError("Value is not a valid dict")
 
 
 def filtering_params(filters: str | None = None) -> FilteringQueryParams:
     try:
         return FilteringQueryParams(filters=filters)
     except pydantic.error_wrappers.ValidationError as e:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail=e.errors())
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+        )
 
 
 class CommonQueryParams:
-    def __init__(self,
-                 pagination_query_params: PaginationQueryParams = Depends(
-                     pagination_params),
-                 sorting_query_params: SortingQueryParams = Depends(sorting_params),
-                 filtering_query_params: FilteringQueryParams = Depends(
-                     filtering_params)):
+    def __init__(
+        self,
+        pagination_query_params: PaginationQueryParams = Depends(pagination_params),
+        sorting_query_params: SortingQueryParams = Depends(sorting_params),
+        filtering_query_params: FilteringQueryParams = Depends(filtering_params),
+    ):
         self.pagination_query_params = pagination_query_params
         self.sorting_query_params = sorting_query_params
         self.filtering_query_params = filtering_query_params
 
     def __repr__(self):
-        return f'{self.pagination_query_params}, ' \
-               f'{self.sorting_query_params}, ' \
-               f'{self.filtering_query_params} '
+        return (
+            f"{self.pagination_query_params}, "
+            f"{self.sorting_query_params}, "
+            f"{self.filtering_query_params} "
+        )
 
 
 class ParametrizedQuery:
@@ -91,10 +97,10 @@ class ParametrizedQuery:
         self._items_per_page = params.pagination_query_params.items_per_page
 
         # sorting
-        columns = params.sorting_query_params.sort.split(',')
+        columns = params.sorting_query_params.sort.split(",")
         for column in columns:
-            name, order = column.split(':')
-            self._sort_by.append(f'{name} {order}')
+            name, order = column.split(":")
+            self._sort_by.append(f"{name} {order}")
 
     def _filter(self) -> None:
         for column, values in self.filters.items():
@@ -105,7 +111,7 @@ class ParametrizedQuery:
                 raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     def _sort(self) -> None:
-        self._query.order_by(''.join(self._sort_by))
+        self._query.order_by("".join(self._sort_by))
 
     def _paginate(self) -> None:
         self._query.limit(self._items_per_page)
