@@ -27,8 +27,8 @@ class Settings(BaseSettings):
     MAIL_FROM: EmailStr
     MAIL_PORT: int
     MAIL_SERVER: str
-    MAIL_TLS: bool
-    MAIL_SSL: bool
+    MAIL_STARTTLS: bool
+    MAIL_SSL_TLS: bool
     USE_CREDENTIALS: bool
     VALIDATE_CERTS: bool
     MAIL_FROM_NAME: str

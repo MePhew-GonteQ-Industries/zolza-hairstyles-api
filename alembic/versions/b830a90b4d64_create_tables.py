@@ -1,8 +1,8 @@
 """Create tables
 
-Revision ID: 774cf7cd5ff1
+Revision ID: b830a90b4d64
 Revises: 
-Create Date: 2022-07-30 13:29:17.994111
+Create Date: 2023-01-18 14:33:35.189793
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "774cf7cd5ff1"
+revision = "b830a90b4d64"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -106,8 +106,8 @@ def upgrade():
         sa.Column("break_time", sa.Boolean(), server_default="false", nullable=False),
         sa.Column("holiday_id", sa.Integer(), nullable=True),
         sa.Column("date", sa.DATE(), nullable=False),
-        sa.Column("start_time", sa.TIMESTAMP(), nullable=True),
-        sa.Column("end_time", sa.TIMESTAMP(), nullable=True),
+        sa.Column("start_time", sa.TIMESTAMP(timezone=True), nullable=True),
+        sa.Column("end_time", sa.TIMESTAMP(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(
             ["holiday_id"],
             ["holidays.id"],
@@ -323,7 +323,6 @@ def upgrade():
         sa.Column("start_slot_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("end_slot_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("canceled", sa.Boolean(), server_default="false", nullable=False),
-        sa.Column("archival", sa.Boolean(), server_default="false", nullable=False),
         sa.Column(
             "created_at",
             sa.TIMESTAMP(),
@@ -370,6 +369,7 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("session_id"),
+        sa.UniqueConstraint("token"),
     )
     # ### end Alembic commands ###
 

@@ -3,30 +3,40 @@ import logging
 from datetime import timedelta
 
 import apscheduler.jobstores.base
-from fastapi import APIRouter, Depends, HTTPException, Header, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header, status
 from pydantic import UUID4
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import extract
 
 from .. import models, oauth2
 from ..config import settings
 from ..database import get_db
 from ..exceptions import ResourceNotFoundHTTPException
-from ..jobs import send_appointment_reminder
+from ..jobs import (
+    send_appointment_canceled_notification,
+    send_appointment_updated_notification,
+    send_new_appointment_notification,
+    send_upcoming_appointment_notification,
+)
 from ..query_manager import CommonQueryParams, ParametrizedQuery
 from ..scheduler import scheduler
 from ..schemas.appointment import (
     AppointmentSlot,
     CreateAppointment,
     FirstSlot,
+    ReserveSlots,
     ReturnAllAppointments,
     ReturnAppointment,
     ReturnAppointmentDetailed,
+    UnreserveSlots,
 )
 from ..utils import (
+    PL_TIMEZONE,
     get_language_code_from_header,
     get_language_id_from_language_code,
     get_user_language_id,
+    is_archival,
 )
 
 router = APIRouter(prefix=settings.BASE_URL + "/appointments", tags=["Appointments"])
@@ -157,17 +167,19 @@ def get_your_appointments(
 
     language_id = get_user_language_id(db, user.id)
 
-    for appointment in appointments_db:
+    for appointment_db in appointments_db:
         service_translation = (
             db.query(
                 models.ServiceTranslations.name, models.ServiceTranslations.description
             )
             .where(models.ServiceTranslations.language_id == language_id)
-            .where(models.ServiceTranslations.service_id == appointment.service.id)
+            .where(models.ServiceTranslations.service_id == appointment_db.service.id)
             .first()
         )
-        appointment.service.name = service_translation[0]
-        appointment.service.description = service_translation[1]
+        appointment_db.service.name = service_translation[0]
+        appointment_db.service.description = service_translation[1]
+
+        appointment_db.archival = is_archival(appointment_db)
 
     return appointments_db
 
@@ -183,12 +195,28 @@ def get_your_appointment(
         models.Appointment.user_id == verified_user.id
     )
 
+    language_id = get_user_language_id(db, verified_user.id)
+
+    service_translation = (
+        db.query(
+            models.ServiceTranslations.name, models.ServiceTranslations.description
+        )
+        .where(models.ServiceTranslations.language_id == language_id)
+        .where(models.ServiceTranslations.service_id == appointment_db.service.id)
+        .first()
+    )
+    appointment_db.service.name = service_translation[0]
+    appointment_db.service.description = service_translation[1]
+
+    appointment_db.archival = is_archival(appointment_db)
+
     return appointment_db
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_appointment(
         appointment: CreateAppointment,
+        background_tasks: BackgroundTasks,
         db: Session = Depends(get_db),
         verified_user_session=Depends(oauth2.get_verified_user),
 ):
@@ -229,6 +257,7 @@ def create_appointment(
         .where(models.AppointmentSlot.holiday == False)
         .where(models.AppointmentSlot.sunday == False)
         .where(models.AppointmentSlot.break_time == False)
+        .where(extract("dow", models.AppointmentSlot.date) != 6)
         .order_by(models.AppointmentSlot.start_time)
         .all()
     )
@@ -263,14 +292,44 @@ def create_appointment(
     db.commit()
 
     scheduler.add_job(
-        func=send_appointment_reminder,
+        func=send_upcoming_appointment_notification,
         trigger="date",
-        id=f"appointment_reminder_appointment_#{new_appointment.id}",
-        name=f"Appointment Reminder - Appointment #{new_appointment.id}",
+        id=f"appointment_reminder_t_minus_120_min_appointment#{new_appointment.id}",
+        name=f"Appointment Reminder T-120min - Appointment #{new_appointment.id}",
         misfire_grace_time=20,
         next_run_time=appointment_start_time - timedelta(hours=2),
         args=[get_db],
-        kwargs={"user_id": verified_user.id, "appointment_id": new_appointment.id},
+        kwargs={
+            "user_id": verified_user.id,
+            "appointment_id": new_appointment.id,
+            "minutes_to_appointment": 120,
+        },
+    )
+
+    scheduler.add_job(
+        func=send_upcoming_appointment_notification,
+        trigger="date",
+        id=f"appointment_reminder_t_minus_30_min_appointment#{new_appointment.id}",
+        name=f"Appointment Reminder T-30min - Appointment #{new_appointment.id}",
+        misfire_grace_time=20,
+        next_run_time=appointment_start_time - timedelta(minutes=30),
+        args=[get_db],
+        kwargs={
+            "user_id": verified_user.id,
+            "appointment_id": new_appointment.id,
+            "minutes_to_appointment": 30,
+        },
+    )
+
+    new_appointment.archival = False
+
+    background_tasks.add_task(
+        send_new_appointment_notification,
+        db,
+        user_name=verified_user.name,
+        user_surname=verified_user.surname,
+        service_id=service_db.id,
+        appointment_date=first_slot_db.start_time,
     )
 
     return new_appointment
@@ -278,57 +337,99 @@ def create_appointment(
 
 @router.get("/all", response_model=ReturnAllAppointments)  # TODO: search
 def get_all_appointments(
-        common_query_params: CommonQueryParams = Depends(),
-        db: Session = Depends(get_db),
-        _=Depends(oauth2.get_admin),
-        upcoming_only: bool = False,
-        offset: int = 0,
-        limit: int | None = None,
-        user_id: UUID4 | None = None,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),
+    common_query_params: CommonQueryParams = Depends(),
+    # upcoming_only: bool = False, # TODO: fix
+    offset: int = 0,
+    limit: int | None = None,
+    user_id: UUID4 | None = None,
 ):
+    admin = admin_session.admin
+
     appointments = ParametrizedQuery(db, models.Appointment, common_query_params)
+
     all_appointments = db.query(models.Appointment)
 
-    if upcoming_only:
-        all_appointments = all_appointments.where(models.Appointment.archival == False)
+    appointments_db = db.query(models.Appointment)
+
+    # TODO: fix
+    # if upcoming_only:
+    #     all_appointments = all_appointments.where(
+    #         models.Appointment.archival == False)
 
     if user_id:
-        all_appointments = all_appointments.where(models.Appointment.user_id == user_id)
+        appointments_db = appointments_db.where(models.Appointment.user_id == user_id)
 
     if offset:
-        all_appointments = all_appointments.offset(offset)
+        appointments_db = appointments_db.offset(offset)
 
     if limit:
-        all_appointments = all_appointments.limit(limit)
+        appointments_db = appointments_db.limit(limit)
 
-    all_appointments = all_appointments.all()
+    appointments_db = appointments_db.all()
 
     appointments_num = db.query(models.Appointment).count()
 
-    return {"items": all_appointments, "total": appointments_num}
+    language_id = get_user_language_id(db, admin.id)
+
+    for appointment_db in appointments_db:
+        service_translation = (
+            db.query(
+                models.ServiceTranslations.name, models.ServiceTranslations.description
+            )
+            .where(models.ServiceTranslations.language_id == language_id)
+            .where(models.ServiceTranslations.service_id == appointment_db.service.id)
+            .first()
+        )
+        appointment_db.service.name = service_translation[0]
+        appointment_db.service.description = service_translation[1]
+
+        appointment_db.archival = is_archival(appointment_db)
+
+    return {"items": appointments_db, "total": appointments_num}
 
 
 @router.get("/any/{appointment_id}", response_model=ReturnAppointmentDetailed)
 def get_any_appointment(
-        appointment_id: UUID4, db: Session = Depends(get_db),
-        _=Depends(oauth2.get_admin)
+    appointment_id: UUID4,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),
 ):
-    appointment = (
+    appointment_db = (
         db.query(models.Appointment)
         .where(models.Appointment.id == appointment_id)
         .first()
     )
 
-    if not appointment:
+    if not appointment_db:
         raise ResourceNotFoundHTTPException()
 
-    return appointment
+    admin = admin_session.admin
+    language_id = get_user_language_id(db, admin.id)
+
+    service_translation = (
+        db.query(
+            models.ServiceTranslations.name, models.ServiceTranslations.description
+        )
+        .where(models.ServiceTranslations.language_id == language_id)
+        .where(models.ServiceTranslations.service_id == appointment_db.service.id)
+        .first()
+    )
+    appointment_db.service.name = service_translation[0]
+    appointment_db.service.description = service_translation[1]
+
+    appointment_db.archival = is_archival(appointment_db)
+
+    return appointment_db
 
 
+# TODO: find potential bug when checking free space
 @router.put("/any/{appointment_id}")
 def update_any_appointment(
         new_start_slot: FirstSlot,
         appointment_id: UUID4,
+        background_tasks: BackgroundTasks,
         db: Session = Depends(get_db),
         admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
@@ -341,10 +442,10 @@ def update_any_appointment(
     if not appointment_db:
         raise ResourceNotFoundHTTPException()
 
-    if appointment_db.archival:
+    if is_archival(appointment_db):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot edit an archived resource",
+            detail="Cannot edit an archival resource",
         )
 
     first_slot_db = (
@@ -415,23 +516,56 @@ def update_any_appointment(
 
     db.commit()
 
-    try:
-        scheduler.remove_job(f"appointment_reminder_appointment_#{appointment_db.id}")
-    except apscheduler.jobstores.base.JobLookupError:
-        logging.info(
-            f"Failed to remove job: "
-            f"Appointment reminder for appointment {appointment_db.id}"
-        )
+    for job_name in [
+        f"appointment_reminder_t_minus_120_min_appointment#{appointment_db.id}",
+        f"appointment_reminder_t_minus_30_min_appointment#{appointment_db.id}",
+    ]:
+        try:
+            scheduler.remove_job(job_name)
+        except apscheduler.jobstores.base.JobLookupError:
+            logging.info(
+                f"Failed to remove job: {job_name}"
+                f"Appointment reminder for appointment {appointment_db.id}"
+            )
 
     scheduler.add_job(
-        func=send_appointment_reminder,
+        func=send_upcoming_appointment_notification,
         trigger="date",
-        id=f"appointment_reminder_appointment_#{appointment_db.id}",
-        name=f"Appointment Reminder - Appointment #{appointment_db.id}",
+        id=f"appointment_reminder_t_minus_120_min_appointment#{appointment_db.id}",
+        name=f"Appointment Reminder T-120min - Appointment #{appointment_db.id}",
         misfire_grace_time=20,
         next_run_time=appointment_start_time - timedelta(hours=2),
         args=[get_db],
-        kwargs={"user_id": appointment_db.user_id, "appointment_id": appointment_db.id},
+        kwargs={
+            "user_id": appointment_db.id,
+            "appointment_id": appointment_db.id,
+            "minutes_to_appointment": 120,
+        },
+    )
+
+    scheduler.add_job(
+        func=send_upcoming_appointment_notification,
+        trigger="date",
+        id=f"appointment_reminder_t_minus_30_min_appointment#{appointment_db.id}",
+        name=f"Appointment Reminder T-30min - Appointment #{appointment_db.id}",
+        misfire_grace_time=20,
+        next_run_time=appointment_start_time - timedelta(minutes=30),
+        args=[get_db],
+        kwargs={
+            "user_id": appointment_db.id,
+            "appointment_id": appointment_db.id,
+            "minutes_to_appointment": 30,
+        },
+    )
+
+    appointment_db.archival = False
+
+    background_tasks.add_task(
+        send_appointment_updated_notification,
+        db,
+        user_id=appointment_db.user.id,
+        service_id=appointment_db.service.id,
+        new_appointment_date=appointment_db.start_slot.start_time,
     )
 
     return appointment_db
@@ -440,6 +574,7 @@ def update_any_appointment(
 @router.post("/any/{appointment_id}")
 def cancel_appointment(
         appointment_id: UUID4,
+        background_tasks: BackgroundTasks,
         db: Session = Depends(get_db),
         admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
@@ -452,7 +587,7 @@ def cancel_appointment(
     if not appointment_db:
         raise ResourceNotFoundHTTPException()
 
-    if appointment_db.archival:
+    if is_archival(appointment_db):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot edit an archived resource",
@@ -472,12 +607,120 @@ def cancel_appointment(
 
     db.commit()
 
-    try:
-        scheduler.remove_job(f"appointment_reminder_appointment_#{appointment_db.id}")
-    except apscheduler.jobstores.base.JobLookupError:
-        logging.info(
-            f"Failed to remove job: "
-            f"Appointment reminder for appointment {appointment_db.id}"
-        )
+    for job_name in [
+        f"appointment_reminder_t_minus_120_min_appointment#{appointment_db.id}",
+        f"appointment_reminder_t_minus_30_min_appointment#{appointment_db.id}",
+    ]:
+        try:
+            scheduler.remove_job(job_name)
+        except apscheduler.jobstores.base.JobLookupError:
+            logging.info(
+                f"Failed to remove job: {job_name}"
+                f"Appointment reminder for appointment {appointment_db.id}"
+            )
+
+    appointment_db.archival = False
+
+    background_tasks.add_task(
+        send_appointment_canceled_notification,
+        db,
+        user_id=appointment_db.user.id,
+        service_id=appointment_db.service.id,
+        appointment_date=appointment_db.start_slot.start_time,
+    )
 
     return appointment_db
+
+
+@router.post("/reserve_slots")
+def reserve_slots(
+    reserve_slots_data: ReserveSlots,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),  # TODO: events
+):
+    slots_db = (
+        db.query(models.AppointmentSlot)
+        .where(models.AppointmentSlot.id.in_(reserve_slots_data.slots))
+        .where(models.AppointmentSlot.reserved == False)
+        .where(models.AppointmentSlot.occupied == False)
+        .where(models.AppointmentSlot.holiday == False)
+        .where(models.AppointmentSlot.sunday == False)
+        .where(models.AppointmentSlot.break_time == False)
+        .where(
+            models.AppointmentSlot.start_time
+            > datetime.datetime.now().astimezone(PL_TIMEZONE)
+        )
+        .all()
+    )
+
+    slots_db_ids = [slot_db.id for slot_db in slots_db]
+
+    if len(slots_db) != len(reserve_slots_data.slots):
+        invalid_slots = [
+            str(slot) for slot in reserve_slots_data.slots if slot not in slots_db_ids
+        ]
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"These slots cannot be reserved: {invalid_slots}"
+            f" (This most likely means these slots are either"
+            f" already reserved or occupied, holiday, sunday, break time"
+            f" or archival)",
+        )
+
+    for slot_db in slots_db:
+        slot_db.reserved = True
+        slot_db.reserved_reason = reserve_slots_data.reason
+
+    db.commit()
+    for slot_db in slots_db:
+        db.refresh(slot_db)
+
+    return {"status": "success", "reserved_slots": slots_db}
+
+
+@router.post("/unreserve_slots")
+def unreserve_slots(
+    unreserve_slots_data: UnreserveSlots,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),  # TODO: events
+):
+    slots_db = (
+        db.query(models.AppointmentSlot)
+        .where(models.AppointmentSlot.id.in_(unreserve_slots_data.slots))
+        .where(models.AppointmentSlot.reserved == True)
+        .where(models.AppointmentSlot.occupied == False)
+        .where(models.AppointmentSlot.holiday == False)
+        .where(models.AppointmentSlot.sunday == False)
+        .where(models.AppointmentSlot.break_time == False)
+        .where(
+            models.AppointmentSlot.start_time
+            > datetime.datetime.now().astimezone(PL_TIMEZONE)
+        )
+        .all()
+    )
+
+    slots_db_ids = [slot_db.id for slot_db in slots_db]
+
+    if len(slots_db) != len(unreserve_slots_data.slots):
+        invalid_slots = [
+            str(slot) for slot in unreserve_slots_data.slots if slot not in slots_db_ids
+        ]
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"These slots cannot be reserved: {invalid_slots}"
+            f" (This most likely means these slots are either"
+            f" not reserved or occupied, holiday, sunday, break time"
+            f" or archival)",
+        )
+
+    for slot_db in slots_db:
+        slot_db.reserved = False
+        slot_db.reserved_reason = None
+
+    db.commit()
+    for slot_db in slots_db:
+        db.refresh(slot_db)
+
+    return {"status": "success", "unreserved_slots": slots_db}

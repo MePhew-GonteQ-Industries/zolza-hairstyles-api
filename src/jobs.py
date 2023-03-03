@@ -1,46 +1,79 @@
-from uuid import uuid4
+import datetime
 
-from . import models
-from .email_manager import send_email
-from .fcm_manager import send_multicast_message
+from pydantic import UUID4
+from sqlalchemy.orm import Session
+
+from .notifications_manager import (
+    AppointmentCanceledNotification,
+    AppointmentUpdatedNotification,
+    NewAppointmentNotification,
+    UpcomingAppointmentNotification,
+)
 
 
-def send_appointment_reminder(
-    get_db_func: callable, *, user_id: uuid4, appointment_id: uuid4
+def send_upcoming_appointment_notification(
+    get_db_func: callable,
+    *,
+    user_id: UUID4,
+    appointment_id: UUID4,
+    minutes_to_appointment: int,
 ):
     db = next(get_db_func())
 
-    user = db.query(models.User).where(models.User.id == user_id).first()
-
-    appointment = (
-        db.query(models.Appointment)
-        .where(models.Appointment.id == appointment_id)
-        .first()
-    )
-
-    user_notification_settings = (
-        db.query(models.Setting)
-        .where(models.Setting.user_id == user_id)
-        .where(models.Setting.name == "notifications")
-        .all()
-    )
-
-    # send email
-
-    # send_email()
-
-    # send push notifications
-
-    user_fcm_registration_tokens = (
-        db.query(models.FcmToken).where(models.FcmToken.user_id == user_id).all()
-    )
-
-    tokens = [token_db.token for token_db in user_fcm_registration_tokens]
-
-    send_multicast_message(
+    upcoming_appointment_notification = UpcomingAppointmentNotification(
         db=db,
-        registration_tokens_db=user_fcm_registration_tokens,
-        title="Upcoming appointment",
-        msg="Your appointment will take place in 2 hours",
-        registration_tokens=tokens,
+        user_id=user_id,
+        appointment_id=appointment_id,
+        minutes_to_appointment=minutes_to_appointment,
     )
+    upcoming_appointment_notification.send()
+
+
+def send_new_appointment_notification(
+    db: Session,
+    *,
+    user_name: str,
+    user_surname: str,
+    service_id: UUID4,
+    appointment_date: datetime.datetime,
+):
+    new_appointment_notification = NewAppointmentNotification(
+        db=db,
+        user_name=user_name,
+        user_surname=user_surname,
+        service_id=service_id,
+        appointment_date=appointment_date,
+    )
+    new_appointment_notification.send()
+
+
+def send_appointment_updated_notification(
+    db: Session,
+    *,
+    user_id: UUID4,
+    service_id: UUID4,
+    new_appointment_date: datetime.datetime,
+):
+    appointment_updated_notification = AppointmentUpdatedNotification(
+        db=db,
+        user_id=user_id,
+        service_id=service_id,
+        new_appointment_date=new_appointment_date,
+    )
+    appointment_updated_notification.send()
+
+
+def send_appointment_canceled_notification(
+    db: Session,
+    *,
+    user_id: UUID4,
+    service_id: UUID4,
+    appointment_date: datetime.datetime,
+):
+    appointment_canceled_notification = AppointmentCanceledNotification(
+        db=db,
+        user_id=user_id,
+        service_id=service_id,
+        appointment_date=appointment_date,
+    )
+    appointment_canceled_notification.send()

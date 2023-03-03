@@ -1,6 +1,8 @@
+import datetime
 import logging
 
 import langcodes
+import pytz
 import user_agents
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
@@ -253,3 +255,14 @@ def load_session_data(session_db: models.Session):
     session_db.last_access_data = last_access_data
 
     return session_db
+
+
+PL_TIMEZONE = pytz.timezone("Poland")
+
+
+def is_archival(appointment: models.Appointment):
+    return appointment.end_slot.end_time < datetime.datetime.now(PL_TIMEZONE)
+
+
+def format_datetime_str(datetime_obj: datetime.datetime) -> str:
+    return datetime_obj.strftime("%d.%m.%Y, %H:%M")

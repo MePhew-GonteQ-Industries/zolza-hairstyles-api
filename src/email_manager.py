@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
+from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from fastapi_mail.errors import ConnectionErrors
 from pydantic import EmailStr
 
@@ -18,8 +18,8 @@ MAIL_CONFIG = ConnectionConfig(
     MAIL_FROM=EmailStr(settings.MAIL_FROM),
     MAIL_PORT=settings.MAIL_PORT,
     MAIL_SERVER=settings.MAIL_SERVER,
-    MAIL_TLS=settings.MAIL_TLS,
-    MAIL_SSL=settings.MAIL_SSL,
+    MAIL_STARTTLS=settings.MAIL_STARTTLS,
+    MAIL_SSL_TLS=settings.MAIL_SSL_TLS,
     USE_CREDENTIALS=settings.USE_CREDENTIALS,
     VALIDATE_CERTS=settings.VALIDATE_CERTS,
     MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
@@ -66,7 +66,7 @@ def create_email_verification_email(
             f"/email-verification"
             f"?token={email_verification_token}",
         },
-        subtype="html",
+        subtype=MessageType.html,
     )
 
     return message, template_name
@@ -90,9 +90,10 @@ def create_password_reset_email(
         recipients=[user.email],
         template_body={
             "user": user.name,
-            "password_reset_link": f"https://mephew.ddns.net/password-reset?token={password_reset_token}",
+            "password_reset_link": f"https://mephew.ddns.net/password-reset?token="
+            f"{password_reset_token}",
         },
-        subtype="html",
+        subtype=MessageType.html,
     )
 
     return message, template_name

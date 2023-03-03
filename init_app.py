@@ -14,7 +14,8 @@ from sqlalchemy.orm import Session
 from src import models
 from src.config import settings
 from src.database import SQLALCHEMY_DATABASE_URL, get_db
-from src.scheduler import scheduler, configure_and_start_scheduler
+from src.scheduler import configure_and_start_scheduler, scheduler
+from src.utils import PL_TIMEZONE
 
 formatter = logging.Formatter(
     "%(thread)d;%(threadName)s;%(asctime)s;%(levelname)s;%(message)s",
@@ -243,7 +244,7 @@ def generate_appointment_slots(db: Session) -> None:
 
     holiday_dates = load_json_file("resources/holiday_dates.json")
     holiday_names = load_json_file("resources/holiday_names.json")
-    weekplan = load_json_file("src/dynamic_resources/weekplan.json")
+    weekplan = load_json_file("dynamic_resources/weekplan.json")
 
     holiday_ids = []
     for holiday in holiday_names:
@@ -309,7 +310,7 @@ def generate_appointment_slots(db: Session) -> None:
                 minute=first_start_minute,
                 second=0,
                 microsecond=0,
-            )
+            ).astimezone(tz=PL_TIMEZONE)
 
     if not first_slot_start:
         hours = now.hour
@@ -329,14 +330,14 @@ def generate_appointment_slots(db: Session) -> None:
                 second=0,
                 microsecond=0,
                 day=now.day + 1,
-            )
+            ).astimezone(tz=PL_TIMEZONE)
         else:
             first_slot_start = now.replace(
                 hour=hours,
                 minute=minutes,
                 second=0,
                 microsecond=0,
-            )
+            ).astimezone(tz=PL_TIMEZONE)
 
     days = 366 if calendar.isleap(now.year) else 365
 
@@ -344,7 +345,7 @@ def generate_appointment_slots(db: Session) -> None:
 
     last_slot_end = last_slot_end.replace(
         hour=last_end_hour, minute=last_end_minute, second=0, microsecond=0
-    )
+    ).astimezone(PL_TIMEZONE)
 
     current_date = first_slot_start
 
@@ -453,8 +454,8 @@ def generate_appointment_slots(db: Session) -> None:
                         if current_date.minute == break_time["start_minute"]:
                             appointment_slot = models.AppointmentSlot(
                                 date=current_date,
-                                start_time=current_date,
-                                end_time=current_date
+                                start_time=current_date.astimezone(PL_TIMEZONE),
+                                end_time=current_date.astimezone(PL_TIMEZONE)
                                 + timedelta(minutes=break_time["time_minutes"]),
                                 break_time=True,
                             )
@@ -465,9 +466,9 @@ def generate_appointment_slots(db: Session) -> None:
         if not appointment_slot:
             appointment_slot = models.AppointmentSlot(
                 date=current_date,
-                start_time=current_date,
+                start_time=current_date.astimezone(PL_TIMEZONE),
                 end_time=(
-                    current_date
+                    current_date.astimezone(PL_TIMEZONE)
                     + timedelta(minutes=settings.APPOINTMENT_SLOT_TIME_MINUTES)
                 ),
             )

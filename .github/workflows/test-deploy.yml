@@ -6,71 +6,71 @@ on:
       - "main"
 
 jobs:
-#  test:
-#    name: Test
-#    env:
-#      API_VERSION: ${{secrets.API_VERSION}}
-#      API_TITLE: ${{secrets.API_TITLE}}
-#      BASE_URL: ${{secrets.BASE_URL}}
-#      ZOLZA_HAIRSTYLES_URL: ${{secrets.ZOLZA_HAIRSTYLES_URL}}
-#      DATABASE_USERNAME: ${{secrets.DATABASE_USERNAME}}
-#      DATABASE_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
-#      DATABASE_HOSTNAME: ${{secrets.DATABASE_HOSTNAME}}
-#      DATABASE_PORT: ${{secrets.DATABASE_PORT}}
-#      DATABASE_NAME: ${{secrets.DATABASE_NAME}}
-#      API_SECRET: ${{secrets.API_SECRET}}
-#      ALGORITHM: ${{secrets.ALGORITHM}}
-#      ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
-#      MAIL_VERIFICATION_TOKEN_EXPIRE_MINUTES: ${{secrets.MAIL_VERIFICATION_TOKEN_EXPIRE_MINUTES}}
-#      PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: ${{secrets.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES}}
-#      MAIL_VERIFICATION_COOLDOWN_MINUTES: ${{secrets.MAIL_VERIFICATION_COOLDOWN_MINUTES}}
-#      PASSWORD_RESET_COOLDOWN_MINUTES: ${{secrets.PASSWORD_RESET_COOLDOWN_MINUTES}}
-#      MAIL_USERNAME: ${{secrets.MAIL_USERNAME}}
-#      MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD}}
-#      MAIL_FROM: ${{secrets.MAIL_FROM}}
-#      MAIL_PORT: ${{secrets.MAIL_PORT}}
-#      MAIL_SERVER: ${{secrets.MAIL_SERVER}}
-#      MAIL_TLS: ${{secrets.MAIL_TLS}}
-#      MAIL_SSL: ${{secrets.MAIL_SSL}}
-#      USE_CREDENTIALS: ${{secrets.USE_CREDENTIALS}}
-#      VALIDATE_CERTS: ${{secrets.VALIDATE_CERTS}}
-#      MAIL_FROM_NAME: ${{secrets.MAIL_FROM_NAME}}
-#      IPINFO_ACCESS_TOKEN: ${{secrets.IPINFO_ACCESS_TOKEN}}
-#      SUDO_MODE_TIME_HOURS: ${{secrets.SUDO_MODE_TIME_HOURS}}
-#      APPOINTMENT_SLOT_TIME_MINUTES: ${{secrets.APPOINTMENT_SLOT_TIME_MINUTES}}
-#      MAX_FUTURE_APPOINTMENT_DAYS: ${{secrets.MAX_FUTURE_APPOINTMENT_DAYS}}
-#    services:
-#      postgres:
-#        image: postgres:latest
-#        env:
-#          POSTGRES_USER: ${{secrets.DATABASE_USERNAME}}
-#          POSTGRES_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
-#          POSTGRES_DB: ${{secrets.DATABASE_NAME}}_test
-#        ports:
-#          - 5432:5432
-#        options: >-
-#          --health-cmd pg_isready
-#          --health-interval 10s
-#          --health-timeout 5s
-#          --health-retries 5
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Pull git repo
-#        uses: actions/checkout@v2
-#      - name: Set up Python v. 3.10
-#        uses: actions/setup-python@v2
-#        with:
-#          python-version: "3.10"
-#      - name: Update pip
-#        run: python -m pip install --upgrade pip
-#      - name: Install project dependencies
-#        run: pip install -r requirements.txt
-#      - name: Run tests
-#        run: pytest
+  #  test:
+  #    name: Test
+  #    env:
+  #      API_VERSION: ${{secrets.API_VERSION}}
+  #      API_TITLE: ${{secrets.API_TITLE}}
+  #      BASE_URL: ${{secrets.BASE_URL}}
+  #      ZOLZA_HAIRSTYLES_URL: ${{secrets.ZOLZA_HAIRSTYLES_URL}}
+  #      DATABASE_USERNAME: ${{secrets.DATABASE_USERNAME}}
+  #      DATABASE_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
+  #      DATABASE_HOSTNAME: ${{secrets.DATABASE_HOSTNAME}}
+  #      DATABASE_PORT: ${{secrets.DATABASE_PORT}}
+  #      DATABASE_NAME: ${{secrets.DATABASE_NAME}}
+  #      API_SECRET: ${{secrets.API_SECRET}}
+  #      ALGORITHM: ${{secrets.ALGORITHM}}
+  #      ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
+  #      MAIL_VERIFICATION_TOKEN_EXPIRE_MINUTES: ${{secrets.MAIL_VERIFICATION_TOKEN_EXPIRE_MINUTES}}
+  #      PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: ${{secrets.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES}}
+  #      MAIL_VERIFICATION_COOLDOWN_MINUTES: ${{secrets.MAIL_VERIFICATION_COOLDOWN_MINUTES}}
+  #      PASSWORD_RESET_COOLDOWN_MINUTES: ${{secrets.PASSWORD_RESET_COOLDOWN_MINUTES}}
+  #      MAIL_USERNAME: ${{secrets.MAIL_USERNAME}}
+  #      MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD}}
+  #      MAIL_FROM: ${{secrets.MAIL_FROM}}
+  #      MAIL_PORT: ${{secrets.MAIL_PORT}}
+  #      MAIL_SERVER: ${{secrets.MAIL_SERVER}}
+  #      MAIL_TLS: ${{secrets.MAIL_TLS}}
+  #      MAIL_SSL: ${{secrets.MAIL_SSL}}
+  #      USE_CREDENTIALS: ${{secrets.USE_CREDENTIALS}}
+  #      VALIDATE_CERTS: ${{secrets.VALIDATE_CERTS}}
+  #      MAIL_FROM_NAME: ${{secrets.MAIL_FROM_NAME}}
+  #      IPINFO_ACCESS_TOKEN: ${{secrets.IPINFO_ACCESS_TOKEN}}
+  #      SUDO_MODE_TIME_HOURS: ${{secrets.SUDO_MODE_TIME_HOURS}}
+  #      APPOINTMENT_SLOT_TIME_MINUTES: ${{secrets.APPOINTMENT_SLOT_TIME_MINUTES}}
+  #      MAX_FUTURE_APPOINTMENT_DAYS: ${{secrets.MAX_FUTURE_APPOINTMENT_DAYS}}
+  #    services:
+  #      postgres:
+  #        image: postgres:latest
+  #        env:
+  #          POSTGRES_USER: ${{secrets.DATABASE_USERNAME}}
+  #          POSTGRES_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
+  #          POSTGRES_DB: ${{secrets.DATABASE_NAME}}_test
+  #        ports:
+  #          - 5432:5432
+  #        options: >-
+  #          --health-cmd pg_isready
+  #          --health-interval 10s
+  #          --health-timeout 5s
+  #          --health-retries 5
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - name: Pull git repo
+  #        uses: actions/checkout@v2
+  #      - name: Set up Python v. 3.10
+  #        uses: actions/setup-python@v2
+  #        with:
+  #          python-version: "3.10"
+  #      - name: Update pip
+  #        run: python -m pip install --upgrade pip
+  #      - name: Install project dependencies
+  #        run: pip install -r requirements.txt
+  #      - name: Run tests
+  #        run: pytest
 
   deploy:
     name: Deploy
-#    needs: [test]
+    #    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to the server
@@ -81,11 +81,11 @@ jobs:
           key: ${{secrets.DEPLOYMENT_SSH_KEY}}
           passphrase: ${{secrets.DEPLOYMENT_SSH_KEY_PASSPHRASE}}
           script: |
-            echo ${{secrets.DEPLOYMENT_PASSWORD}} | sudo -S apt update && echo ${{secrets.DEPLOYMENT_PASSWORD}} | sudo -S apt upgrade
-            cd /home/${{secrets.DEPLOYMENT_USERNAME}}/zolza-hairstyles-api
+            echo '${{secrets.DEPLOYMENT_PASSWORD}}' | sudo -S apt update && echo '${{secrets.DEPLOYMENT_PASSWORD}}' | sudo -S apt -y upgrade
+            cd ${{secrets.DEPLOYMENT_PATH}}zolza-hairstyles-api
             git pull
             source venv/bin/activate
             python -m pip install --upgrade pip
             pip install -r requirements.txt
             alembic upgrade head
-            echo ${{secrets.DEPLOYMENT_PASSWORD}} | sudo -S systemctl restart zolza_hairstyles_api
+            echo '${{secrets.DEPLOYMENT_PASSWORD}}' | sudo -S systemctl restart zolza_hairstyles_api

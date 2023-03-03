@@ -6,27 +6,9 @@ from sqlalchemy.orm import Session
 from .. import models, oauth2
 from ..config import settings
 from ..database import get_db
-from ..jobs import send_appointment_reminder
-from ..scheduler import scheduler
 from ..schemas.notifications import FcmToken, ReturnFcmToken
 
 router = APIRouter(prefix=settings.BASE_URL + "/notifications", tags=["Notifications"])
-
-
-@router.post("/test")
-def test(db: Session = Depends(get_db)):
-    scheduler.add_job(
-        func=send_appointment_reminder,
-        trigger="date",
-        id=f"appointment_reminder_appointment_#sadsadsadaoifaoijfoi",
-        name=f"Appointment Reminder - Appointment #sdsadadadadadsad",
-        misfire_grace_time=20,
-        next_run_time=datetime.datetime.utcnow() - datetime.timedelta(hours=2),
-        args=[get_db],
-        kwargs={"user_id": "asdsadsadsad", "appointment_id": "asdsadad"},
-    )
-
-    return "ok"
 
 
 @router.post("/add_token", response_model=ReturnFcmToken)
@@ -76,4 +58,4 @@ def add_token(
     db.commit()
     db.refresh(fcm_token_db)
 
-    return {"fcm_token": fcm_token_db.token, "created_at": fcm_token_db.last_updated_at}
+    return {"fcm_token": fcm_token_db.token, "updated_at": fcm_token_db.last_updated_at}

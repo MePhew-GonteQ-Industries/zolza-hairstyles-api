@@ -206,8 +206,8 @@ class AppointmentSlot(Base):
     break_time = Column(Boolean, nullable=False, server_default="false")
     holiday_id = Column(Integer, ForeignKey("holidays.id"))
     date = Column(DATE, nullable=False)
-    start_time = Column(TIMESTAMP(timezone=False), unique=True)
-    end_time = Column(TIMESTAMP(timezone=False), unique=True)
+    start_time = Column(TIMESTAMP(timezone=True), unique=True)
+    end_time = Column(TIMESTAMP(timezone=True), unique=True)
     appointment = relationship(
         "Appointment",
         cascade="all,delete",
@@ -215,6 +215,7 @@ class AppointmentSlot(Base):
         foreign_keys=[occupied_by_appointment],
     )
     holiday_info = relationship("Holiday")
+    UniqueConstraint("date", "start_time", "end_time", name="appointment_slots_unique")
 
 
 class Appointment(Base):
@@ -234,7 +235,6 @@ class Appointment(Base):
         UUID(as_uuid=True), ForeignKey("appointment_slots.id"), nullable=False
     )
     canceled = Column(Boolean, nullable=False, server_default="false")
-    archival = Column(Boolean, nullable=False, server_default="false")
     created_at = Column(
         TIMESTAMP(timezone=False),
         nullable=False,

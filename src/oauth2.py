@@ -70,7 +70,7 @@ def decode_jwt(
     options: dict | None = None,
     expected_token_type: TokenType,
     on_error: Optional[Callable] = None,
-    **kwargs
+    **kwargs,
 ):
     try:
         payload = jwt.decode(
