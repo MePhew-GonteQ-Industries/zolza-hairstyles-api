@@ -65,9 +65,9 @@ class CommonQueryParams:
         self.filtering_query_params = filtering_query_params
 
     def __repr__(self):
-        return f'{self.pagination_query_params}, ' \
-               f'{self.sorting_query_params}, ' \
-               f'{self.filtering_query_params} '
+        return (f'{self.pagination_query_params}, '
+                f'{self.sorting_query_params}, '
+                f'{self.filtering_query_params} ')
 
 
 class ParametrizedQuery:
