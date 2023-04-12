@@ -338,13 +338,13 @@ def create_appointment(
 
 @router.get("/all", response_model=ReturnAllAppointments)  # TODO: search
 def get_all_appointments(
-        db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin),
-        common_query_params: CommonQueryParams = Depends(),
-        # upcoming_only: bool = False, # TODO: fix
-        offset: int = 0,
-        limit: int | None = None,
-        user_id: UUID4 | None = None,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),
+    common_query_params: CommonQueryParams = Depends(),
+    # upcoming_only: bool = False, # TODO: fix
+    offset: int = 0,
+    limit: int | None = None,
+    user_id: UUID4 | None = None,
 ):
     admin = admin_session.admin
 
@@ -394,9 +394,9 @@ def get_all_appointments(
 
 @router.get("/any/{appointment_id}", response_model=ReturnAppointmentDetailed)
 def get_any_appointment(
-        appointment_id: UUID4,
-        db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin),
+    appointment_id: UUID4,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),
 ):
     appointment_db = (
         db.query(models.Appointment)
@@ -636,9 +636,9 @@ def cancel_appointment(
 
 @router.post("/reserve_slots")
 def reserve_slots(
-        reserve_slots_data: ReserveSlots,
-        db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin),  # TODO: events
+    reserve_slots_data: ReserveSlots,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
     slots_db = (
         db.query(models.AppointmentSlot)
@@ -665,9 +665,9 @@ def reserve_slots(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"These slots cannot be reserved: {invalid_slots}"
-                   f" (This most likely means these slots are either"
-                   f" already reserved or occupied, holiday, sunday, break time"
-                   f" or archival)",
+            f" (This most likely means these slots are either"
+            f" already reserved or occupied, holiday, sunday, break time"
+            f" or archival)",
         )
 
     for slot_db in slots_db:
@@ -683,9 +683,9 @@ def reserve_slots(
 
 @router.post("/unreserve_slots")
 def unreserve_slots(
-        unreserve_slots_data: UnreserveSlots,
-        db: Session = Depends(get_db),
-        admin_session=Depends(oauth2.get_admin),  # TODO: events
+    unreserve_slots_data: UnreserveSlots,
+    db: Session = Depends(get_db),
+    admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
     slots_db = (
         db.query(models.AppointmentSlot)
@@ -712,9 +712,9 @@ def unreserve_slots(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"These slots cannot be reserved: {invalid_slots}"
-                   f" (This most likely means these slots are either"
-                   f" not reserved or occupied, holiday, sunday, break time"
-                   f" or archival)",
+            f" (This most likely means these slots are either"
+            f" not reserved or occupied, holiday, sunday, break time"
+            f" or archival)",
         )
 
     for slot_db in slots_db:
