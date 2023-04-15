@@ -13,9 +13,9 @@ router = APIRouter(prefix=settings.BASE_URL + "/notifications", tags=["Notificat
 
 @router.post("/add_token", response_model=ReturnFcmToken)
 def add_token(
-    fcm_token: FcmToken,
-    db: Session = Depends(get_db),
-    user_session=Depends(oauth2.get_user),
+        fcm_token: FcmToken,
+        db: Session = Depends(get_db),
+        user_session=Depends(oauth2.get_user),
 ):
     user = user_session.user
     session = user_session.session
@@ -30,7 +30,7 @@ def add_token(
     if existing_token:
         return {
             "fcm_token": existing_token.token,
-            "created_at": existing_token.last_updated_at,
+            "updated_at": existing_token.last_updated_at,
         }
 
     existing_session = (
