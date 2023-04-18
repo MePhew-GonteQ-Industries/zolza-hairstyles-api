@@ -4,11 +4,10 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
-from .config import settings
-from .database import SQLALCHEMY_DATABASE_URL
-from .routers import appointments, auth, services, user_settings, users, notifications
-from .scheduler import configure_and_start_scheduler
 from . import github_client
+from .config import settings
+from .routers import appointments, auth, notifications, services, user_settings, users
+from .scheduler import configure_and_start_scheduler
 
 logging.basicConfig(
     filename="app.log",
@@ -61,7 +60,7 @@ app.add_middleware(
 def startup():
     logger.info("Application is in startup")
 
-    configure_and_start_scheduler(SQLALCHEMY_DATABASE_URL)
+    configure_and_start_scheduler()
 
 
 @app.get(settings.BASE_URL, tags=["Zołza Hairstyles Redirection"])

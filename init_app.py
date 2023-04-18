@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from src import models
 from src.config import settings
-from src.database import SQLALCHEMY_DATABASE_URL, get_db
+from src.database import get_db
 from src.scheduler import configure_and_start_scheduler, scheduler
 from src.utils import PL_TIMEZONE
 
@@ -492,7 +492,7 @@ def generate_appointment_slots(db: Session) -> None:
 def init_app():
     logger.info("Initializing application")
 
-    configure_and_start_scheduler(SQLALCHEMY_DATABASE_URL)
+    configure_and_start_scheduler()
 
     logger.info("Scheduler started")
 

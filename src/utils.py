@@ -2,6 +2,7 @@ import datetime
 import logging
 
 import langcodes
+import pydantic
 import pytz
 import user_agents
 from fastapi import HTTPException, status
@@ -21,6 +22,8 @@ from .schemas.session import (
 )
 from .schemas.user_settings import AvailableSettings, DefaultContentLanguages
 
+PL_TIMEZONE = pytz.timezone("Poland")
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 formatter = logging.Formatter(
@@ -33,7 +36,7 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
 
-def get_language_code_from_header(accept_language: str):
+def get_language_code_from_header(accept_language: str) -> str | None:
     if accept_language:
         accept_language = accept_language.split(",")[0].split(";")[0]
         language = langcodes.Language.get(langcodes.standardize_tag(accept_language))
@@ -48,7 +51,8 @@ def get_language_code_from_header(accept_language: str):
     return language_code
 
 
-def get_language_id_from_language_code(db: Session, language_code: str):
+def get_language_id_from_language_code(db: Session,
+                                       language_code: str) -> pydantic.UUID4:
     language_id = (
         db.query(models.Language.id)
         .where(models.Language.code == language_code)
@@ -159,7 +163,7 @@ def on_decode_error(*, db, request_db) -> None:
     db.commit()
 
 
-def get_user_from_db(*, uuid: UUID4, db: Session):
+def get_user_from_db(*, uuid: UUID4, db: Session) -> models.User:
     user = db.query(models.User).where(models.User.id == uuid).first()
 
     if not user:
@@ -175,7 +179,7 @@ def get_user_agent_info(user_agent: str) -> user_agents.parsers.UserAgent:
     return user_agents.parse(user_agent)
 
 
-def load_session_data(session_db: models.Session):
+def load_session_data(session_db: models.Session) -> models.Session:
     sign_in_user_agent_info = get_user_agent_info(session_db.sign_in_user_agent)
     sign_in_user_agent_info = UserAgentInfo(
         is_bot=sign_in_user_agent_info.is_bot,
@@ -257,10 +261,7 @@ def load_session_data(session_db: models.Session):
     return session_db
 
 
-PL_TIMEZONE = pytz.timezone("Poland")
-
-
-def is_archival(appointment: models.Appointment):
+def is_archival(appointment: models.Appointment) -> bool:
     return appointment.end_slot.end_time < datetime.datetime.now(PL_TIMEZONE)
 
 
