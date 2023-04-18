@@ -316,7 +316,7 @@ def create_appointment(
                 "appointment_id": new_appointment.id,
                 "minutes_to_appointment": 120,
             },
-        )  # this call is likely to fail
+        )  # todo: fix possible error
 
     if now < appointment_start_time - timedelta(minutes=30):
         scheduler.add_job(
@@ -332,7 +332,7 @@ def create_appointment(
                 "appointment_id": new_appointment.id,
                 "minutes_to_appointment": 30,
             },
-        )  # this call is likely to fail
+        )  # todo: fix possible error
 
     new_appointment.archival = False
 
