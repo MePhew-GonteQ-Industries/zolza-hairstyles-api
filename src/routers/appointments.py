@@ -234,13 +234,15 @@ def create_appointment(
     now = datetime.datetime.now(PL_TIMEZONE)
     first_available_time = now + timedelta(hours=1)
 
-    if appointment_start_time > first_available_time:
+    if appointment_start_time < first_available_time:
+        print('A TUTAJ')
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
     today = datetime.date.today()
     last_available_day = today + timedelta(days=settings.MAX_FUTURE_APPOINTMENT_DAYS)
 
     if appointment_start_time.date() > last_available_day:
+        print('TU')
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
     service_db = (
@@ -294,14 +296,11 @@ def create_appointment(
     )
 
     db.add(new_appointment)
-    db.commit()
-    db.refresh(new_appointment)
+    db.flush()
 
     for slot in available_slots:
         slot.occupied = True
         slot.occupied_by_appointment = new_appointment.id
-
-    db.commit()
 
     if now < appointment_start_time - timedelta(hours=2):
         scheduler.add_job(
@@ -347,6 +346,9 @@ def create_appointment(
     )
 
     # todo: send email?
+
+    db.commit()
+    db.refresh(new_appointment)
 
     return new_appointment
 
