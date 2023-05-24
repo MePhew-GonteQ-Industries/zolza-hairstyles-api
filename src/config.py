@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     API_TITLE: str
     BASE_URL: str
     ZOLZA_HAIRSTYLES_URL: str
-    LOG_LEVEL: str = 'INFO'
+    LOG_LEVEL: str = "INFO"
 
     API_SECRET: str
     ALGORITHM: str
