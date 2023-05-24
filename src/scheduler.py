@@ -11,8 +11,6 @@ def configure_and_start_scheduler():
     if not scheduler.running:
         jobstores = {"default": SQLAlchemyJobStore(engine=database_engine)}
 
-        scheduler.configure(
-            jobstores=jobstores, timezone=PL_TIMEZONE
-        )
+        scheduler.configure(jobstores=jobstores, timezone=PL_TIMEZONE)
 
         scheduler.start()
