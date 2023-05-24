@@ -1,6 +1,5 @@
 import calendar
 import json
-import logging
 import math
 import os
 from datetime import date, datetime, timedelta
@@ -14,19 +13,9 @@ from sqlalchemy.orm import Session
 from src import models
 from src.config import settings
 from src.database import get_db
+from src.loggers import init_app_logger
 from src.scheduler import configure_and_start_scheduler, scheduler
 from src.utils import PL_TIMEZONE
-
-formatter = logging.Formatter(
-    "%(thread)d;%(threadName)s;%(asctime)s;%(levelname)s;%(message)s",
-    "%Y-%m-%d %H:%M:%S",
-)
-
-file_handler = logging.FileHandler(f"init_app.log")
-file_handler.setFormatter(formatter)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-logger.addHandler(file_handler)
 
 
 def init_languages(db: Session) -> None:
@@ -55,7 +44,7 @@ def init_languages(db: Session) -> None:
     try:
         db.commit()
     except Exception as e:
-        logger.error(
+        init_app_logger.error(
             f"Initializing languages with {type(db)} instance failed with error {e}"
         )
         raise
@@ -94,8 +83,8 @@ def init_services(db: Session) -> None:
                 max_price=service["max_price"],
                 average_time_minutes=service["average_time_minutes"],
                 required_slots=(
-                    int(service["average_time_minutes"])
-                    // settings.APPOINTMENT_SLOT_TIME_MINUTES
+                        int(service["average_time_minutes"])
+                        // settings.APPOINTMENT_SLOT_TIME_MINUTES
                 ),
             )
             db.add(service_db)
@@ -116,7 +105,7 @@ def init_services(db: Session) -> None:
                 try:
                     db.commit()
                 except Exception as e:
-                    logger.error(
+                    init_app_logger.error(
                         f"Adding service translation with {type(db)} instance"
                         f"failed with error {e}"
                     )
@@ -144,7 +133,8 @@ def add_holiday_to_db(db: Session) -> models.Holiday:
     try:
         db.commit()
     except Exception as e:
-        logger.error(f"Adding holiday with {type(db)} instance failed with error {e}")
+        init_app_logger.error(
+            f"Adding holiday with {type(db)} instance failed with error {e}")
         raise
     db.refresh(holiday_db)
 
@@ -152,7 +142,7 @@ def add_holiday_to_db(db: Session) -> models.Holiday:
 
 
 def add_holiday_translation_to_db(
-    holiday: models.Holiday, lang, holiday_name: str, db: Session
+        holiday: models.Holiday, lang, holiday_name: str, db: Session
 ) -> None:
     language_db = db.query(models.Language).where(models.Language.code == lang).first()
 
@@ -163,7 +153,7 @@ def add_holiday_translation_to_db(
     try:
         db.commit()
     except Exception as e:
-        logger.error(
+        init_app_logger.error(
             f"Adding holiday translation with {type(db)} instance"
             f"failed with error {e}"
         )
@@ -191,7 +181,7 @@ def ensure_enough_appointment_slots_available(get_db_func: callable) -> None:
 
 
 def ensure_appointment_slots_generation_task_exists(
-    background_scheduler: BackgroundScheduler,
+        background_scheduler: BackgroundScheduler,
 ) -> None:
     appointment_slots_generation_task = background_scheduler.get_job(
         "appointment_slots_generation"
@@ -202,7 +192,7 @@ def ensure_appointment_slots_generation_task_exists(
 
 
 def add_appointment_slots_generation_task(
-    background_scheduler: BackgroundScheduler,
+        background_scheduler: BackgroundScheduler,
 ) -> None:
     background_scheduler.add_job(
         ensure_enough_appointment_slots_available,
@@ -396,8 +386,8 @@ def generate_appointment_slots(db: Session) -> None:
                 current_date = current_date + timedelta(days=1)
             else:
                 if (
-                    current_date.hour
-                    < weekplan[current_date.weekday()]["work_hours"]["start_hour"]
+                        current_date.hour
+                        < weekplan[current_date.weekday()]["work_hours"]["start_hour"]
                 ):
                     current_date = current_date.replace(
                         hour=weekplan[current_date.weekday()]["work_hours"][
@@ -409,8 +399,8 @@ def generate_appointment_slots(db: Session) -> None:
                     )
                     continue
                 elif (
-                    current_date.hour
-                    > weekplan[current_date.weekday()]["work_hours"]["end_hour"]
+                        current_date.hour
+                        > weekplan[current_date.weekday()]["work_hours"]["end_hour"]
                 ):
                     current_date = current_date + timedelta(days=1)
                     next_day_index = current_date.weekday() + 1
@@ -428,12 +418,13 @@ def generate_appointment_slots(db: Session) -> None:
                     current_date = current_date.replace(hour=hour, minute=minute)
                     continue
                 elif (
-                    current_date.hour
-                    == weekplan[current_date.weekday()]["work_hours"]["end_hour"]
+                        current_date.hour
+                        == weekplan[current_date.weekday()]["work_hours"]["end_hour"]
                 ):
                     if (
-                        current_date.minute
-                        >= weekplan[current_date.weekday()]["work_hours"]["end_minute"]
+                            current_date.minute
+                            >= weekplan[current_date.weekday()]["work_hours"][
+                        "end_minute"]
                     ):
                         current_date = current_date + timedelta(days=1)
                         next_day_index = current_date.weekday() + 1
@@ -458,7 +449,8 @@ def generate_appointment_slots(db: Session) -> None:
                                 date=current_date,
                                 start_time=current_date.astimezone(PL_TIMEZONE),
                                 end_time=current_date.astimezone(PL_TIMEZONE)
-                                + timedelta(minutes=break_time["time_minutes"]),
+                                         + timedelta(
+                                    minutes=break_time["time_minutes"]),
                                 break_time=True,
                             )
                             current_date = current_date + timedelta(
@@ -470,8 +462,8 @@ def generate_appointment_slots(db: Session) -> None:
                 date=current_date,
                 start_time=current_date.astimezone(PL_TIMEZONE),
                 end_time=(
-                    current_date.astimezone(PL_TIMEZONE)
-                    + timedelta(minutes=settings.APPOINTMENT_SLOT_TIME_MINUTES)
+                        current_date.astimezone(PL_TIMEZONE)
+                        + timedelta(minutes=settings.APPOINTMENT_SLOT_TIME_MINUTES)
                 ),
             )
 
@@ -488,27 +480,30 @@ def generate_appointment_slots(db: Session) -> None:
 
 
 def init_app():
-    logger.info("Initializing application")
+    init_app_logger.info("Initializing application")
 
     configure_and_start_scheduler()
 
-    logger.info("Scheduler started")
+    init_app_logger.info("Scheduler started")
 
     db = next(get_db())
 
-    logger.info(f"Created new {type(db)} object #{id(db)}")
+    init_app_logger.info(f"Created new {type(db)} object #{id(db)}")
 
     init_languages(db)
 
-    logger.info(f"Successfully initialized languages using {type(db)} object #{id(db)}")
+    init_app_logger.info(
+        f"Successfully initialized languages using {type(db)} object #{id(db)}")
 
     init_services(db)
 
-    logger.info(f"Successfully initialized services using {type(db)} object #{id(db)}")
+    init_app_logger.info(
+        f"Successfully initialized services using {type(db)} object #{id(db)}")
 
     init_holidays(db)
 
-    logger.info(f"Successfully initialized holidays using {type(db)} object #{id(db)}")
+    init_app_logger.info(
+        f"Successfully initialized holidays using {type(db)} object #{id(db)}")
 
     ensure_enough_appointment_slots_available(get_db)
 

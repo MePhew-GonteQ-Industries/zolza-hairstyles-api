@@ -1,32 +1,12 @@
-import logging
-
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from . import github_client
 from .config import settings
+from .loggers import app_logger
 from .routers import appointments, auth, notifications, services, user_settings, users
 from .scheduler import configure_and_start_scheduler
-
-logging.basicConfig(
-    filename="app.log",
-    encoding="utf-8",
-    level=logging.DEBUG,
-    format="%(asctime)s;%(levelname)s;%(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-
-formatter = logging.Formatter(
-    "%(thread)d;%(threadName)s;%(asctime)s;%(levelname)s;%(message)s",
-    "%Y-%m-%d %H:%M:%S",
-)
-
-file_handler = logging.FileHandler(f"main.log")
-file_handler.setFormatter(formatter)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-logger.addHandler(file_handler)
 
 app = FastAPI(
     docs_url=settings.BASE_URL + "/docs",
@@ -58,7 +38,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup():
-    logger.info("Application is in startup")
+    app_logger.info("Application is in startup")
 
     configure_and_start_scheduler()
 
