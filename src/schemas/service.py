@@ -32,6 +32,7 @@ class CreateService(BaseModel):
                 "ensure max_price is greater than or equal to the min_price"
             )
         return v
+
     model_config = ConfigDict(from_attributes=True)
 
 

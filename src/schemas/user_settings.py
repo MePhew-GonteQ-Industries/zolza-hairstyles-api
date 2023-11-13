@@ -69,6 +69,7 @@ class SettingBase(BaseModel):
         elif not langcodes.Language.get(value).is_valid():
             raise ValueError("value is not a valid ietf language tag ")
         return value
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -89,6 +90,7 @@ class UpdateSetting(BaseModel):
         elif not langcodes.Language.get(value).is_valid():
             raise ValueError("value is not a valid ietf language tag ")
         return value
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -106,4 +108,5 @@ class UpdateSettings(BaseModel):
             raise ValueError("Each setting can be specified only once")
 
         return v
+
     model_config = ConfigDict(from_attributes=True)
