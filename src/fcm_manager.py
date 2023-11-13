@@ -26,9 +26,18 @@ def send_multicast_message(
         data_object: object = None
 ) -> None:
     message = messaging.MulticastMessage(
-        notification=messaging.Notification(title=title, body=msg),
+        notification=messaging.Notification(title=title,
+                                            body=msg),
         data=data_object,
         tokens=fcm_tokens,
+        android=messaging.AndroidConfig(priority='high',
+                                        notification=messaging.AndroidNotification(
+                                            priority='max'
+                                        )),
+        apns=messaging.APNSConfig(headers={
+            "apns-priority": "10",
+            "interruption-level": "time-sensitive"
+        })
     )
 
     response = messaging.send_each_for_multicast(message)
