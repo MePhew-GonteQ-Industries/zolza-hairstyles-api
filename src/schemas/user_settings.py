@@ -56,7 +56,7 @@ class SettingBase(BaseModel):
     name: AvailableSettings
     current_value: str
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def ensure_valid_setting(self):
         if self.name == AvailableSettings.preferred_theme:
             if self.current_value not in (v for v in AvailableThemes):
