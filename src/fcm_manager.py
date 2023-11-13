@@ -17,13 +17,13 @@ firebase_admin.initialize_app(cred)
 
 
 def send_multicast_message(
-    *,
-    db: Session,
-    fcm_tokens_db: list[models.FcmToken],
-    title: str,
-    msg: str,
-    fcm_tokens: list[str],
-    data_object: object = None
+        *,
+        db: Session,
+        fcm_tokens_db: list[models.FcmToken],
+        title: str,
+        msg: str,
+        fcm_tokens: list[str],
+        data_object: object = None
 ) -> None:
     message = messaging.MulticastMessage(
         notification=messaging.Notification(title=title, body=msg),
@@ -31,7 +31,7 @@ def send_multicast_message(
         tokens=fcm_tokens,
     )
 
-    response = messaging.send_multicast(message)
+    response = messaging.send_each_for_multicast(message)
 
     db = db.object_session(fcm_tokens_db[0])
 

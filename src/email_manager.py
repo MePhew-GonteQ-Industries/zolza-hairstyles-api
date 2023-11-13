@@ -108,6 +108,6 @@ def create_email_request(
         user_id=user.id, request_type=request_type, request_token=request_token
     )
 
-    email_request = models.EmailRequests(**email_request.dict())
+    email_request = models.EmailRequests(**email_request.model_dump())
 
     return email_request

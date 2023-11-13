@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List, Union
 
 import langcodes
-from pydantic import field_validator, ConfigDict, BaseModel, validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 
 class AvailableSettings(str, Enum):
@@ -56,19 +56,18 @@ class SettingBase(BaseModel):
     name: AvailableSettings
     current_value: str
 
-    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-    @validator("current_value", pre=True)
-    def ensure_valid_setting(cls, value, values):
-        if values.get("name") == AvailableSettings.preferred_theme:
-            if value not in (v for v in AvailableThemes):
+    @model_validator(mode='after')
+    def ensure_valid_setting(self):
+        if self.name == AvailableSettings.preferred_theme:
+            if self.current_value not in (v for v in AvailableThemes):
                 raise ValueError(
-                    f"value is not a valid enumeration member; permitted: "
+                    "value is not a valid enumeration member; permitted: "
                     + ", ".join([f"'{v.value}'" for v in AvailableThemes])
                 )
-        elif not langcodes.Language.get(value).is_valid():
+        elif not langcodes.Language.get(self.current_value).is_valid():
             raise ValueError("value is not a valid ietf language tag ")
-        return value
+        return self
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -76,19 +75,18 @@ class UpdateSetting(BaseModel):
     name: AvailableSettings
     new_value: Union[str, AvailableThemes]
 
-    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-    @validator("new_value", pre=True)
-    def ensure_valid_setting(cls, value, values):
-        if values.get("name") == AvailableSettings.preferred_theme:
-            if value not in (v for v in AvailableThemes):
+    @model_validator(mode="after")
+    def ensure_valid_setting(self):
+        if self.name == AvailableSettings.preferred_theme:
+            if self.new_value not in (v for v in AvailableThemes):
                 raise ValueError(
                     f"value is not a valid enumeration member; permitted: "
                     + ", ".join([f"'{v.value}'" for v in AvailableThemes])
                 )
-        elif not langcodes.Language.get(value).is_valid():
+        elif not langcodes.Language.get(self.new_value).is_valid():
             raise ValueError("value is not a valid ietf language tag ")
-        return value
+        return self
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -106,4 +104,5 @@ class UpdateSettings(BaseModel):
             raise ValueError("Each setting can be specified only once")
 
         return v
+
     model_config = ConfigDict(from_attributes=True)

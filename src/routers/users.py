@@ -113,7 +113,7 @@ def create_user(
     else:
         user_language = LanguageCreate(current_value=language.language)
 
-    new_user = user.dict()
+    new_user = user.model_dump()
 
     hashed_password = utils.hash_password(new_user.pop("password"))
 
@@ -143,12 +143,12 @@ def create_user(
     db.add(password)
     db.commit()
 
-    user_theme = user_theme.dict()
+    user_theme = user_theme.model_dump()
     user_theme["user_id"] = new_user.id
     user_theme_db = models.Setting(**user_theme)
     db.add(user_theme_db)
 
-    user_language = user_language.dict()
+    user_language = user_language.model_dump()
     user_language["user_id"] = new_user.id
     user_language_db = models.Setting(**user_language)
     db.add(user_language_db)

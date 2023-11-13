@@ -1,9 +1,8 @@
-import pytest
-from fastapi.testclient import TestClient
-from fastapi_mail import FastMail, ConnectionConfig
 from pathlib import Path
 
-from pydantic import EmailStr
+import pytest
+from fastapi.testclient import TestClient
+from fastapi_mail import ConnectionConfig, FastMail
 
 from src.config import settings
 from src.database import get_db
@@ -24,7 +23,7 @@ def client(session):
         MAIL_CONFIG = ConnectionConfig(
             MAIL_USERNAME=settings.MAIL_USERNAME,
             MAIL_PASSWORD=settings.MAIL_PASSWORD,
-            MAIL_FROM=EmailStr(settings.MAIL_FROM),
+            MAIL_FROM=settings.MAIL_FROM,
             MAIL_PORT=settings.MAIL_PORT,
             MAIL_SERVER=settings.MAIL_SERVER,
             MAIL_TLS=settings.MAIL_TLS,
