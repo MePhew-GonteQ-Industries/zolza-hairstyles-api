@@ -1,7 +1,8 @@
-import langcodes
-from pydantic import BaseModel, validator
 from enum import Enum
 from typing import List, Union
+
+import langcodes
+from pydantic import field_validator, ConfigDict, BaseModel, validator
 
 
 class AvailableSettings(str, Enum):
@@ -22,9 +23,7 @@ class AvailableThemes(str, Enum):
 class PreferredThemeBase(BaseModel):
     name: AvailableSettings = AvailableSettings.preferred_theme
     current_value: AvailableThemes
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PreferredThemeCreate(PreferredThemeBase):
@@ -34,9 +33,7 @@ class PreferredThemeCreate(PreferredThemeBase):
 class LanguageBase(BaseModel):
     name: AvailableSettings = AvailableSettings.language
     current_value: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LanguageCreate(LanguageBase):
@@ -45,24 +42,22 @@ class LanguageCreate(LanguageBase):
 
 class ReturnSetting(BaseModel):
     name: AvailableSettings
-    default_value: Union[str, None]
+    default_value: Union[str, None] = None
     current_value: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ReturnSettings(BaseModel):
     settings: List[ReturnSetting]
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SettingBase(BaseModel):
     name: AvailableSettings
     current_value: str
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("current_value", pre=True)
     def ensure_valid_setting(cls, value, values):
         if values.get("name") == AvailableSettings.preferred_theme:
@@ -74,15 +69,15 @@ class SettingBase(BaseModel):
         elif not langcodes.Language.get(value).is_valid():
             raise ValueError("value is not a valid ietf language tag ")
         return value
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UpdateSetting(BaseModel):
     name: AvailableSettings
     new_value: Union[str, AvailableThemes]
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("new_value", pre=True)
     def ensure_valid_setting(cls, value, values):
         if values.get("name") == AvailableSettings.preferred_theme:
@@ -94,15 +89,14 @@ class UpdateSetting(BaseModel):
         elif not langcodes.Language.get(value).is_valid():
             raise ValueError("value is not a valid ietf language tag ")
         return value
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UpdateSettings(BaseModel):
     settings: List[UpdateSetting]
 
-    @validator("settings", pre=True)
+    @field_validator("settings", mode="before")
+    @classmethod
     def ensure_settings_limit(cls, v):
         if len(v) > len(AvailableSettings):
             raise ValueError("Each setting can be specified only once")
@@ -112,6 +106,4 @@ class UpdateSettings(BaseModel):
             raise ValueError("Each setting can be specified only once")
 
         return v
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

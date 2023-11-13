@@ -1,9 +1,11 @@
 import re
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, EmailStr, Field, validator, UUID4
-from .user_settings import ReturnSetting
 from typing import List
+
+from pydantic import field_validator, ConfigDict, BaseModel, EmailStr, Field, UUID4
+
+from .user_settings import ReturnSetting
 
 
 class Gender(str, Enum):
@@ -14,9 +16,7 @@ class Gender(str, Enum):
 
 class UserEmailOnly(BaseModel):
     email: EmailStr
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserData(BaseModel):
@@ -32,7 +32,8 @@ class BaseUser(UserEmailOnly, UserData):
 class CreateUser(BaseUser):
     password: str = Field(min_length=8, max_length=200)
 
-    @validator("password")
+    @field_validator("password")
+    @classmethod
     def verify_strong_password(cls, v):
         strong_password_regex = (
             r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,}$"

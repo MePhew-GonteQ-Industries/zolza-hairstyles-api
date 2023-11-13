@@ -1,41 +1,41 @@
-from datetime import datetime
 import ipaddress
+from datetime import datetime
 
-from pydantic import BaseModel
-from pydantic import UUID4
+from pydantic import ConfigDict, BaseModel, UUID4
+
 from . import user
 
 
 class LocationData(BaseModel):
-    country: str | None
-    region: str | None
-    city: str | None
-    latitude: float | None
-    longitude: float | None
+    country: str | None = None
+    region: str | None = None
+    city: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 class DeviceInfo(BaseModel):
-    family: str | None
-    brand: str | None
-    model: str | None
-    is_mobile: bool | None
-    is_tablet: bool | None
-    is_pc: bool | None
-    supports_touch: bool | None
+    family: str | None = None
+    brand: str | None = None
+    model: str | None = None
+    is_mobile: bool | None = None
+    is_tablet: bool | None = None
+    is_pc: bool | None = None
+    supports_touch: bool | None = None
 
 
 class OsInfo(BaseModel):
-    family: str | None
-    version: str | None
+    family: str | None = None
+    version: str | None = None
 
 
 class BrowserInfo(BaseModel):
-    family: str | None
-    version: str | None
+    family: str | None = None
+    version: str | None = None
 
 
 class UserAgentInfo(BaseModel):
-    is_bot: bool | None
+    is_bot: bool | None = None
     device: DeviceInfo
     os: OsInfo
     browser: BrowserInfo
@@ -45,7 +45,7 @@ class LoginData(BaseModel):
     user_agent: str
     user_agent_info: UserAgentInfo
     ip_address: ipaddress.IPv4Address
-    location: LocationData | None
+    location: LocationData | None = None
 
 
 class ReturnActiveSession(BaseModel):
@@ -54,9 +54,7 @@ class ReturnActiveSession(BaseModel):
     last_accessed: datetime
     sign_in_data: LoginData
     last_access_data: LoginData
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ActiveUserSession(BaseModel):
@@ -68,6 +66,4 @@ class ActiveUserSession(BaseModel):
     last_user_agent: str
     last_ip_address: ipaddress.IPv4Address
     user: user.ReturnUserDetailed
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

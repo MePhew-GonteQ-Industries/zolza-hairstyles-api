@@ -1,4 +1,5 @@
-from pydantic import BaseSettings, EmailStr
+from pydantic import EmailStr
+from pydantic_settings import SettingsConfigDict, BaseSettings
 
 
 class Settings(BaseSettings):
@@ -50,9 +51,7 @@ class Settings(BaseSettings):
     # GITHUB config
     GH_APP_CLIENT_ID: str
     GH_APP_CLIENT_SECRET: str
-
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
 
 
 settings = Settings()

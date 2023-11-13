@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field, UUID4, validator
+from pydantic import field_validator, ConfigDict, BaseModel, Field, UUID4, validator
 
 
 class CreateService(BaseModel):
@@ -9,9 +9,10 @@ class CreateService(BaseModel):
     max_price: int = Field(gt=0)
     average_time_minutes: int
     available: bool
-    description: str | None
+    description: str | None = None
 
-    @validator("description")
+    @field_validator("description")
+    @classmethod
     def validate_description(cls, v):
         if not v:
             return None
@@ -22,6 +23,8 @@ class CreateService(BaseModel):
             raise ValueError("ensure this value has at most 140 characters")
         return v
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("max_price")
     def validate_max_price(cls, v, values):
         if "min_price" in values and v < values["min_price"]:
@@ -29,9 +32,7 @@ class CreateService(BaseModel):
                 "ensure max_price is greater than or equal to the min_price"
             )
         return v
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ReturnService(CreateService):

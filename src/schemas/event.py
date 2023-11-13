@@ -1,8 +1,10 @@
 from datetime import datetime
-from pydantic import BaseModel, UUID4
+from enum import Enum
+
+from pydantic import ConfigDict, BaseModel, UUID4
+
 from .service import ReturnServiceDetailed
 from .user import ReturnUserDetailed
-from enum import Enum
 
 
 class EventType(str, Enum):
@@ -14,9 +16,7 @@ class EventType(str, Enum):
 class Event(BaseModel):
     id: UUID4
     event_type: EventType
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CreateServiceEvent(Event):

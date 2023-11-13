@@ -101,7 +101,7 @@ def decode_jwt(
     user_id = payload.get("sub")
 
     match token_type:
-        case TokenType.access_token, TokenType.refresh_token:
+        case [TokenType.access_token, TokenType.refresh_token]:
             token_data = ReturnAccessTokenPayload(user_id=user_id, access_token=token)
         case _:
             token_data = ReturnGenericToken(user_id=user_id)

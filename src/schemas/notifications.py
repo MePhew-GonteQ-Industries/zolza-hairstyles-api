@@ -1,6 +1,6 @@
 import datetime
 
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 
 class FcmToken(BaseModel):
@@ -9,6 +9,4 @@ class FcmToken(BaseModel):
 
 class ReturnFcmToken(FcmToken):
     updated_at: datetime.datetime
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

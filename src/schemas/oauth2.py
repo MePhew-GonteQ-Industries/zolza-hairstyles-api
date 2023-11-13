@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 
-from pydantic import BaseModel, Field, validator
+from pydantic import field_validator, ConfigDict, BaseModel, Field
 from enum import Enum
 from pydantic import UUID4
 from src import models
@@ -46,7 +46,8 @@ class PasswordChangeForm(BaseModel):
     old_password: str
     new_password: str = Field(min_length=8, max_length=200)
 
-    @validator("new_password")
+    @field_validator("new_password")
+    @classmethod
     def verify_strong_password(cls, v):
         strong_password_regex = (
             r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,}$"
@@ -65,9 +66,7 @@ class SudoModeInfo(BaseModel):
 
 class BaseUserSession(BaseModel):
     session: models.Session
-
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class UserSession(BaseUserSession):
