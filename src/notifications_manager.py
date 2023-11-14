@@ -20,7 +20,7 @@ class Notification:
 
     @abc.abstractmethod
     def send(self) -> None:
-        if not self.abort_send:
+        if not self.abort_send and self.fcm_tokens:
             send_multicast_message(
                 db=self.db,
                 fcm_tokens_db=self.fcm_tokens_db,
@@ -41,12 +41,12 @@ class UpcomingAppointmentNotification(Notification):
     appointment: models.Appointment
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_id: UUID4,
-        appointment_id: UUID4,
-        minutes_to_appointment: int,
+            self,
+            *,
+            db: Session,
+            user_id: UUID4,
+            appointment_id: UUID4,
+            minutes_to_appointment: int,
     ):
         self.db = db
         self.user_id = user_id
@@ -126,12 +126,12 @@ class AppointmentUpdatedNotification(Notification):
     user_id: UUID4
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_id: UUID4,
-        service_id: UUID4,
-        new_appointment_date: datetime.datetime,
+            self,
+            *,
+            db: Session,
+            user_id: UUID4,
+            service_id: UUID4,
+            new_appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -174,12 +174,12 @@ class AppointmentCanceledNotification(Notification):
     user_id: UUID4
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_id: UUID4,
-        service_id: UUID4,
-        appointment_date: datetime.datetime,
+            self,
+            *,
+            db: Session,
+            user_id: UUID4,
+            service_id: UUID4,
+            appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -232,13 +232,13 @@ class NewAppointmentNotification(Notification):
     notifications: list[Notification] = []
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_name: str,
-        user_surname: str,
-        service_id: UUID4,
-        appointment_date: datetime.datetime,
+            self,
+            *,
+            db: Session,
+            user_name: str,
+            user_surname: str,
+            service_id: UUID4,
+            appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -297,19 +297,19 @@ class NewAppointmentNotification(Notification):
                             "msg": msg,
                         }
                     )
-
         else:
             self.abort_send = True
 
     def send(self) -> None:
         if not self.abort_send:
             for notification in self.notifications:
-                send_multicast_message(
-                    db=self.db,
-                    fcm_tokens_db=notification.get("fcm_tokens_db"),
-                    title=notification.get("title"),
-                    msg=notification.get("msg"),
-                    fcm_tokens=notification.get("fcm_tokens"),
-                )
+                if notification.get('fcm_tokens'):
+                    send_multicast_message(
+                        db=self.db,
+                        fcm_tokens_db=notification.get("fcm_tokens_db"),
+                        title=notification.get("title"),
+                        msg=notification.get("msg"),
+                        fcm_tokens=notification.get("fcm_tokens"),
+                    )
 
                 # TODO: send email
