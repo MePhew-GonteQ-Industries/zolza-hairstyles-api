@@ -1,7 +1,13 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field, UUID4, field_validator, \
-    model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    UUID4,
+    field_validator,
+    model_validator,
+)
 
 
 class CreateService(BaseModel):
