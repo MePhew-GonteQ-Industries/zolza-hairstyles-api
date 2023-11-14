@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field, UUID4, field_validator
+from pydantic import BaseModel, ConfigDict, Field, UUID4, field_validator, \
+    model_validator
 
 
 class CreateService(BaseModel):
@@ -23,14 +24,13 @@ class CreateService(BaseModel):
             raise ValueError("ensure this value has at most 140 characters")
         return v
 
-    @field_validator("max_price")
-    @classmethod
-    def validate_max_price(cls, v):
-        if "min_price" in cls.model_fields() and v < cls.model_fields("min_price"):
+    @model_validator(mode="after")
+    def validate_max_price(self):
+        if self.max_price < self.min_price:
             raise ValueError(
                 "ensure max_price is greater than or equal to the min_price"
             )
-        return v
+        return self
 
     model_config = ConfigDict(from_attributes=True)
 
