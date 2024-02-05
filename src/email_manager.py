@@ -34,7 +34,7 @@ def get_fast_mail_client():
 
 
 async def send_email(
-    email: MessageSchema, template_name: str, fast_mail_client: FastMail
+        email: MessageSchema, template_name: str, fast_mail_client: FastMail
 ):
     try:
         await fast_mail_client.send_message(email, template_name)
@@ -44,7 +44,7 @@ async def send_email(
 
 
 def create_email_verification_email(
-    content_language: DefaultContentLanguages, user, email_verification_token
+        content_language: DefaultContentLanguages, user, email_verification_token
 ):
     match content_language:
         case DefaultContentLanguages.polish:
@@ -63,8 +63,8 @@ def create_email_verification_email(
             "user": user.name,
             "zolza_hairstyles_link": settings.ZOLZA_HAIRSTYLES_URL,
             "account_confirmation_link": f"{settings.ZOLZA_HAIRSTYLES_URL}"
-            f"/email-verification"
-            f"?token={email_verification_token}",
+                                         f"/email-verification"
+                                         f"?token={email_verification_token}",
         },
         subtype=MessageType.html,
     )
@@ -73,7 +73,7 @@ def create_email_verification_email(
 
 
 def create_password_reset_email(
-    content_language: DefaultContentLanguages, user, password_reset_token
+        content_language: DefaultContentLanguages, user, password_reset_token
 ):
     match content_language:
         case DefaultContentLanguages.polish:
@@ -91,7 +91,7 @@ def create_password_reset_email(
         template_body={
             "user": user.name,
             "password_reset_link": f"https://mephew.ddns.net/password-reset?token="
-            f"{password_reset_token}",
+                                   f"{password_reset_token}",
         },
         subtype=MessageType.html,
     )
@@ -100,7 +100,7 @@ def create_password_reset_email(
 
 
 def create_email_request(
-    *, user, token_type: TokenType, request_type: EmailRequestType
+        *, user, token_type: TokenType, request_type: EmailRequestType
 ):
     token_data = TokenPayloadBase(user_id=user.id, token_type=token_type)
     request_token = oauth2.create_jwt(token_data)
@@ -112,3 +112,36 @@ def create_email_request(
     email_request = models.EmailRequests(**email_request.dict())
 
     return email_request
+
+
+def create_new_appointment_email(
+        # content_language: DefaultContentLanguages,
+        email,
+        title,
+        msg,
+):
+    # TODO: Translations
+    # match content_language:
+    #     case DefaultContentLanguages.polish:
+    #         template_name = "password_reset_pl.html"
+    #         subject = "Zołza Hairstyles - resetowanie hasła"
+    #     case DefaultContentLanguages.english:
+    #         template_name = "password_reset_en.html"
+    #         subject = "Zołza Hairstyles - password reset"
+    #     case _:
+    #         raise InvalidEnumerationMemberHTTPException()
+
+    template_name = "new_appointment_pl.html"
+    subject = "Zołza Hairstyles - nowa wizyta"
+
+    message = MessageSchema(
+        subject=subject,
+        recipients=[email],
+        template_body={
+            "title": title,
+            "msg": msg,
+        },
+        subtype=MessageType.html,
+    )
+
+    return message, template_name
