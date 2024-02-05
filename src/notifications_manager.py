@@ -7,7 +7,11 @@ from pydantic import UUID4
 from sqlalchemy.orm import Session
 
 from src import models
-from src.email_manager import create_new_appointment_email, get_fast_mail_client, send_email
+from src.email_manager import (
+    create_new_appointment_email,
+    get_fast_mail_client,
+    send_email,
+)
 from src.fcm_manager import send_multicast_message
 from src.utils import format_datetime_str, get_user_language_id
 
@@ -240,13 +244,13 @@ class NewAppointmentNotification(Notification):
     emails: list[Email] = []
 
     def __init__(
-            self,
-            *,
-            db: Session,
-            user_name: str,
-            user_surname: str,
-            service_id: UUID4,
-            appointment_date: datetime.datetime,
+        self,
+        *,
+        db: Session,
+        user_name: str,
+        user_surname: str,
+        service_id: UUID4,
+        appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -268,9 +272,7 @@ class NewAppointmentNotification(Notification):
             return
 
         service_db = (
-            db.query(models.Service)
-            .where(models.Service.id == self.service_id)
-            .first()
+            db.query(models.Service).where(models.Service.id == self.service_id).first()
         )
 
         for recipient in notification_recipients:
@@ -288,23 +290,13 @@ class NewAppointmentNotification(Notification):
             service_name = service_translation[0]
 
             title = f"{self.user_name} {self.user_surname} umówił/a wizytę"
-            msg = (
-                f"{service_name} - "
-                f"{format_datetime_str(self.appointment_date)}"
-            )
+            msg = f"{service_name} - " f"{format_datetime_str(self.appointment_date)}"
 
             message, template_name = create_new_appointment_email(
-                recipient.email,
-                title,
-                msg
+                recipient.email, title, msg
             )
 
-            self.emails.append(
-                {
-                    "message": message,
-                    template_name: template_name
-                }
-            )
+            self.emails.append({"message": message, template_name: template_name})
 
             recipient_fcm_tokens_db = db.query(models.FcmToken).where(
                 models.FcmToken.user_id == recipient.id
@@ -329,7 +321,7 @@ class NewAppointmentNotification(Notification):
             return
 
         for notification in self.notifications:
-            if notification.get('fcm_tokens'):
+            if notification.get("fcm_tokens"):
                 send_multicast_message(
                     db=self.db,
                     fcm_tokens_db=notification.get("fcm_tokens_db"),
@@ -339,4 +331,6 @@ class NewAppointmentNotification(Notification):
                 )
 
         for email in self.emails:
-            send_email(email.get('message'), email.get('template_name'), self.fast_mail_client)
+            send_email(
+                email.get("message"), email.get("template_name"), self.fast_mail_client
+            )

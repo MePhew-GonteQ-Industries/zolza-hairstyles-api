@@ -114,10 +114,10 @@ def create_email_request(
 
 
 def create_new_appointment_email(
-        # content_language: DefaultContentLanguages,
-        email,
-        title,
-        msg,
+    # content_language: DefaultContentLanguages,
+    email,
+    title,
+    msg,
 ):
     # TODO: Translations
     # match content_language:
