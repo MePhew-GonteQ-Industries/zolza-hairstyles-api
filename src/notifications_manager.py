@@ -2,10 +2,12 @@ import abc
 import datetime
 from typing import TypedDict
 
+from fastapi_mail import FastMail, MessageSchema
 from pydantic import UUID4
 from sqlalchemy.orm import Session
 
 from src import models
+from src.email_manager import create_new_appointment_email, get_fast_mail_client, send_email
 from src.fcm_manager import send_multicast_message
 from src.utils import format_datetime_str, get_user_language_id
 
@@ -222,6 +224,7 @@ class NewAppointmentNotification(Notification):
     user_surname: str
     service_id: UUID4
     appointment_date: datetime.datetime
+    fast_mail_client: FastMail
 
     class Notification(TypedDict):
         fcm_tokens_db: list[models.FcmToken]
@@ -229,18 +232,25 @@ class NewAppointmentNotification(Notification):
         title: str
         msg: str
 
+    class Email(TypedDict):
+        message: MessageSchema
+        template_name: str
+
     notifications: list[Notification] = []
+    emails: list[Email] = []
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_name: str,
-        user_surname: str,
-        service_id: UUID4,
-        appointment_date: datetime.datetime,
+            self,
+            *,
+            db: Session,
+            user_name: str,
+            user_surname: str,
+            service_id: UUID4,
+            appointment_date: datetime.datetime,
     ):
         self.db = db
+
+        self.fast_mail_client = get_fast_mail_client()
 
         self.user_name = user_name
         self.user_surname = user_surname
@@ -253,63 +263,80 @@ class NewAppointmentNotification(Notification):
             db.query(models.User).where(models.User.permission_level.any("owner")).all()
         )
 
-        if notification_recipients:
-            service_db = (
-                db.query(models.Service)
-                .where(models.Service.id == self.service_id)
+        if not notification_recipients:
+            self.abort_send = True
+            return
+
+        service_db = (
+            db.query(models.Service)
+            .where(models.Service.id == self.service_id)
+            .first()
+        )
+
+        for recipient in notification_recipients:
+            language_id = get_user_language_id(db, recipient.id)
+
+            service_translation = (
+                db.query(
+                    models.ServiceTranslations.name,
+                    models.ServiceTranslations.description,
+                )
+                .where(models.ServiceTranslations.language_id == language_id)
+                .where(models.ServiceTranslations.service_id == service_db.id)
                 .first()
             )
+            service_name = service_translation[0]
 
-            for recipient in notification_recipients:
-                recipient_fcm_tokens_db = db.query(models.FcmToken).where(
-                    models.FcmToken.user_id == recipient.id
+            title = f"{self.user_name} {self.user_surname} umówił/a wizytę"
+            msg = (
+                f"{service_name} - "
+                f"{format_datetime_str(self.appointment_date)}"
+            )
+
+            message, template_name = create_new_appointment_email(
+                recipient.email,
+                title,
+                msg
+            )
+
+            self.emails.append(
+                {
+                    "message": message,
+                    template_name: template_name
+                }
+            )
+
+            recipient_fcm_tokens_db = db.query(models.FcmToken).where(
+                models.FcmToken.user_id == recipient.id
+            )
+
+            if recipient_fcm_tokens_db:
+                recipient_fcm_tokens = [
+                    token_db.token for token_db in recipient_fcm_tokens_db
+                ]
+
+                self.notifications.append(
+                    {
+                        "fcm_tokens_db": recipient_fcm_tokens_db,
+                        "fcm_tokens": recipient_fcm_tokens,
+                        "title": title,
+                        "msg": msg,
+                    }
                 )
 
-                if recipient_fcm_tokens_db:
-                    recipient_fcm_tokens = [
-                        token_db.token for token_db in recipient_fcm_tokens_db
-                    ]
-
-                    language_id = get_user_language_id(db, recipient.id)
-
-                    service_translation = (
-                        db.query(
-                            models.ServiceTranslations.name,
-                            models.ServiceTranslations.description,
-                        )
-                        .where(models.ServiceTranslations.language_id == language_id)
-                        .where(models.ServiceTranslations.service_id == service_db.id)
-                        .first()
-                    )
-                    service_name = service_translation[0]
-
-                    title = f"{self.user_name} {self.user_surname} umówił/a wizytę"
-                    msg = (
-                        f"{service_name} - "
-                        f"{format_datetime_str(self.appointment_date)}"
-                    )
-
-                    self.notifications.append(
-                        {
-                            "fcm_tokens_db": recipient_fcm_tokens_db,
-                            "fcm_tokens": recipient_fcm_tokens,
-                            "title": title,
-                            "msg": msg,
-                        }
-                    )
-        else:
-            self.abort_send = True
-
     def send(self) -> None:
-        if not self.abort_send:
-            for notification in self.notifications:
-                if notification.get("fcm_tokens"):
-                    send_multicast_message(
-                        db=self.db,
-                        fcm_tokens_db=notification.get("fcm_tokens_db"),
-                        title=notification.get("title"),
-                        msg=notification.get("msg"),
-                        fcm_tokens=notification.get("fcm_tokens"),
-                    )
+        if self.abort_send:
+            return
 
-                # TODO: send email
+        for notification in self.notifications:
+            if notification.get('fcm_tokens'):
+                send_multicast_message(
+                    db=self.db,
+                    fcm_tokens_db=notification.get("fcm_tokens_db"),
+                    title=notification.get("title"),
+                    msg=notification.get("msg"),
+                    fcm_tokens=notification.get("fcm_tokens"),
+                )
+
+        for email in self.emails:
+            send_email(email.get('message'), email.get('template_name'), self.fast_mail_client)

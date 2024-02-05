@@ -111,3 +111,36 @@ def create_email_request(
     email_request = models.EmailRequests(**email_request.model_dump())
 
     return email_request
+
+
+def create_new_appointment_email(
+        # content_language: DefaultContentLanguages,
+        email,
+        title,
+        msg,
+):
+    # TODO: Translations
+    # match content_language:
+    #     case DefaultContentLanguages.polish:
+    #         template_name = "password_reset_pl.html"
+    #         subject = "Zołza Hairstyles - resetowanie hasła"
+    #     case DefaultContentLanguages.english:
+    #         template_name = "password_reset_en.html"
+    #         subject = "Zołza Hairstyles - password reset"
+    #     case _:
+    #         raise InvalidEnumerationMemberHTTPException()
+
+    template_name = "new_appointment_pl.html"
+    subject = "Zołza Hairstyles - nowa wizyta"
+
+    message = MessageSchema(
+        subject=subject,
+        recipients=[email],
+        template_body={
+            "title": title,
+            "msg": msg,
+        },
+        subtype=MessageType.html,
+    )
+
+    return message, template_name
