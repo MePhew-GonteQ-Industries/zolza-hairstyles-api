@@ -17,14 +17,17 @@ firebase_admin.initialize_app(cred)
 
 
 def send_multicast_message(
-    *,
-    db: Session,
-    fcm_tokens_db: list[models.FcmToken],
-    title: str,
-    msg: str,
-    fcm_tokens: list[str],
-    data_object: object | None = None
+        *,
+        db: Session,
+        fcm_tokens_db: list[models.FcmToken],
+        title: str,
+        msg: str,
+        fcm_tokens: list[str],
+        data_object: object | None = None
 ) -> None:
+    # TODO: Remove debug prints
+    print(f'Sending multicast message to {fcm_tokens}')
+
     message = messaging.MulticastMessage(
         notification=messaging.Notification(title=title, body=msg),
         data=data_object,
@@ -38,6 +41,10 @@ def send_multicast_message(
     )
 
     response = messaging.send_each_for_multicast(message)
+
+    print('No errors during send')
+    print(f'Number of failures: {response.failure_count}')
+    print(f'Response: {response}')
 
     db = db.object_session(fcm_tokens_db[0])
 
