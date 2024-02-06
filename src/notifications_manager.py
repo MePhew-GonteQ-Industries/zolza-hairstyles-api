@@ -323,6 +323,12 @@ class NewAppointmentNotification(Notification):
         for notification in self.notifications:
             fcm_tokens = notification.get("fcm_tokens")
 
+            # TODO: Remove debug prints
+            print("Trying to send notification")
+            print("FCM_TOKENS: ", fcm_tokens)
+            print("Notification dict: ", str(notification))
+            print()
+
             if fcm_tokens:
                 send_multicast_message(
                     db=self.db,
