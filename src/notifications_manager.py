@@ -48,12 +48,12 @@ class UpcomingAppointmentNotification(Notification):
     appointment: models.Appointment
 
     def __init__(
-            self,
-            *,
-            db: Session,
-            user_id: UUID4,
-            appointment_id: UUID4,
-            minutes_to_appointment: int,
+        self,
+        *,
+        db: Session,
+        user_id: UUID4,
+        appointment_id: UUID4,
+        minutes_to_appointment: int,
     ):
         self.db = db
         self.user_id = user_id
@@ -133,12 +133,12 @@ class AppointmentUpdatedNotification(Notification):
     user_id: UUID4
 
     def __init__(
-            self,
-            *,
-            db: Session,
-            user_id: UUID4,
-            service_id: UUID4,
-            new_appointment_date: datetime.datetime,
+        self,
+        *,
+        db: Session,
+        user_id: UUID4,
+        service_id: UUID4,
+        new_appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -181,12 +181,12 @@ class AppointmentCanceledNotification(Notification):
     user_id: UUID4
 
     def __init__(
-            self,
-            *,
-            db: Session,
-            user_id: UUID4,
-            service_id: UUID4,
-            appointment_date: datetime.datetime,
+        self,
+        *,
+        db: Session,
+        user_id: UUID4,
+        service_id: UUID4,
+        appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -245,13 +245,13 @@ class NewAppointmentNotification(Notification):
     emails: list[Email] = []
 
     def __init__(
-            self,
-            *,
-            db: Session,
-            user_name: str,
-            user_surname: str,
-            service_id: UUID4,
-            appointment_date: datetime.datetime,
+        self,
+        *,
+        db: Session,
+        user_name: str,
+        user_surname: str,
+        service_id: UUID4,
+        appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -340,14 +340,20 @@ class NewAppointmentNotification(Notification):
                         fcm_tokens=fcm_tokens,
                     )
             except Exception:
-                app_logger.exception('Exception during sending new appointment fcm notification: \n'
-                                     f'Notification: {str(notification)}')
+                app_logger.exception(
+                    "Exception during sending new appointment fcm notification: \n"
+                    f"Notification: {str(notification)}"
+                )
 
         for email in self.emails:
             try:
                 await send_email(
-                    email.get("message"), email.get("template_name"), self.fast_mail_client
+                    email.get("message"),
+                    email.get("template_name"),
+                    self.fast_mail_client,
                 )
             except Exception:
-                app_logger.exception('Exception during sending new appointment email notification: \n'
-                                     f'Email: {str(email)}')
+                app_logger.exception(
+                    "Exception during sending new appointment email notification: \n"
+                    f"Email: {str(email)}"
+                )
