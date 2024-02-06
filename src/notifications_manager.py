@@ -321,13 +321,15 @@ class NewAppointmentNotification(Notification):
             return
 
         for notification in self.notifications:
-            if notification.get("fcm_tokens"):
+            fcm_tokens = notification.get("fcm_tokens")
+
+            if fcm_tokens:
                 send_multicast_message(
                     db=self.db,
                     fcm_tokens_db=notification.get("fcm_tokens_db"),
                     title=notification.get("title"),
                     msg=notification.get("msg"),
-                    fcm_tokens=notification.get("fcm_tokens"),
+                    fcm_tokens=fcm_tokens,
                 )
 
         for email in self.emails:
