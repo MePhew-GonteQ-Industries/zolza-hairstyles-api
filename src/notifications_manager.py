@@ -13,6 +13,7 @@ from src.email_manager import (
     send_email,
 )
 from src.fcm_manager import send_multicast_message
+from src.loggers import app_logger
 from src.utils import format_datetime_str, get_user_language_id
 
 
@@ -321,24 +322,32 @@ class NewAppointmentNotification(Notification):
             return
 
         for notification in self.notifications:
-            fcm_tokens = notification.get("fcm_tokens")
+            try:
+                fcm_tokens = notification.get("fcm_tokens")
 
-            # TODO: Remove debug prints
-            print("Trying to send notification")
-            print("FCM_TOKENS: ", fcm_tokens)
-            print("Notification dict: ", str(notification))
-            print()
+                # TODO: Remove debug prints
+                print("Trying to send notification")
+                print("FCM_TOKENS: ", fcm_tokens)
+                print("Notification dict: ", str(notification))
+                print()
 
-            if fcm_tokens:
-                send_multicast_message(
-                    db=self.db,
-                    fcm_tokens_db=notification.get("fcm_tokens_db"),
-                    title=notification.get("title"),
-                    msg=notification.get("msg"),
-                    fcm_tokens=fcm_tokens,
-                )
+                if fcm_tokens:
+                    send_multicast_message(
+                        db=self.db,
+                        fcm_tokens_db=notification.get("fcm_tokens_db"),
+                        title=notification.get("title"),
+                        msg=notification.get("msg"),
+                        fcm_tokens=fcm_tokens,
+                    )
+            except Exception:
+                app_logger.exception('Exception during sending new appointment fcm notification: \n'
+                                     f'Notification: {str(notification)}')
 
         for email in self.emails:
-            await send_email(
-                email.get("message"), email.get("template_name"), self.fast_mail_client
-            )
+            try:
+                await send_email(
+                    email.get("message"), email.get("template_name"), self.fast_mail_client
+                )
+            except Exception:
+                app_logger.exception('Exception during sending new appointment email notification: \n'
+                                     f'Email: {str(email)}')
