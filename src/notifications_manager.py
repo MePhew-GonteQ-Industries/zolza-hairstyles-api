@@ -297,7 +297,7 @@ class NewAppointmentNotification(Notification):
                 recipient.email, title, msg
             )
 
-            self.emails.append({"message": message, template_name: template_name})
+            self.emails.append({"message": message, "template_name": template_name})
 
             recipient_fcm_tokens_db = db.query(models.FcmToken).where(
                 models.FcmToken.user_id == recipient.id
