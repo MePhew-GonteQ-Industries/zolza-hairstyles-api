@@ -47,12 +47,12 @@ class UpcomingAppointmentNotification(Notification):
     appointment: models.Appointment
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_id: UUID4,
-        appointment_id: UUID4,
-        minutes_to_appointment: int,
+            self,
+            *,
+            db: Session,
+            user_id: UUID4,
+            appointment_id: UUID4,
+            minutes_to_appointment: int,
     ):
         self.db = db
         self.user_id = user_id
@@ -132,12 +132,12 @@ class AppointmentUpdatedNotification(Notification):
     user_id: UUID4
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_id: UUID4,
-        service_id: UUID4,
-        new_appointment_date: datetime.datetime,
+            self,
+            *,
+            db: Session,
+            user_id: UUID4,
+            service_id: UUID4,
+            new_appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -180,12 +180,12 @@ class AppointmentCanceledNotification(Notification):
     user_id: UUID4
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_id: UUID4,
-        service_id: UUID4,
-        appointment_date: datetime.datetime,
+            self,
+            *,
+            db: Session,
+            user_id: UUID4,
+            service_id: UUID4,
+            appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -244,13 +244,13 @@ class NewAppointmentNotification(Notification):
     emails: list[Email] = []
 
     def __init__(
-        self,
-        *,
-        db: Session,
-        user_name: str,
-        user_surname: str,
-        service_id: UUID4,
-        appointment_date: datetime.datetime,
+            self,
+            *,
+            db: Session,
+            user_name: str,
+            user_surname: str,
+            service_id: UUID4,
+            appointment_date: datetime.datetime,
     ):
         self.db = db
 
@@ -316,7 +316,7 @@ class NewAppointmentNotification(Notification):
                     }
                 )
 
-    def send(self) -> None:
+    async def send(self) -> None:
         if self.abort_send:
             return
 
@@ -331,6 +331,6 @@ class NewAppointmentNotification(Notification):
                 )
 
         for email in self.emails:
-            send_email(
+            await send_email(
                 email.get("message"), email.get("template_name"), self.fast_mail_client
             )

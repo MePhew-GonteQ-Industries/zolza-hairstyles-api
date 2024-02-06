@@ -12,11 +12,11 @@ from .notifications_manager import (
 
 
 def send_upcoming_appointment_notification(
-    get_db_func: callable,
-    *,
-    user_id: UUID4,
-    appointment_id: UUID4,
-    minutes_to_appointment: int,
+        get_db_func: callable,
+        *,
+        user_id: UUID4,
+        appointment_id: UUID4,
+        minutes_to_appointment: int,
 ):
     db = next(get_db_func())
 
@@ -29,13 +29,13 @@ def send_upcoming_appointment_notification(
     upcoming_appointment_notification.send()
 
 
-def send_new_appointment_notification(
-    db: Session,
-    *,
-    user_name: str,
-    user_surname: str,
-    service_id: UUID4,
-    appointment_date: datetime.datetime,
+async def send_new_appointment_notification(
+        db: Session,
+        *,
+        user_name: str,
+        user_surname: str,
+        service_id: UUID4,
+        appointment_date: datetime.datetime,
 ):
     new_appointment_notification = NewAppointmentNotification(
         db=db,
@@ -44,15 +44,15 @@ def send_new_appointment_notification(
         service_id=service_id,
         appointment_date=appointment_date,
     )
-    new_appointment_notification.send()
+    await new_appointment_notification.send()
 
 
 def send_appointment_updated_notification(
-    db: Session,
-    *,
-    user_id: UUID4,
-    service_id: UUID4,
-    new_appointment_date: datetime.datetime,
+        db: Session,
+        *,
+        user_id: UUID4,
+        service_id: UUID4,
+        new_appointment_date: datetime.datetime,
 ):
     appointment_updated_notification = AppointmentUpdatedNotification(
         db=db,
@@ -64,11 +64,11 @@ def send_appointment_updated_notification(
 
 
 def send_appointment_canceled_notification(
-    db: Session,
-    *,
-    user_id: UUID4,
-    service_id: UUID4,
-    appointment_date: datetime.datetime,
+        db: Session,
+        *,
+        user_id: UUID4,
+        service_id: UUID4,
+        appointment_date: datetime.datetime,
 ):
     appointment_canceled_notification = AppointmentCanceledNotification(
         db=db,
