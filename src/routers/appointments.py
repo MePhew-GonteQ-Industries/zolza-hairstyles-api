@@ -377,7 +377,7 @@ def get_all_appointments(
     if limit:
         appointments_db = appointments_db.limit(limit)
 
-    appointments_db = appointments_db.order_by(models.Appointment.created_at)
+    appointments_db = appointments_db.order_by(models.Appointment.created_at.desc())
 
     appointments_db = appointments_db.all()
 
