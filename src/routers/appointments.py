@@ -364,7 +364,8 @@ def get_all_appointments(
 
     if not include_archival:
         appointments_db = appointments_db.where(
-            models.Appointment.end_slot.end_time < datetime.datetime.now(PL_TIMEZONE))
+            models.Appointment.end_slot.end_time < datetime.datetime.now(PL_TIMEZONE)
+        )
 
     if user_id:
         appointments_db = appointments_db.where(models.Appointment.user_id == user_id)
