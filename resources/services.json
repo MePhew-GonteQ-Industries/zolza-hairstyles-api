@@ -6,7 +6,8 @@
     },
     "min_price": "30",
     "max_price": "60",
-    "average_time_minutes": "60"
+    "average_time_minutes": "60",
+    "description": "Podkreśl swój styl z profesjonalnym strzyżeniem damskim. Dopasowane do Twoich oczekiwań, abyś poczuła się pewna i piękna."
   },
   {
     "name": {
@@ -15,7 +16,8 @@
     },
     "min_price": "30",
     "max_price": "30",
-    "average_time_minutes": "30"
+    "average_time_minutes": "30",
+    "description": "Odśwież swój wygląd z naszym strzyżeniem męskim. Precyzja i staranność, które dają Ci pewność siebie."
   },
   {
     "name": {
@@ -24,7 +26,8 @@
     },
     "min_price": "30",
     "max_price": "30",
-    "average_time_minutes": "30"
+    "average_time_minutes": "30",
+    "description": "Doprowadź swoją brodę do perfekcji z naszym usługami strzyżenia brody. Każdy szczegół liczy się dla Twojego wyglądu."
   },
   {
     "name": {
@@ -33,7 +36,8 @@
     },
     "min_price": "50",
     "max_price": "60",
-    "average_time_minutes": "60"
+    "average_time_minutes": "60",
+    "description": "Skorzystaj z naszego combo - strzyżenie włosów i brody to kompleksowe podejście do Twojego wyglądu."
   },
   {
     "name": {
@@ -42,7 +46,8 @@
     },
     "min_price": "30",
     "max_price": "30",
-    "average_time_minutes": "30"
+    "average_time_minutes": "30",
+    "description": "Zadbaj o wygodę swojego dziecka z profesjonalnym strzyżeniem dziecięcym. Atmosfera pełna uśmiechu i komfortu dla najmłodszych klientów."
   },
   {
     "name": {
@@ -51,7 +56,8 @@
     },
     "min_price": "130",
     "max_price": "150",
-    "average_time_minutes": "90"
+    "average_time_minutes": "90",
+    "description": "Dla doskonałej fryzury ślubnej, zapraszamy na próbę. Razem dopracujemy każdy detal, abyś czuła się bajecznie w tym wyjątkowym dniu."
   },
   {
     "name": {
@@ -60,7 +66,8 @@
     },
     "min_price": "150",
     "max_price": "180",
-    "average_time_minutes": "60"
+    "average_time_minutes": "60",
+    "description": "Zaufaj nam, aby uczynić Twój dzień jeszcze bardziej wyjątkowym. Zaprojektujemy i stworzymy idealną fryzurę ślubną, na którą zasługujesz."
   },
   {
     "name": {
@@ -69,6 +76,7 @@
     },
     "min_price": "110",
     "max_price": "130",
-    "average_time_minutes": "60"
+    "average_time_minutes": "60",
+    "description": "Stwórz niezapomniany wizerunek z naszą fryzurą okolicznościową. Niezależnie od wydarzenia, zapewniamy profesjonalną stylizację, która podkreśli Twój wyjątkowy styl."
   }
 ]
