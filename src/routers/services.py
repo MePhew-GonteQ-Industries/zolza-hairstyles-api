@@ -18,7 +18,7 @@ router = APIRouter(prefix=settings.BASE_URL + "/services", tags=["Services"])
 
 @router.get("", response_model=list[ReturnService])
 def get_services(
-    db: Session = Depends(get_db), accept_language: str | None = Header(None)
+        db: Session = Depends(get_db), accept_language: str | None = Header(None)
 ):
     language_code = get_language_code_from_header(accept_language)
 
@@ -33,7 +33,7 @@ def get_services(
     services = []
     for service, translation in services_db:
         service.name = translation.name
-        service.description = translation.description
+        # service.description = translation.description
         services.append(service)
 
     return services
@@ -41,7 +41,7 @@ def get_services(
 
 @router.get("/details", response_model=list[ReturnServiceDetailed])
 def get_services_details(
-    db: Session = Depends(get_db), admin_session=Depends(oauth2.get_admin)
+        db: Session = Depends(get_db), admin_session=Depends(oauth2.get_admin)
 ):
     admin = admin_session.admin
 
@@ -66,7 +66,7 @@ def get_services_details(
 
 @router.get("/details/{uuid}", response_model=ReturnServiceDetailed)
 def get_service_details(
-    uuid: UUID4, db: Session = Depends(get_db), admin_session=Depends(oauth2.get_admin)
+        uuid: UUID4, db: Session = Depends(get_db), admin_session=Depends(oauth2.get_admin)
 ):
     service_db = db.query(models.Service).where(models.Service.id == uuid).first()
 
@@ -92,9 +92,9 @@ def get_service_details(
 
 @router.get("/{uuid}", response_model=ReturnService)
 def get_service(
-    uuid: UUID4,
-    db: Session = Depends(get_db),
-    accept_language: str | None = Header(None),
+        uuid: UUID4,
+        db: Session = Depends(get_db),
+        accept_language: str | None = Header(None),
 ):
     language_code = get_language_code_from_header(accept_language)
 
@@ -121,9 +121,9 @@ def get_service(
 
 @router.post("")
 def create_service(
-    service: CreateService,
-    db: Session = Depends(get_db),
-    admin_session=Depends(oauth2.get_admin),  # TODO: events
+        service: CreateService,
+        db: Session = Depends(get_db),
+        admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
     raise NotImplementedError  # todo: finish
     new_service = models.Service(**service.dict())
@@ -136,10 +136,10 @@ def create_service(
 
 @router.put("/service/{service_id}")
 def update_service(
-    service_id: UUID4,
-    service_data: CreateService,
-    db: Session = Depends(get_db),
-    admin_session=Depends(oauth2.get_admin),  # TODO: events
+        service_id: UUID4,
+        service_data: CreateService,
+        db: Session = Depends(get_db),
+        admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
     raise NotImplementedError  # todo: finish
     service_db = db.query(models.Service).where(models.Service.id == service_id).first()
@@ -160,9 +160,9 @@ def update_service(
 
 @router.post("/service/service_id")
 def delete_service(
-    service_id: UUID4,
-    db: Session = Depends(get_db),
-    admin_session=Depends(oauth2.get_admin),  # TODO: events
+        service_id: UUID4,
+        db: Session = Depends(get_db),
+        admin_session=Depends(oauth2.get_admin),  # TODO: events
 ):
     raise NotImplementedError  # todo: finish
 
