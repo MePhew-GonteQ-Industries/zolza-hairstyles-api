@@ -26,7 +26,7 @@ class CreateService(BaseModel):
 
         if len(v) < 60:
             raise ValueError("ensure this value has at least 60 characters")
-        elif len(v) > 140:
+        elif len(v) > 200:
             raise ValueError("ensure this value has at most 140 characters")
         return v
 
