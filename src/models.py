@@ -113,6 +113,7 @@ class Service(Base):
     average_time_minutes = Column(Integer, nullable=False)
     required_slots = Column(Integer, nullable=False)
     available = Column(Boolean, nullable=False, server_default=text("true"))
+    description = Column(String)
     deleted = Column(Boolean, nullable=False, server_default=text("false"))
     created_at = Column(
         TIMESTAMP(timezone=False),
