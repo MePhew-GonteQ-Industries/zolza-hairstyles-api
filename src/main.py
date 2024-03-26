@@ -46,7 +46,7 @@ def startup():
 @app.get(settings.BASE_URL, tags=["Zołza Hairstyles Redirection"])
 def zolza_hairstyles_redirection():
     return RedirectResponse(
-        settings.ZOLZA_HAIRSTYLES_URL, status_code=status.HTTP_308_PERMANENT_REDIRECT
+        settings.FRONTEND_URL, status_code=status.HTTP_308_PERMANENT_REDIRECT
     )
 
 
