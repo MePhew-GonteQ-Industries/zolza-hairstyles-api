@@ -1,5 +1,5 @@
 from pydantic import EmailStr
-from pydantic_settings import SettingsConfigDict, BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -48,9 +48,9 @@ class Settings(BaseSettings):
     # FIREBASE config
     FIREBASE_SERVICE_ACCOUNT_CREDENTIALS_PATH: str
 
-    # GITHUB config
-    GH_APP_CLIENT_ID: str
-    GH_APP_CLIENT_SECRET: str
+    # GITHUB config (used for an unrelated proxy, disabled if not set)
+    GH_APP_CLIENT_ID: str | None = None
+    GH_APP_CLIENT_SECRET: str | None = None
     model_config = SettingsConfigDict(env_file=".env")
 
 
