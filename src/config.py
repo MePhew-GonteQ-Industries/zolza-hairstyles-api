@@ -6,9 +6,10 @@ class Settings(BaseSettings):
     # App config
     API_VERSION: str
     API_TITLE: str
+    LOG_LEVEL: str = "INFO"
+
     BASE_URL: str
     FRONTEND_URL: str
-    LOG_LEVEL: str = "INFO"
 
     API_SECRET: str
     ALGORITHM: str
