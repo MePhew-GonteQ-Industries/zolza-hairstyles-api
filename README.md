@@ -205,7 +205,9 @@ Otherwise, you can call this function in another file (e.g. `main.py`)
 
 Example startup command for Gunicorn:
 
-`gunicorn --access-logfile ./gunicorn-access.log --error-logfile ./gunicorn-error.log --workers 4 --worker-class uvicorn.workers.UvicornWorker src.main:app`
+```bash
+gunicorn --access-logfile ./gunicorn-access.log --error-logfile ./gunicorn-error.log --workers 4 --worker-class uvicorn.workers.UvicornWorker src.main:app
+```
 
 If your server is using systemd as a service manager you can also create a custom unit file to make managing the API's
 state easier
