@@ -13,10 +13,10 @@ class UserNotFoundException(HTTPException):
 
 class AdditionalAuthenticationRequiredHTTPException(HTTPException):
     def __init__(
-            self,
-            detail: str = f"Additional authentication required; "
-                          f"Authenticate using {settings.FRONTEND_URL}"
-                          f"{settings.BASE_URL}/auth/enter-sudo-mode",
+        self,
+        detail: str = f"Additional authentication required; "
+        f"Authenticate using {settings.FRONTEND_URL}"
+        f"{settings.BASE_URL}/auth/enter-sudo-mode",
     ):
         self.status_code = status.HTTP_403_FORBIDDEN
         self.detail = detail
@@ -24,7 +24,7 @@ class AdditionalAuthenticationRequiredHTTPException(HTTPException):
 
 class ResourceNotFoundHTTPException(HTTPException):
     def __init__(
-            self, *, detail: str = "Requested resource was not found on the server"
+        self, *, detail: str = "Requested resource was not found on the server"
     ):
         self.status_code = status.HTTP_404_NOT_FOUND
         self.detail = detail
@@ -36,10 +36,10 @@ class IncorrectTokenDataException(Exception):
 
 class InvalidTokenHTTPException(HTTPException):
     def __init__(
-            self,
-            detail: str = "Invalid or expired verification code provided",
-            status_code: status = status.HTTP_401_UNAUTHORIZED,
-            headers: Optional[dict] = None,
+        self,
+        detail: str = "Invalid or expired verification code provided",
+        status_code: status = status.HTTP_401_UNAUTHORIZED,
+        headers: Optional[dict] = None,
     ):
         self.detail = detail
         self.status_code = status_code
