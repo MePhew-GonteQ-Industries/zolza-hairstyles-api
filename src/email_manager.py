@@ -34,7 +34,7 @@ def get_fast_mail_client():
 
 
 async def send_email(
-        email: MessageSchema, template_name: str, fast_mail_client: FastMail
+    email: MessageSchema, template_name: str, fast_mail_client: FastMail
 ):
     try:
         await fast_mail_client.send_message(email, template_name)
@@ -44,7 +44,7 @@ async def send_email(
 
 
 def create_email_verification_email(
-        content_language: DefaultContentLanguages, user, email_verification_token
+    content_language: DefaultContentLanguages, user, email_verification_token
 ):
     match content_language:
         case DefaultContentLanguages.polish:
@@ -63,10 +63,10 @@ def create_email_verification_email(
             "user": user.name,
             "frontend_url": settings.FRONTEND_URL,
             "account_confirmation_link": f"{settings.FRONTEND_URL}"
-                                         f"/email-verification"
-                                         f"?token={email_verification_token}",
+            f"/email-verification"
+            f"?token={email_verification_token}",
             "company_name": settings.COMPANY_NAME,
-            "current_year": datetime.datetime.today().year
+            "current_year": datetime.datetime.today().year,
         },
         subtype=MessageType.html,
     )
@@ -75,7 +75,7 @@ def create_email_verification_email(
 
 
 def create_password_reset_email(
-        content_language: DefaultContentLanguages, user, password_reset_token
+    content_language: DefaultContentLanguages, user, password_reset_token
 ):
     match content_language:
         case DefaultContentLanguages.polish:
@@ -93,9 +93,9 @@ def create_password_reset_email(
         template_body={
             "user": user.name,
             "password_reset_link": f"{settings.FRONTEND_URL}/password-reset"
-                                   f"?token={password_reset_token}",
+            f"?token={password_reset_token}",
             "company_name": settings.COMPANY_NAME,
-            "current_year": datetime.datetime.today().year
+            "current_year": datetime.datetime.today().year,
         },
         subtype=MessageType.html,
     )
@@ -104,7 +104,7 @@ def create_password_reset_email(
 
 
 def create_email_request(
-        *, user, token_type: TokenType, request_type: EmailRequestType
+    *, user, token_type: TokenType, request_type: EmailRequestType
 ):
     token_data = TokenPayloadBase(user_id=user.id, token_type=token_type)
     request_token = oauth2.create_jwt(token_data)
@@ -119,10 +119,10 @@ def create_email_request(
 
 
 def create_new_appointment_email(
-        # content_language: DefaultContentLanguages,
-        email,
-        title,
-        msg,
+    # content_language: DefaultContentLanguages,
+    email,
+    title,
+    msg,
 ):
     # TODO: Translations
     # match content_language:
@@ -145,7 +145,7 @@ def create_new_appointment_email(
             "title": title,
             "msg": msg,
             "company_name": settings.COMPANY_NAME,
-            "current_year": datetime.datetime.today().year
+            "current_year": datetime.datetime.today().year,
         },
         subtype=MessageType.html,
     )
