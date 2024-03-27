@@ -24,7 +24,7 @@ app.include_router(services.router)
 app.include_router(notifications.router)
 
 ALLOWED_ORIGINS = [
-    "*",
+    settings.FRONTEND_URL,
 ]
 
 app.add_middleware(
