@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     API_TITLE: str
     LOG_LEVEL: str = "INFO"
 
+    COMPANY_NAME: str
     BASE_URL: str
     FRONTEND_URL: str
 

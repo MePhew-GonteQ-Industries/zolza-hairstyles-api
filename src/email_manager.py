@@ -1,3 +1,4 @@
+import datetime
 import logging
 from pathlib import Path
 
@@ -48,10 +49,10 @@ def create_email_verification_email(
     match content_language:
         case DefaultContentLanguages.polish:
             template_name = "account_verification_pl.html"
-            subject = "Zołza Hairstyles - weryfikacja konta"
+            subject = f"{settings.COMPANY_NAME} - weryfikacja konta"
         case DefaultContentLanguages.english:
             template_name = "account_verification_en.html"
-            subject = "Zołza Hairstyles - account verification"
+            subject = f"{settings.COMPANY_NAME} - account verification"
         case _:
             raise InvalidEnumerationMemberHTTPException()
 
@@ -60,10 +61,12 @@ def create_email_verification_email(
         recipients=[user.email],
         template_body={
             "user": user.name,
-            "zolza_hairstyles_link": settings.FRONTEND_URL,
+            "frontend_url": settings.FRONTEND_URL,
             "account_confirmation_link": f"{settings.FRONTEND_URL}"
                                          f"/email-verification"
                                          f"?token={email_verification_token}",
+            "company_name": settings.COMPANY_NAME,
+            "current_year": datetime.datetime.today().year
         },
         subtype=MessageType.html,
     )
@@ -77,10 +80,10 @@ def create_password_reset_email(
     match content_language:
         case DefaultContentLanguages.polish:
             template_name = "password_reset_pl.html"
-            subject = "Zołza Hairstyles - resetowanie hasła"
+            subject = f"{settings.COMPANY_NAME} - resetowanie hasła"
         case DefaultContentLanguages.english:
             template_name = "password_reset_en.html"
-            subject = "Zołza Hairstyles - password reset"
+            subject = f"{settings.COMPANY_NAME} - password reset"
         case _:
             raise InvalidEnumerationMemberHTTPException()
 
@@ -91,6 +94,8 @@ def create_password_reset_email(
             "user": user.name,
             "password_reset_link": f"{settings.FRONTEND_URL}/password-reset"
                                    f"?token={password_reset_token}",
+            "company_name": settings.COMPANY_NAME,
+            "current_year": datetime.datetime.today().year
         },
         subtype=MessageType.html,
     )
@@ -131,7 +136,7 @@ def create_new_appointment_email(
     #         raise InvalidEnumerationMemberHTTPException()
 
     template_name = "new_appointment_pl.html"
-    subject = "Zołza Hairstyles - nowa wizyta"
+    subject = f"{settings.COMPANY_NAME} - nowa wizyta"
 
     message = MessageSchema(
         subject=subject,
@@ -139,6 +144,8 @@ def create_new_appointment_email(
         template_body={
             "title": title,
             "msg": msg,
+            "company_name": settings.COMPANY_NAME,
+            "current_year": datetime.datetime.today().year
         },
         subtype=MessageType.html,
     )

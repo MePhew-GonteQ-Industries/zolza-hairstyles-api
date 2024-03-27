@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Zołza Hairstyles - account activation</title>
+    <title>{{company_name}} - account activation</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body style="font-family: 'Open Sans', sans-serif;; text-align: center;">
-<h1>Hello, {{user}}!</h1> <!-- TODO: Polish all templates -->
-<h2>Thank you for signing up at <a href="{{zolza_hairstyles_link}}">{{zolza_hairstyles_link}}</a></h2>
+<h1>Hello, {{user}}!</h1>
+<h2>Thank you for signing up at <a href="{{frontend_url}}">{{frontend_url}}</a></h2>
 <h2 style="font-weight: normal;">In order to verify your account's email address click the below button</h2>
 <div style="text-align: center; display: flex; align-items: center; justify-content:center;">
     <a href="{{account_confirmation_link}}" style="display: block; text-decoration: none; margin: 5px 0;
@@ -23,6 +23,6 @@
           color: rgb(116, 120, 126); padding: 10px 20px; padding-left: 20px; padding-right: 20px; padding-top: 10px;
           padding-bottom: 10px; border-radius: 10px; font-size: 18px; text-align: left; word-break: break-all;">
     {{account_confirmation_link}}</p>
-<h2 style="font-weight: normal; text-align: center;">© 2021 Zołza Hairstyles</h2>
+<h2 style="font-weight: normal; text-align: center;">© {{current_year}} {{company_name}}</h2>
 </body>
 </html>

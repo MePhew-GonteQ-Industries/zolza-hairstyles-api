@@ -1,12 +1,14 @@
-import requests
-from requests.auth import HTTPBasicAuth
-from .config import settings
 from functools import lru_cache
+
+import requests
 from fastapi import HTTPException, status
+from requests.auth import HTTPBasicAuth
+
+from .config import settings
 
 auth = HTTPBasicAuth(settings.GH_APP_CLIENT_ID, settings.GH_APP_CLIENT_SECRET)
 
-headers = {"Accept": "application/vnd.github+json", "User-Agent": "Zolza Hairstyles"}
+headers = {"Accept": "application/vnd.github+json", "User-Agent": settings.COMPANY_NAME}
 
 
 @lru_cache()

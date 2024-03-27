@@ -43,8 +43,8 @@ def startup():
     configure_and_start_scheduler()
 
 
-@app.get(settings.BASE_URL, tags=["Zołza Hairstyles Redirection"])
-def zolza_hairstyles_redirection():
+@app.get(settings.BASE_URL, tags=["Frontend Redirection"])
+def frontend_redirection():
     return RedirectResponse(
         settings.FRONTEND_URL, status_code=status.HTTP_308_PERMANENT_REDIRECT
     )
