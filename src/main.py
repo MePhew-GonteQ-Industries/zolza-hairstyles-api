@@ -52,7 +52,7 @@ def frontend_redirection():
 
 @app.get(settings.BASE_URL + "/github_user/{username}")
 def get_github_user_data(username: str):
-    if not settings.GH_APP_CLIENT_ID or settings.GH_APP_CLIENT_SECRET:
+    if not settings.GH_APP_CLIENT_ID or not settings.GH_APP_CLIENT_SECRET:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Path not found"
         )
