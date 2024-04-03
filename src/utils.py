@@ -11,6 +11,7 @@ from pydantic import UUID4
 from sqlalchemy.orm import Session
 
 from src import models
+from .config import settings
 from .ipinfo import get_ip_address_details
 from .schemas.session import (
     BrowserInfo,
@@ -22,7 +23,7 @@ from .schemas.session import (
 )
 from .schemas.user_settings import AvailableSettings, DefaultContentLanguages
 
-PL_TIMEZONE = pytz.timezone("Poland")
+COMPANY_TIMEZONE = pytz.timezone(settings.COMPANY_TIMEZONE)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -52,7 +53,7 @@ def get_language_code_from_header(accept_language: str) -> str | None:
 
 
 def get_language_id_from_language_code(
-    db: Session, language_code: str
+        db: Session, language_code: str
 ) -> pydantic.UUID4:
     language_id = (
         db.query(models.Language.id)
@@ -263,7 +264,7 @@ def load_session_data(session_db: models.Session) -> models.Session:
 
 
 def is_archival(appointment: models.Appointment) -> bool:
-    return appointment.end_slot.end_time < datetime.datetime.now(PL_TIMEZONE)
+    return appointment.end_slot.end_time < datetime.datetime.now(COMPANY_TIMEZONE)
 
 
 def format_datetime_str(datetime_obj: datetime.datetime) -> str:

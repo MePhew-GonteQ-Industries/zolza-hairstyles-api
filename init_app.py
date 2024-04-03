@@ -15,7 +15,7 @@ from src.config import settings
 from src.database import get_db
 from src.loggers import init_app_logger
 from src.scheduler import configure_and_start_scheduler, scheduler
-from src.utils import PL_TIMEZONE
+from src.utils import COMPANY_TIMEZONE
 
 
 def init_languages(db: Session) -> None:
@@ -83,8 +83,8 @@ def init_services(db: Session) -> None:
                 max_price=service["max_price"],
                 average_time_minutes=service["average_time_minutes"],
                 required_slots=(
-                    int(service["average_time_minutes"])
-                    // settings.APPOINTMENT_SLOT_TIME_MINUTES
+                        int(service["average_time_minutes"])
+                        // settings.APPOINTMENT_SLOT_TIME_MINUTES
                 ),
                 description=service.get("description"),
             )
@@ -144,7 +144,7 @@ def add_holiday_to_db(db: Session) -> models.Holiday:
 
 
 def add_holiday_translation_to_db(
-    holiday: models.Holiday, lang, holiday_name: str, db: Session
+        holiday: models.Holiday, lang, holiday_name: str, db: Session
 ) -> None:
     language_db = db.query(models.Language).where(models.Language.code == lang).first()
 
@@ -183,7 +183,7 @@ def ensure_enough_appointment_slots_available(get_db_func: callable) -> None:
 
 
 def ensure_appointment_slots_generation_task_exists(
-    background_scheduler: BackgroundScheduler,
+        background_scheduler: BackgroundScheduler,
 ) -> None:
     appointment_slots_generation_task = background_scheduler.get_job(
         "appointment_slots_generation"
@@ -194,7 +194,7 @@ def ensure_appointment_slots_generation_task_exists(
 
 
 def add_appointment_slots_generation_task(
-    background_scheduler: BackgroundScheduler,
+        background_scheduler: BackgroundScheduler,
 ) -> None:
     background_scheduler.add_job(
         ensure_enough_appointment_slots_available,
@@ -302,7 +302,7 @@ def generate_appointment_slots(db: Session) -> None:
                 minute=first_start_minute,
                 second=0,
                 microsecond=0,
-            ).astimezone(tz=PL_TIMEZONE)
+            ).astimezone(tz=COMPANY_TIMEZONE)
 
     if not first_slot_start:
         hours = now.hour
@@ -322,14 +322,14 @@ def generate_appointment_slots(db: Session) -> None:
                 second=0,
                 microsecond=0,
                 day=now.day + 1,
-            ).astimezone(tz=PL_TIMEZONE)
+            ).astimezone(tz=COMPANY_TIMEZONE)
         else:
             first_slot_start = now.replace(
                 hour=hours,
                 minute=minutes,
                 second=0,
                 microsecond=0,
-            ).astimezone(tz=PL_TIMEZONE)
+            ).astimezone(tz=COMPANY_TIMEZONE)
 
     days = 366 if calendar.isleap(now.year) else 365
 
@@ -337,7 +337,7 @@ def generate_appointment_slots(db: Session) -> None:
 
     last_slot_end = last_slot_end.replace(
         hour=last_end_hour, minute=last_end_minute, second=0, microsecond=0
-    ).astimezone(PL_TIMEZONE)
+    ).astimezone(COMPANY_TIMEZONE)
 
     current_date = first_slot_start
 
@@ -388,8 +388,8 @@ def generate_appointment_slots(db: Session) -> None:
                 current_date = current_date + timedelta(days=1)
             else:
                 if (
-                    current_date.hour
-                    < weekplan[current_date.weekday()]["work_hours"]["start_hour"]
+                        current_date.hour
+                        < weekplan[current_date.weekday()]["work_hours"]["start_hour"]
                 ):
                     current_date = current_date.replace(
                         hour=weekplan[current_date.weekday()]["work_hours"][
@@ -401,8 +401,8 @@ def generate_appointment_slots(db: Session) -> None:
                     )
                     continue
                 elif (
-                    current_date.hour
-                    > weekplan[current_date.weekday()]["work_hours"]["end_hour"]
+                        current_date.hour
+                        > weekplan[current_date.weekday()]["work_hours"]["end_hour"]
                 ):
                     current_date = current_date + timedelta(days=1)
                     next_day_index = current_date.weekday() + 1
@@ -420,12 +420,12 @@ def generate_appointment_slots(db: Session) -> None:
                     current_date = current_date.replace(hour=hour, minute=minute)
                     continue
                 elif (
-                    current_date.hour
-                    == weekplan[current_date.weekday()]["work_hours"]["end_hour"]
+                        current_date.hour
+                        == weekplan[current_date.weekday()]["work_hours"]["end_hour"]
                 ):
                     if (
-                        current_date.minute
-                        >= weekplan[current_date.weekday()]["work_hours"]["end_minute"]
+                            current_date.minute
+                            >= weekplan[current_date.weekday()]["work_hours"]["end_minute"]
                     ):
                         current_date = current_date + timedelta(days=1)
                         next_day_index = current_date.weekday() + 1
@@ -448,9 +448,9 @@ def generate_appointment_slots(db: Session) -> None:
                         if current_date.minute == break_time["start_minute"]:
                             appointment_slot = models.AppointmentSlot(
                                 date=current_date,
-                                start_time=current_date.astimezone(PL_TIMEZONE),
-                                end_time=current_date.astimezone(PL_TIMEZONE)
-                                + timedelta(minutes=break_time["time_minutes"]),
+                                start_time=current_date.astimezone(COMPANY_TIMEZONE),
+                                end_time=current_date.astimezone(COMPANY_TIMEZONE)
+                                         + timedelta(minutes=break_time["time_minutes"]),
                                 break_time=True,
                             )
                             current_date = current_date + timedelta(
@@ -460,10 +460,10 @@ def generate_appointment_slots(db: Session) -> None:
         if not appointment_slot:
             appointment_slot = models.AppointmentSlot(
                 date=current_date,
-                start_time=current_date.astimezone(PL_TIMEZONE),
+                start_time=current_date.astimezone(COMPANY_TIMEZONE),
                 end_time=(
-                    current_date.astimezone(PL_TIMEZONE)
-                    + timedelta(minutes=settings.APPOINTMENT_SLOT_TIME_MINUTES)
+                        current_date.astimezone(COMPANY_TIMEZONE)
+                        + timedelta(minutes=settings.APPOINTMENT_SLOT_TIME_MINUTES)
                 ),
             )
 
