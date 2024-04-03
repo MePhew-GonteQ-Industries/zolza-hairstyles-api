@@ -71,6 +71,9 @@ List of the features that have been implemented so far:
     # See https://docs.python.org/3/library/logging.html#logging-levels for available logging levels
     LOG_LEVEL='<DEBUG/INFO...>'
 
+    # Pytz timezone (see https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568 for list of all timezones)
+    COMPANY_TIMEZONE: str
+
     # Used mostly for email messages
     COMPANY_NAME=''
     BASE_URL='/api'
