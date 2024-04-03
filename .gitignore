@@ -1,3 +1,5 @@
+*.png
+*.pdf
 dynamic_resources
 notes.md
 venv
