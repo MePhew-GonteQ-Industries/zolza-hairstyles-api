@@ -8,7 +8,10 @@ from .config import settings
 
 auth = HTTPBasicAuth(settings.GH_APP_CLIENT_ID, settings.GH_APP_CLIENT_SECRET)
 
-headers = {"Accept": "application/vnd.github+json", "User-Agent": settings.COMPANY_NAME.encode('utf-8')}
+headers = {
+    "Accept": "application/vnd.github+json",
+    "User-Agent": settings.COMPANY_NAME.encode("utf-8"),
+}
 
 
 @lru_cache()
