@@ -12,8 +12,8 @@ VERSION = "1.0.0"
 
 URL = "http://localhost:8000/api"
 # URL = "https://zolza-hairstyles.pl/api"
-EMAIL = "basmateusz@wp.pl"
-PASSWORD = "Kwakwa5!"
+EMAIL = "test@test.pl"
+PASSWORD = "Testing5!"
 
 
 class AuthEndpoints(Enum):
