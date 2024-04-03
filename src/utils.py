@@ -53,7 +53,7 @@ def get_language_code_from_header(accept_language: str) -> str | None:
 
 
 def get_language_id_from_language_code(
-        db: Session, language_code: str
+    db: Session, language_code: str
 ) -> pydantic.UUID4:
     language_id = (
         db.query(models.Language.id)
