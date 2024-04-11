@@ -1,5 +1,6 @@
-*.png
-*.pdf
+* PA *.png
+* PA *.pdf
+* PA *.json
 dynamic_resources
 notes.md
 venv
