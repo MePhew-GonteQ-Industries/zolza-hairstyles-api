@@ -46,13 +46,14 @@ class PerformanceAnalyzer:
     performance_data: dict = {"iterations": [], "total_run_time": None}
 
     def __init__(
-        self,
-        url,
-        auth_endpoints: AuthEndpoints,
-        resource_endpoints: ResourceEndpoints,
-        email,
-        password,
-        iterations: int,
+            self,
+            url,
+            auth_endpoints: AuthEndpoints,
+            resource_endpoints: ResourceEndpoints,
+            email,
+            password,
+            iterations: int,
+            report_prefix: str | None = None
     ):
         self.url = url
         self.auth_endpoints = auth_endpoints
@@ -60,6 +61,7 @@ class PerformanceAnalyzer:
         self.email = email
         self.password = password
         self.iterations = iterations
+        self.report_prefix = report_prefix
 
     def _build_endpoint_url(self, endpoint: AuthEndpoints | ResourceEndpoints):
         return f"{self.url}/{endpoint.value}"
@@ -195,14 +197,16 @@ class PerformanceAnalyzer:
         self.performance_data["total_run_time"] = total_run_time
 
         timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        filename = f"PA V{VERSION} {timestamp} I-{self.iterations}"
+        filename = f"{self.report_prefix} PA V{VERSION} {timestamp} I-{self.iterations}"
         self._save_data(filename)
         self._create_graphs(filename)
 
 
 def main():
+    report_prefix = input('Please enter report prefix: ')
+
     performance_analyzer = PerformanceAnalyzer(
-        URL, AuthEndpoints, ResourceEndpoints, EMAIL, PASSWORD, 1
+        URL, AuthEndpoints, ResourceEndpoints, EMAIL, PASSWORD, 10, report_prefix
     )
     performance_analyzer.run()
 
