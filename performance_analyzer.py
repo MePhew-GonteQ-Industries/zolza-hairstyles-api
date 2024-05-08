@@ -46,14 +46,14 @@ class PerformanceAnalyzer:
     performance_data: dict = {"iterations": [], "total_run_time": None}
 
     def __init__(
-            self,
-            url,
-            auth_endpoints: AuthEndpoints,
-            resource_endpoints: ResourceEndpoints,
-            email,
-            password,
-            iterations: int,
-            report_prefix: str | None = None
+        self,
+        url,
+        auth_endpoints: AuthEndpoints,
+        resource_endpoints: ResourceEndpoints,
+        email,
+        password,
+        iterations: int,
+        report_prefix: str | None = None,
     ):
         self.url = url
         self.auth_endpoints = auth_endpoints
@@ -203,7 +203,7 @@ class PerformanceAnalyzer:
 
 
 def main():
-    report_prefix = input('Please enter report prefix: ')
+    report_prefix = input("Please enter report prefix: ")
 
     performance_analyzer = PerformanceAnalyzer(
         URL, AuthEndpoints, ResourceEndpoints, EMAIL, PASSWORD, 10, report_prefix
