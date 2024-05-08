@@ -78,5 +78,25 @@
     "max_price": "130",
     "average_time_minutes": "60",
     "description": "Stwórz niezapomniany wizerunek z naszą fryzurą okolicznościową. Niezależnie od wydarzenia, zapewniamy profesjonalną stylizację, która podkreśli Twój wyjątkowy styl."
+  },
+  {
+    "name": {
+      "pl": "Prostowanie włosów",
+      "en": "Hair straightening"
+    },
+    "min_price": "100",
+    "max_price": "100",
+    "average_time_minutes": "60",
+    "description": "Profesjonalne prostowanie włosów, abyś mogła cieszyć się gładkimi, lśniącymi włosami bez wysiłku. Daj swoim włosom nowy wymiar elegancji i łatwości codziennej stylizacji."
+  },
+  {
+    "name": {
+      "pl": "Modelowanie włosów",
+      "en": "Hair styling"
+    },
+    "min_price": "70",
+    "max_price": "90",
+    "average_time_minutes": "60",
+    "description": "Profesjonalne modelowanie włosów - stylizacja dopasowana do Twoich potrzeb i preferencji. Dla włosów krótkich cena wynosi 70 zł, a dla długich - 90 zł."
   }
 ]
