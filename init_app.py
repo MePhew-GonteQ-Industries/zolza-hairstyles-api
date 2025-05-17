@@ -387,9 +387,16 @@ def generate_appointment_slots(db: Session) -> None:
                 )
                 current_date = current_date + timedelta(days=1)
 
-            elif settings.TEMPORARY_CLOSURE_FROM_DATE and current_date >= datetime.fromisoformat(settings.TEMPORARY_CLOSURE_FROM_DATE).astimezone(timezone.utc):
+            elif (
+                settings.TEMPORARY_CLOSURE_FROM_DATE
+                and current_date
+                >= datetime.fromisoformat(
+                    settings.TEMPORARY_CLOSURE_FROM_DATE
+                ).astimezone(timezone.utc)
+            ):
                 appointment_slot = models.AppointmentSlot(
-                    date=current_date, temporary_closure=True,
+                    date=current_date,
+                    temporary_closure=True,
                 )
                 current_date = current_date.replace(
                     hour=first_start_hour, minute=first_start_minute
