@@ -204,6 +204,7 @@ class AppointmentSlot(Base):
     reserved_reason = Column(String)
     holiday = Column(Boolean, nullable=False, server_default="false")
     sunday = Column(Boolean, nullable=False, server_default="false")
+    temporary_closure = Column(Boolean, nullable=False, server_default="false")
     break_time = Column(Boolean, nullable=False, server_default="false")
     holiday_id = Column(Integer, ForeignKey("holidays.id"))
     date = Column(DATE, nullable=False)

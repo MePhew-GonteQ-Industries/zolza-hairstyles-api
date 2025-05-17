@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     APPOINTMENT_SLOT_TIME_MINUTES: int
     MAX_FUTURE_APPOINTMENT_DAYS: int
 
+    TEMPORARY_CLOSURE_FROM_DATE: str | None = None
+
     # Database config
     DATABASE_USERNAME: str
     DATABASE_PASSWORD: str

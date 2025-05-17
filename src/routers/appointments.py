@@ -231,6 +231,9 @@ def create_appointment(
 
     appointment_start_time = first_slot_db.start_time
 
+    if not appointment_start_time:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
     now = datetime.datetime.now(COMPANY_TIMEZONE)
     first_available_time = now + timedelta(hours=1)
 

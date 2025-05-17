@@ -2,7 +2,7 @@ import calendar
 import json
 import math
 import os
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 import langcodes
@@ -386,6 +386,16 @@ def generate_appointment_slots(db: Session) -> None:
                     hour=first_start_hour, minute=first_start_minute
                 )
                 current_date = current_date + timedelta(days=1)
+
+            elif settings.TEMPORARY_CLOSURE_FROM_DATE and current_date >= datetime.fromisoformat(settings.TEMPORARY_CLOSURE_FROM_DATE).astimezone(timezone.utc):
+                appointment_slot = models.AppointmentSlot(
+                    date=current_date, temporary_closure=True,
+                )
+                current_date = current_date.replace(
+                    hour=first_start_hour, minute=first_start_minute
+                )
+                current_date = current_date + timedelta(days=1)
+
             else:
                 if (
                     current_date.hour
