@@ -13,6 +13,7 @@ class AppointmentSlot(BaseModel):
     reserved_reason: str | None = None
     holiday: bool
     sunday: bool
+    temporary_closure: bool
     break_time: bool
     date: datetime.date
     start_time: datetime.datetime | None = None

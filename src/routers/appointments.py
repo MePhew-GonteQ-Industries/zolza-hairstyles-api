@@ -115,6 +115,7 @@ def get_nearest_slots(
         db.query(models.AppointmentSlot)
         .where(models.AppointmentSlot.holiday == False)
         .where(models.AppointmentSlot.sunday == False)
+        .where(models.AppointmentSlot.temporary_closure == False)
         .where(
             (
                 (models.AppointmentSlot.start_time == None)
@@ -271,6 +272,7 @@ def create_appointment(
         .where(models.AppointmentSlot.reserved == False)
         .where(models.AppointmentSlot.holiday == False)
         .where(models.AppointmentSlot.sunday == False)
+        .where(models.AppointmentSlot.temporary_closure == False)
         .where(models.AppointmentSlot.break_time == False)
         .where(extract("dow", models.AppointmentSlot.date) != 6)
         .order_by(models.AppointmentSlot.start_time)
@@ -489,6 +491,7 @@ def update_any_appointment(
             models.AppointmentSlot.reserved == False,
             models.AppointmentSlot.holiday == False,
             models.AppointmentSlot.sunday == False,
+            models.AppointmentSlot.temporary_closure == False,
             models.AppointmentSlot.break_time == False,
             or_(
                 models.AppointmentSlot.occupied_by_appointment != appointment_db.id,
@@ -662,6 +665,7 @@ def reserve_slots(
         .where(models.AppointmentSlot.occupied == False)
         .where(models.AppointmentSlot.holiday == False)
         .where(models.AppointmentSlot.sunday == False)
+        .where(models.AppointmentSlot.temporary_closure == False)
         .where(models.AppointmentSlot.break_time == False)
         .where(
             models.AppointmentSlot.start_time
@@ -709,6 +713,7 @@ def unreserve_slots(
         .where(models.AppointmentSlot.occupied == False)
         .where(models.AppointmentSlot.holiday == False)
         .where(models.AppointmentSlot.sunday == False)
+        .where(models.AppointmentSlot.temporary_closure == False)
         .where(models.AppointmentSlot.break_time == False)
         .where(
             models.AppointmentSlot.start_time
